@@ -16,6 +16,7 @@
         <module>sxwl-boot-config-web</module>
         <module>sxwl-boot-config-mybatis</module>
         <module>sxwl-boot-config-security</module>
+        <module>sxwl-boot-config-redis</module>
     </modules>
 
     <properties>
