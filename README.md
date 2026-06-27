@@ -25,35 +25,33 @@
 
 ### 后端 `sxwl-boot`
 
-| 技术 | 版本 |
-|------|------|
-| Java | 17 |
-| Spring Boot | 3.5.15 |
-| MyBatis | 3.0.5 |
-| PageHelper | 2.1.1 |
-| PostgreSQL | 42.7.8 |
-| JJWT | 0.13.0 |
-| Bouncy Castle | 1.83 |
-| AWS S3 SDK | 2.42.27 |
-| Flowable | 7.2.0 |
-| Apache POI | 5.2.5 |
-| Maven | 3.9+ |
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| Java | 17 | 运行环境 |
+| Spring Boot | 3.5.15 | 应用框架 |
+| MyBatis | 3.0.5 | ORM |
+| PageHelper | 2.1.1 | 分页插件 |
+| PostgreSQL | 42.7.8 | 主数据库 |
+| Redis | Lettuce | 缓存 / Token 白名单 |
+| JJWT | 0.13.0 | JWT 令牌 |
+| Bouncy Castle | 1.83 | 加密 |
+| AWS S3 SDK | 2.42.27 | 对象存储（RustFS） |
+| Flowable | 7.2.0 | 工作流引擎（预留） |
+| Apache POI | 5.2.5 | Excel 导入导出（预留） |
+| Maven | 3.9+ | 构建工具 |
 
-### 前端 `sxwl-web`
+### 前端 `sxwl-react`
 
-| 技术 | 版本 |
-|------|------|
-| React | 19.2.6 |
-| TypeScript | 6.0.2 |
-| Vite | 8.1.0 |
-| Ant Design | 6.4.4 |
-| React Router DOM | 7.17.0 |
-| Zustand | 5.0.14 |
-| Axios | 1.17.0 |
-| Sass | 1.101.0 |
-| react-markdown | 10.1.0 |
-| highlight.js | 11.11.1 |
-| remark-gfm | 4.0.1 |
+| 技术 | 版本 | 用途 |
+|------|------|------|
+| React | 19.2.6 | UI 框架 |
+| TypeScript | 6.0.2 | 类型系统 |
+| Vite | 8.1.0 | 构建工具 |
+| Ant Design | 6.4.4 | UI 组件库 |
+| React Router DOM | 7.17.0 | 路由 |
+| Zustand | 5.0.14 | 状态管理 |
+| Axios | 1.17.0 | HTTP 客户端 |
+| Sass | 1.101.0 | CSS 预处理器 |
 
 ---
 
@@ -61,54 +59,16 @@
 
 ```
 sxwl-project/
-├── sxwl-boot/                          # 后端（Maven 聚合项目）
-│   ├── pom.xml                        # 父 POM
-│   ├── sxwl-boot-app/                 # 启动模块
-│   │   ├── pom.xml
-│   │   └── src/main/
-│   │       ├── java/com/sxwl/SxwlApplication.java
-│   │       └── resources/
-│   │           ├── application.yaml
-│   │           ├── application-dev.yaml
-│   │           ├── application-prod.yaml
-│   │           └── logback-spring.xml
-│   ├── sxwl-boot-common/              # 公共模块
-│   │   └── pom.xml
-│   ├── sxwl-boot-config/              # 配置模块（聚合）
-│   │   ├── pom.xml
-│   │   ├── sxwl-boot-config-web/
-│   │   │   └── pom.xml
-│   │   ├── sxwl-boot-config-mybatis/
-│   │   │   └── pom.xml
-│   │   └── sxwl-boot-config-security/
-│   │       └── pom.xml
-│   └── sxwl-boot-module/              # 业务模块（聚合）
-│       ├── pom.xml
-│       └── sxwl-boot-module-system/
-│           └── pom.xml
-├── sxwl-react/                         # 前端（Vite + React 19）
-│   ├── src/
-│   │   ├── main.tsx
-│   │   └── App.tsx
-│   ├── public/
-│   │   └── favicon.svg
-│   ├── index.html
-│   ├── vite.config.ts
-│   ├── tsconfig.json
-│   ├── tsconfig.app.json
-│   ├── tsconfig.node.json
-│   ├── eslint.config.js
-│   └── package.json
-├── docs/
-│   └── architecture.md
-├── .github/
-│   ├── ISSUE_TEMPLATE/
-│   └── PULL_REQUEST_TEMPLATE/
+├── sxwl-boot/              # 后端（Maven 聚合，Spring Boot 3.5）
+│   ├── sxwl-boot-app/      # 启动模块
+│   ├── sxwl-boot-common/   # 公共模块
+│   ├── sxwl-boot-config/   # 配置模块（web / mybatis / redis / security）
+│   └── sxwl-boot-module/   # 业务模块
+├── sxwl-react/             # 前端（Vite + React 19 + TypeScript）
+├── docs/                   # 文档
+├── .github/                # GitHub 模板（Issue / PR）
 ├── .gitignore
-├── .gitattributes
 ├── LICENSE
-├── CHANGELOG.md
-├── CONTRIBUTING.md
 └── README.md
 ```
 
@@ -126,7 +86,8 @@ mvn spring-boot:run
 ```
 
 > 端口：`30101`，context-path：`/api`  
-> 配置文件：`application.yaml` / `application-dev.yaml` / `application-prod.yaml`
+> 配置文件：`application.yaml`（激活 `dev` 或 `prod` profile）  
+> **注意**：`application-dev.yaml` 未提交，本地开发需自行创建。
 
 ### 前端
 

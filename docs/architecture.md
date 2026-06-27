@@ -1,14 +1,14 @@
 # sxwl-project 架构设计文档
 
-> 版本：v0.1 | 2024-06-27
+> 版本：v0.1 | 2026-06-27
 
 ---
 
 ## 1. 系统概述
 
-sxwl-project 是一个前后端分离的权限管理系统。
+sxwl-project 是一个前后端分离的权限管理系统（RBAC）。
 
-- **后端**：Spring Boot 3.5.15 + MyBatis 3.0.5 + PostgreSQL 42.7.8
+- **后端**：Spring Boot 3.5.15 + MyBatis 3.0.5 + PostgreSQL 42.7.8 + Redis
 - **前端**：React 19.2.6 + TypeScript 6.0.2 + Vite 8.1.0 + Ant Design 6.4.4
 
 ---
@@ -28,7 +28,7 @@ sxwl-project 是一个前后端分离的权限管理系统。
 ┌──────────────────────▼──────────────────────────┐
 │      sxwl-boot（端口 30101，context /api）       │
 │  Spring Boot 3.5.15 + MyBatis 3.0.5             │
-│  PostgreSQL 42.7.8                               │
+│  PostgreSQL 42.7.8  +  Redis                    │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -41,15 +41,16 @@ sxwl-project 是一个前后端分离的权限管理系统。
 ```
 sxwl-boot（父 POM，groupId: com.sxwl，version: 0.1.0）
 ├── pom.xml
-├── sxwl-boot-app/                   # 启动模块（jar）
+├── sxwl-boot-app/                   # 启动模块（jar，入口 SxwlApplication）
 │   └── 依赖：sxwl-boot-module-system
-├── sxwl-boot-common/                # 公共模块（jar，空）
+├── sxwl-boot-common/                # 公共模块（jar）
 ├── sxwl-boot-config/                # 配置聚合（pom）
-│   ├── config-web/                  # 依赖 spring-boot-starter-web
-│   ├── config-mybatis/              # 依赖 mybatis + pagehelper + postgresql
-│   └── config-security/             # 空模块
+│   ├── config-web/                  # Web 相关配置
+│   ├── config-mybatis/              # MyBatis + PageHelper + PostgreSQL
+│   ├── config-redis/                # Redis 配置
+│   └── config-security/             # 预留认证鉴权配置
 └── sxwl-boot-module/                # 业务聚合（pom）
-    └── module-system/               # 依赖 config-web + config-mybatis
+    └── module-system/               # 系统管理模块
 ```
 
 ### 3.2 依赖关系
@@ -61,14 +62,6 @@ sxwl-boot-app
 sxwl-boot-module-system
   ├── sxwl-boot-config-web
   └── sxwl-boot-config-mybatis
-
-sxwl-boot-config-web
-  └── spring-boot-starter-web
-
-sxwl-boot-config-mybatis
-  ├── mybatis-spring-boot-starter
-  ├── pagehelper-spring-boot-starter
-  └── postgresql
 ```
 
 ### 3.3 父 POM 版本管理
@@ -111,11 +104,16 @@ public class SxwlApplication {
 | `spring.servlet.multipart.max-file-size` | `100MB` |
 | `spring.servlet.multipart.max-request-size` | `200MB` |
 
-**application-dev.yaml / application-prod.yaml**
+**application-dev.yaml**
 
-两个环境均配置了：
-- PostgreSQL 数据源（HikariCP 连接池：min-idle 5, max-pool-size 20）
-- Redis（Lettuce 连接池：max-active 16, max-idle 8, min-idle 2）
+- PostgreSQL 数据源（HikariCP：min-idle 5, max-pool-size 20）
+- Redis（Lettuce：max-active 16, max-idle 8, min-idle 2）
+- **密码明文，已加入 `.gitignore`，不提交**
+
+**application-prod.yaml**
+
+- 数据源和 Redis 均使用环境变量占位符（`${DB_PASSWORD}`、`${REDIS_PASSWORD}` 等）
+- 不落盘任何敏感信息
 
 **logback-spring.xml**
 
@@ -128,7 +126,7 @@ public class SxwlApplication {
 
 ### 4.1 当前状态
 
-Vite 初始化完成，`App.tsx` 为空组件。
+Vite 初始化完成，`App.tsx` 为空组件，等待业务开发。
 
 - `vite.config.ts`：`@` 路径别名 → `src/`，端口 `31001`
 - `index.html`：title 为 `sxwl-react-template`
@@ -166,4 +164,3 @@ sxwl-react/
 | react-markdown | 10.1.0 |
 | highlight.js | 11.11.1 |
 | remark-gfm | 4.0.1 |
-
