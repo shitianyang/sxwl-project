@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: sxwl-boot                    # 应用名称，日志和监控会用到
+  profiles:
+    active: dev                        # 默认激活的环境配置（dev/prod）
+  servlet:
+    multipart:
+      max-file-size: 100MB             # 单个文件最大大小
+      max-request-size: 200MB          # 单次请求最大大小
+server:
+  port: 30101                          # 应用端口号
+  servlet:
+    context-path: /api                 # 接口统一前缀
+  # 关闭 Whitelabel 错误页面
+  error:
+    whitelabel:
+      enabled: false
+mybatis:
+  mapper-locations: classpath*:mappers/**/*.xml

@@ -1,0 +1,65 @@
+# ============ 通用 ============
+.DS_Store
+*.log
+*.swp
+*.swo
+.vscode/
+.idea/
+*.iml
+.workbuddy
+
+# ============ Java / Maven ============
+# 编译输出
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven 本地仓库（不提交）
+.m2/
+
+# 构建工具
+.gradle/
+build/
+
+# 配置文件（本地开发用，不含敏感信息）
+/sxwl-boot/sxwl-boot-app/src/main/resources/application-test.yaml
+
+# ============ Node / React ============
+# 依赖
+sxwl-react/node_modules/
+sxwl-react/.pnpm-store/
+
+# 构建输出
+sxwl-react/dist/
+sxwl-react/build/
+
+# 缓存
+sxwl-react/.vite/
+sxwl-react/.eslintcache
+sxwl-react/.stylelintcache
+
+# 环境文件（不含实际密钥）
+sxwl-react/.env.local
+sxwl-react/.env.development.local
+sxwl-react/.env.production.local
+
+# TypeScript
+sxwl-react/*.tsbuildinfo
+
+# ============ 数据库 ============
+# 数据库配置中可能含密码，不提交
+*.db
+*.sqlite
+*.sql.gz
+
+# ============ 日志 ============
+logs/
+*.log
+sxwl-boot/logs/
+
+# ============ 测试覆盖率 ============
+coverage/
+*.lcov
+

@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    # 数据库连接 URL
+    url: jdbc:postgresql://localhost:30013/sxwl?currentSchema=public&useUnicode=true&characterEncoding=utf8
+    username: postgres                 # 数据库用户名
+    password: '123456'             # 数据库密码
+    driver-class-name: org.postgresql.Driver
+    # HikariCP 连接池配置
+    hikari:
+      minimum-idle: 5                  # 最小空闲连接数
+      maximum-pool-size: 20            # 最大连接数
+      idle-timeout: 300000             # 空闲连接超时（毫秒）：5分钟
+      max-lifetime: 1800000            # 连接最大存活时间（毫秒）：30分钟
+      connection-timeout: 30000        # 连接超时（毫秒）：30秒
+      pool-name: SxwlHikariPool        # 连接池名称（日志中显示）
+  data:
+    redis:
+      host: localhost                  # Redis 主机
+      port: 30011                      # Redis 端口
+      password: '123456'           # Redis 密码
+      database: 0                      # 使用的数据库索引（0-15）
+      timeout: 10000                   # 连接超时（毫秒）
+      # Lettuce 连接池配置
+      lettuce:
+        pool:
+          max-active: 16               # 最大活跃连接数
+          max-idle: 8                  # 最大空闲连接数
+          min-idle: 2                  # 最小空闲连接数
+          max-wait: 3000               # 获取连接最大等待时间（毫秒）
