@@ -17,3 +17,6 @@ server:
       enabled: false
 mybatis:
   mapper-locations: classpath*:mappers/**/*.xml
+sxwl:
+  cors:
+    allowed-origins: *                 # 允许的跨域来源（逗号分隔，默认 * 表示允许所有）
