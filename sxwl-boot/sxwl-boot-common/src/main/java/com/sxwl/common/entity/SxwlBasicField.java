@@ -61,11 +61,11 @@ public class SxwlBasicField implements Serializable {
         this.id = id;
     }
 
-    public Long getcreateBy() {
+    public Long getCreateBy() {
         return createBy;
     }
 
-    public void setcreateBy(Long createBy) {
+    public void setCreateBy(Long createBy) {
         this.createBy = createBy;
     }
 
