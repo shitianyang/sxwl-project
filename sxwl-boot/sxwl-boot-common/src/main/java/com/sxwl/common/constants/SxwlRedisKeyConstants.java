@@ -1,7 +1,5 @@
 package com.sxwl.common.constants;
 
-import com.sxwl.common.exception.SxwlBusinessException;
-
 /**
  * Redis Key 前缀常量
  *
@@ -30,7 +28,7 @@ public class SxwlRedisKeyConstants {
      * 私有构造函数，防止外部实例化工具类
      */
     private SxwlRedisKeyConstants() {
-        throw new SxwlBusinessException("SxwlRedisKeyConstants 是常量工具类，不允许实例化");
+        throw new UnsupportedOperationException("SxwlRedisKeyConstants 是常量工具类，不允许实例化");
     }
 
     /**

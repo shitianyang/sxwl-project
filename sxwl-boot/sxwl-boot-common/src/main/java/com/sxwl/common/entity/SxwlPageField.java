@@ -1,6 +1,8 @@
 package com.sxwl.common.entity;
 
 import com.sxwl.common.constants.SxwlSystemConstants;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -20,11 +22,14 @@ public class SxwlPageField implements Serializable {
     /**
      * 当前页
      */
+    @Min(value = 1, message = "当前页必须大于等于 1")
     private Integer current;
 
     /**
      * 每页大小
      */
+    @Min(value = 1, message = "每页数量必须大于等于 1")
+    @Max(value = SxwlSystemConstants.MAX_PAGE_SIZE, message = "每页数量不能超过 " + SxwlSystemConstants.MAX_PAGE_SIZE)
     private Integer pageSize;
 
     public Integer getCurrent() {

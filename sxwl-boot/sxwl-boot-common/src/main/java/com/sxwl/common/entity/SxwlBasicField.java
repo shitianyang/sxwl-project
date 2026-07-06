@@ -26,7 +26,7 @@ public class SxwlBasicField implements Serializable {
     /**
      * 创建人标识
      */
-    private Long createdBy;
+    private Long createBy;
 
     /**
      * 创建人所属组织标识
@@ -61,12 +61,12 @@ public class SxwlBasicField implements Serializable {
         this.id = id;
     }
 
-    public Long getCreatedBy() {
-        return createdBy;
+    public Long getcreateBy() {
+        return createBy;
     }
 
-    public void setCreatedBy(Long createdBy) {
-        this.createdBy = createdBy;
+    public void setcreateBy(Long createBy) {
+        this.createBy = createBy;
     }
 
     public Long getCreateOrg() {
@@ -113,9 +113,9 @@ public class SxwlBasicField implements Serializable {
 
     }
 
-    public SxwlBasicField(Long id, Long createdBy, Long createOrg, LocalDateTime createTime, Long updateBy, LocalDateTime updateTime, Integer deleteFlag) {
+    public SxwlBasicField(Long id, Long createBy, Long createOrg, LocalDateTime createTime, Long updateBy, LocalDateTime updateTime, Integer deleteFlag) {
         this.id = id;
-        this.createdBy = createdBy;
+        this.createBy = createBy;
         this.createOrg = createOrg;
         this.createTime = createTime;
         this.updateBy = updateBy;
@@ -127,7 +127,7 @@ public class SxwlBasicField implements Serializable {
     public String toString() {
         return "SxwlBasicField{" +
                 "id=" + id +
-                ", createdBy=" + createdBy +
+                ", createBy=" + createBy +
                 ", createOrg=" + createOrg +
                 ", createTime=" + createTime +
                 ", updateBy=" + updateBy +

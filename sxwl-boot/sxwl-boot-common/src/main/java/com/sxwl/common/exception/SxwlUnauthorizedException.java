@@ -18,7 +18,7 @@ package com.sxwl.common.exception;
  * 401 是"你是谁我不知道"，403 是"我知道你是谁但你没权限"。</p>
  *
  * @author shitianyang
- * @since 1.0.0
+ * @since 0.1.0
  */
 public class SxwlUnauthorizedException extends SxwlBusinessException {
 

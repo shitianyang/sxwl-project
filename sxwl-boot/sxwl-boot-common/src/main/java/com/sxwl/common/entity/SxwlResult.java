@@ -11,7 +11,7 @@ import com.sxwl.common.enums.SxwlStatusEnum;
  * <pre>{@code
  * {
  *   "code": 200,
- *   "msg": "操作成功",
+ *   "message": "操作成功",
  *   "data": { ... }
  * }
  * }</pre>
@@ -91,7 +91,7 @@ public class SxwlResult<T> {
      * 成功返回（无数据）
      *
      * @param <T> 数据类型
-     * @return code=200, msg="操作成功"
+     * @return code=200, message="操作成功"
      */
     public static <T> SxwlResult<T> success() {
         return new SxwlResult<>(SxwlStatusEnum.SUCCESS.getCode(), SxwlStatusEnum.SUCCESS.getDescription(), null);
@@ -102,7 +102,7 @@ public class SxwlResult<T> {
      *
      * @param data 响应数据
      * @param <T>  数据类型
-     * @return code=200, msg="操作成功"
+     * @return code=200, message="操作成功"
      */
     public static <T> SxwlResult<T> success(T data) {
         return new SxwlResult<>(SxwlStatusEnum.SUCCESS.getCode(), SxwlStatusEnum.SUCCESS.getDescription(), data);
@@ -124,7 +124,7 @@ public class SxwlResult<T> {
      * 失败返回（默认业务错误码 10001）
      *
      * @param <T> 数据类型
-     * @return code=10001, msg="业务校验失败"
+     * @return code=10001, message="业务校验失败"
      */
     public static <T> SxwlResult<T> error() {
         return new SxwlResult<>(SxwlStatusEnum.FAIL.getCode(), SxwlStatusEnum.FAIL.getDescription(), null);
@@ -161,7 +161,7 @@ public class SxwlResult<T> {
      * @return code=401
      */
     public static <T> SxwlResult<T> unauthorized(String message) {
-        return new SxwlResult<>(401, message, null);
+        return new SxwlResult<>(SxwlStatusEnum.UNAUTHORIZED.getCode(), message, null);
     }
 
     /**
@@ -172,6 +172,6 @@ public class SxwlResult<T> {
      * @return code=403
      */
     public static <T> SxwlResult<T> forbidden(String message) {
-        return new SxwlResult<>(403, message, null);
+        return new SxwlResult<>(SxwlStatusEnum.FORBIDDEN.getCode(), message, null);
     }
 }

@@ -1,7 +1,5 @@
 package com.sxwl.common.constants;
 
-import com.sxwl.common.exception.SxwlBusinessException;
-
 /**
  * 全局常量
  *
@@ -18,7 +16,7 @@ public final class SxwlSystemConstants {
      * 私有构造函数，防止外部实例化工具类
      */
     private SxwlSystemConstants() {
-        throw new SxwlBusinessException("SxwlSystemConstants 是常量工具类，不允许实例化");
+        throw new UnsupportedOperationException("SxwlSystemConstants 是常量工具类，不允许实例化");
     }
 
     /**
@@ -55,6 +53,11 @@ public final class SxwlSystemConstants {
      * <p>所有分页查询接口的 pageSize 默认值</p>
      */
     public static final int DEFAULT_PAGE_SIZE = 10;
+
+    /**
+     * 每页最大数量
+     */
+    public static final int MAX_PAGE_SIZE = 200;
 
     /**
      * 后台管理端 access_token 过期时间：30 分钟
