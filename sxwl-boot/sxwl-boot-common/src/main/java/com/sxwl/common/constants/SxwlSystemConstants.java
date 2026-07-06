@@ -22,6 +22,12 @@ public final class SxwlSystemConstants {
     }
 
     /**
+     * 默认序列化版本号：2025-03-24 08:00:00
+     * <p>减小生成的 ID 数值长度</p>
+     */
+    public static final long SERIAL_VERSION_UID = 1742774400000L;
+
+    /**
      * 标准日期时间格式：yyyy-MM-dd HH:mm:ss
      * <p>用于 API 响应中的时间字段、数据库 timestamp 格式化</p>
      */
