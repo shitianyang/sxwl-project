@@ -9,7 +9,7 @@
         <version>0.1.0</version>
     </parent>
 
-    <artifactId>sxwl-boot-module-system</artifactId>
+    <artifactId>sxwl-boot-module-auth</artifactId>
     <packaging>jar</packaging>
 
     <properties>

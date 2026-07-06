@@ -11,8 +11,10 @@
 
     <artifactId>sxwl-boot-module</artifactId>
     <packaging>pom</packaging>
+
     <modules>
         <module>sxwl-boot-module-system</module>
+        <module>sxwl-boot-module-auth</module>
     </modules>
 
     <properties>

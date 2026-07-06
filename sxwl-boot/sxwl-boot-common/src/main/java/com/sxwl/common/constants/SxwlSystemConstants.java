@@ -1,7 +1,5 @@
 package com.sxwl.common.constants;
 
-import com.sxwl.common.exception.SxwlBusinessException;
-
 /**
  * 全局常量
  *
@@ -18,8 +16,14 @@ public final class SxwlSystemConstants {
      * 私有构造函数，防止外部实例化工具类
      */
     private SxwlSystemConstants() {
-        throw new SxwlBusinessException("SxwlSystemConstants 是常量工具类，不允许实例化");
+        throw new UnsupportedOperationException("SxwlSystemConstants 是常量工具类，不允许实例化");
     }
+
+    /**
+     * 默认序列化版本号：2025-03-24 08:00:00
+     * <p>减小生成的 ID 数值长度</p>
+     */
+    public static final long SERIAL_VERSION_UID = 1742774400000L;
 
     /**
      * 标准日期时间格式：yyyy-MM-dd HH:mm:ss
@@ -51,26 +55,35 @@ public final class SxwlSystemConstants {
     public static final int DEFAULT_PAGE_SIZE = 10;
 
     /**
-     * 后台管理端 access_token 过期时间：30 分钟
+     * 每页最大数量
+     */
+    public static final int MAX_PAGE_SIZE = 200;
+
+    /**
+     * 后台管理端 access_token 过期时间：30 分钟（1800 秒）
      * <p>后台管理安全性优先，较短过期时间降低 token 泄露风险</p>
+     * <p><b>注意：本常量单位是毫秒。</b>传给 {@code SxwlJwtUtils.Builder#expireSeconds} 前需除以 1000</p>
      */
     public static final long ACCESS_TOKEN_EXPIRE = 30 * 60 * 1000L;
 
     /**
-     * 后台管理端 refresh_token 过期时间：7 天
+     * 后台管理端 refresh_token 过期时间：7 天（604800 秒）
      * <p>一周内免登录，兼顾安全与便利</p>
+     * <p><b>注意：本常量单位是毫秒。</b>传给 {@code SxwlJwtUtils.Builder#expireSeconds} 前需除以 1000</p>
      */
     public static final long REFRESH_TOKEN_EXPIRE = 7 * 24 * 60 * 60 * 1000L;
 
     /**
-     * 前台 C 端 access_token 过期时间：2 小时
+     * 前台 C 端 access_token 过期时间：2 小时（7200 秒）
      * <p>C 端用户体验优先，较长过期时间避免频繁弹登录</p>
+     * <p><b>注意：本常量单位是毫秒。</b>传给 {@code SxwlJwtUtils.Builder#expireSeconds} 前需除以 1000</p>
      */
     public static final long FRONT_ACCESS_TOKEN_EXPIRE = 2 * 60 * 60 * 1000L;
 
     /**
-     * 前台 C 端 refresh_token 过期时间：30 天
+     * 前台 C 端 refresh_token 过期时间：30 天（2592000 秒）
      * <p>移动端常用策略：一个月免登录</p>
+     * <p><b>注意：本常量单位是毫秒。</b>传给 {@code SxwlJwtUtils.Builder#expireSeconds} 前需除以 1000</p>
      */
     public static final long FRONT_REFRESH_TOKEN_EXPIRE = 30 * 24 * 60 * 60 * 1000L;
 

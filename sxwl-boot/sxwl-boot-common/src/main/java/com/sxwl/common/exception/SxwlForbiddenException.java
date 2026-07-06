@@ -1,5 +1,7 @@
 package com.sxwl.common.exception;
 
+import com.sxwl.common.enums.SxwlStatusEnum;
+
 /**
  * 403 无权限异常
  *
@@ -17,15 +19,15 @@ package com.sxwl.common.exception;
  * 401 是"你是谁我不知道"，403 是"我知道你是谁但你没权限"。</p>
  *
  * @author shitianyang
- * @since 1.0.0
+ * @since 0.1.0
  */
-public class SxwlForbiddenException extends SxwlBusinessException {
+public final class SxwlForbiddenException extends SxwlBusinessException {
 
     /**
      * 使用默认消息创建 403 异常
      */
     public SxwlForbiddenException() {
-        super(403, "无访问权限");
+        super(SxwlStatusEnum.FORBIDDEN.getCode(), "无访问权限");
     }
 
     /**
@@ -34,6 +36,6 @@ public class SxwlForbiddenException extends SxwlBusinessException {
      * @param message 错误描述，如 "没有删除用户的权限"
      */
     public SxwlForbiddenException(String message) {
-        super(403, message);
+        super(SxwlStatusEnum.FORBIDDEN.getCode(), message);
     }
 }

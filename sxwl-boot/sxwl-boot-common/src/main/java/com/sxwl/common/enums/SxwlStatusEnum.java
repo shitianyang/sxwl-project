@@ -10,12 +10,14 @@ package com.sxwl.common.enums;
 public enum SxwlStatusEnum {
 
     SUCCESS(200, "操作成功"),
+    UNAUTHORIZED(401, "未认证"),
+    FORBIDDEN(403, "无权限"),
     FAIL(10001, "业务校验失败");
 
     /**
      * 状态码
      */
-    private final Integer code;
+    private final int code;
 
     /**
      * 描述
@@ -28,7 +30,7 @@ public enum SxwlStatusEnum {
      * @param code        状态码
      * @param description 描述
      */
-    SxwlStatusEnum(Integer code, String description) {
+    SxwlStatusEnum(int code, String description) {
         this.code = code;
         this.description = description;
     }
@@ -36,7 +38,7 @@ public enum SxwlStatusEnum {
     /**
      * 获取状态码
      */
-    public Integer getCode() {
+    public int getCode() {
         return code;
     }
 
@@ -53,12 +55,9 @@ public enum SxwlStatusEnum {
      * @param code 状态码
      * @return 对应的枚举实例，找不到返回 null
      */
-    public static SxwlStatusEnum fromCode(Integer code) {
-        if (code == null) {
-            return null;
-        }
+    public static SxwlStatusEnum fromCode(int code) {
         for (SxwlStatusEnum e : values()) {
-            if (e.code.equals(code)) {
+            if (e.code == code) {
                 return e;
             }
         }

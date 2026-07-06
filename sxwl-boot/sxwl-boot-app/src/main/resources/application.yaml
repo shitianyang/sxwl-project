@@ -2,7 +2,7 @@ spring:
   application:
     name: sxwl-boot                    # 应用名称，日志和监控会用到
   profiles:
-    active: dev                        # 默认激活的环境配置（dev/prod）
+    active: test                        # 默认激活的环境配置（dev/prod）
   servlet:
     multipart:
       max-file-size: 100MB             # 单个文件最大大小

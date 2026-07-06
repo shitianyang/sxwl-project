@@ -1,7 +1,5 @@
 package com.sxwl.common.constants;
 
-import com.sxwl.common.exception.SxwlBusinessException;
-
 /**
  * Redis Key 前缀常量
  *
@@ -24,13 +22,13 @@ import com.sxwl.common.exception.SxwlBusinessException;
  * @date 2026/6/28
  * @since 0.1.0
  */
-public class SxwlRedisKeyConstants {
+public final class SxwlRedisKeyConstants {
 
     /**
      * 私有构造函数，防止外部实例化工具类
      */
     private SxwlRedisKeyConstants() {
-        throw new SxwlBusinessException("SxwlRedisKeyConstants 是常量工具类，不允许实例化");
+        throw new UnsupportedOperationException("SxwlRedisKeyConstants 是常量工具类，不允许实例化");
     }
 
     /**
@@ -64,6 +62,60 @@ public class SxwlRedisKeyConstants {
      * <br>TTL：30 天（C 端体验优先）</p>
      */
     public static final String REFRESH_FRONT_PREFIX = "refresh:front:";
+
+    // ==================== Token 辅助索引与缓存 ====================
+
+    /**
+     * Token 辅助索引 Key 前缀（用于高效批量吊销）
+     * <p>完整 Key：token:user:{clientType}:{userId}
+     * <br>数据结构：Set（Members = 该用户所有 jti，access + refresh 不区分设备）
+     * <br>用途：修改密码/角色禁用/强制踢人时，SMEMBERS 拿到所有 jti 后批量 UNLINK 白名单 Key
+     * <br>TTL：无，随最后一个 jti 删除时清空</p>
+     */
+    public static final String TOKEN_USER_PREFIX = "token:user:";
+
+    /**
+     * 用户信息缓存 Key 前缀
+     * <p>完整 Key：token:info:{userId}
+     * <br>数据结构：Hash（字段：userId, username, nickname, roles, permissions, dataScope, dataScopeOrgIds）
+     * <br>TTL：与 Refresh Token 过期时间一致（B 端 7 天 / C 端 30 天）
+     * <br>用途：JwtAuthenticationFilter 从 Redis 读取角色/权限，避免每次请求查 DB</p>
+     */
+    public static final String TOKEN_INFO_PREFIX = "token:info:";
+
+    // ==================== Token 白名单（新版设计） ====================
+
+    /**
+     * Token 白名单 Key 前缀（含设备维度，设计文档 3.4 节新版格式）
+     * <p>完整 Key：token:jwt:{clientType}:{userId}:{deviceId}:{jti}
+     * <br>数据结构：String（value = "access" 或 "refresh"）
+     * <br>TTL：= 对应 Token 的剩余有效期
+     * <br>注意：此为新版统一格式，旧版 TOKEN_ADMIN_PREFIX / TOKEN_FRONT_PREFIX 保留兼容，
+     * 逐步迁移至 token:jwt:* 格式</p>
+     */
+    public static final String TOKEN_JWT_PREFIX = "token:jwt:";
+
+    // ==================== 在线用户（辅助索引） ====================
+
+    /**
+     * 在线设备辅助 Set Key 前缀
+     * <p>完整 Key：online:devices:{userId}
+     * <br>数据结构：Set（Members = 该用户当前所有 deviceId）
+     * <br>用途：强制踢人时先 SMEMBERS 获取所有 deviceId，再逐个 DEL 对应 Key，
+     * 比 SCAN 通配符更精确高效</p>
+     */
+    public static final String ONLINE_DEVICES_PREFIX = "online:devices:";
+
+    // ==================== 登录风控（多维度） ====================
+
+    /**
+     * 登录失败全局计数 Key 前缀（不限 IP）
+     * <p>完整 Key：login:count:{targetAccount}
+     * <br>Value：失败次数（Integer）
+     * <br>TTL：30 分钟
+     * <br>用途：按账号维度统计登录失败次数，与 IP 无关</p>
+     */
+    public static final String LOGIN_COUNT_PREFIX = "login:count:";
 
     // ==================== 在线用户 ====================
 
