@@ -1,5 +1,7 @@
 package com.sxwl.common.exception;
 
+import com.sxwl.common.enums.SxwlStatusEnum;
+
 /**
  * 401 未认证异常
  *
@@ -26,7 +28,7 @@ public class SxwlUnauthorizedException extends SxwlBusinessException {
      * 使用默认消息创建 401 异常
      */
     public SxwlUnauthorizedException() {
-        super(401, "未登录或 Token 已过期");
+        super(SxwlStatusEnum.UNAUTHORIZED.getCode(), "未登录或 Token 已过期");
     }
 
     /**
@@ -35,6 +37,6 @@ public class SxwlUnauthorizedException extends SxwlBusinessException {
      * @param message 错误描述，如 "Token 已被强制下线"
      */
     public SxwlUnauthorizedException(String message) {
-        super(401, message);
+        super(SxwlStatusEnum.UNAUTHORIZED.getCode(), message);
     }
 }

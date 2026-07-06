@@ -1,5 +1,7 @@
 package com.sxwl.common.exception;
 
+import com.sxwl.common.enums.SxwlStatusEnum;
+
 /**
  * 403 无权限异常
  *
@@ -25,7 +27,7 @@ public class SxwlForbiddenException extends SxwlBusinessException {
      * 使用默认消息创建 403 异常
      */
     public SxwlForbiddenException() {
-        super(403, "无访问权限");
+        super(SxwlStatusEnum.FORBIDDEN.getCode(), "无访问权限");
     }
 
     /**
@@ -34,6 +36,6 @@ public class SxwlForbiddenException extends SxwlBusinessException {
      * @param message 错误描述，如 "没有删除用户的权限"
      */
     public SxwlForbiddenException(String message) {
-        super(403, message);
+        super(SxwlStatusEnum.FORBIDDEN.getCode(), message);
     }
 }
