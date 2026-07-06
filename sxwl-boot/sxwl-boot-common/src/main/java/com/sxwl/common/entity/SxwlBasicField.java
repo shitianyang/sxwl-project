@@ -18,6 +18,12 @@ public class SxwlBasicField implements Serializable {
     @Serial
     private static final long serialVersionUID = SxwlSystemConstants.SERIAL_VERSION_UID;
 
+    /** 删除标志：正常 */
+    public static final int DELETE_FLAG_NORMAL = 0;
+
+    /** 删除标志：已删除 */
+    public static final int DELETE_FLAG_DELETED = 1;
+
     /**
      * 唯一ID，主键
      */

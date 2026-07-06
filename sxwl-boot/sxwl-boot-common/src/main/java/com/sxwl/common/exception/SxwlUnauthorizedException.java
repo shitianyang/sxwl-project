@@ -22,7 +22,7 @@ import com.sxwl.common.enums.SxwlStatusEnum;
  * @author shitianyang
  * @since 0.1.0
  */
-public class SxwlUnauthorizedException extends SxwlBusinessException {
+public final class SxwlUnauthorizedException extends SxwlBusinessException {
 
     /**
      * 使用默认消息创建 401 异常

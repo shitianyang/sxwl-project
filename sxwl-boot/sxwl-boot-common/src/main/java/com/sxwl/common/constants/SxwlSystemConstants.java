@@ -60,26 +60,30 @@ public final class SxwlSystemConstants {
     public static final int MAX_PAGE_SIZE = 200;
 
     /**
-     * 后台管理端 access_token 过期时间：30 分钟
+     * 后台管理端 access_token 过期时间：30 分钟（1800 秒）
      * <p>后台管理安全性优先，较短过期时间降低 token 泄露风险</p>
+     * <p><b>注意：本常量单位是毫秒。</b>传给 {@code SxwlJwtUtils.Builder#expireSeconds} 前需除以 1000</p>
      */
     public static final long ACCESS_TOKEN_EXPIRE = 30 * 60 * 1000L;
 
     /**
-     * 后台管理端 refresh_token 过期时间：7 天
+     * 后台管理端 refresh_token 过期时间：7 天（604800 秒）
      * <p>一周内免登录，兼顾安全与便利</p>
+     * <p><b>注意：本常量单位是毫秒。</b>传给 {@code SxwlJwtUtils.Builder#expireSeconds} 前需除以 1000</p>
      */
     public static final long REFRESH_TOKEN_EXPIRE = 7 * 24 * 60 * 60 * 1000L;
 
     /**
-     * 前台 C 端 access_token 过期时间：2 小时
+     * 前台 C 端 access_token 过期时间：2 小时（7200 秒）
      * <p>C 端用户体验优先，较长过期时间避免频繁弹登录</p>
+     * <p><b>注意：本常量单位是毫秒。</b>传给 {@code SxwlJwtUtils.Builder#expireSeconds} 前需除以 1000</p>
      */
     public static final long FRONT_ACCESS_TOKEN_EXPIRE = 2 * 60 * 60 * 1000L;
 
     /**
-     * 前台 C 端 refresh_token 过期时间：30 天
+     * 前台 C 端 refresh_token 过期时间：30 天（2592000 秒）
      * <p>移动端常用策略：一个月免登录</p>
+     * <p><b>注意：本常量单位是毫秒。</b>传给 {@code SxwlJwtUtils.Builder#expireSeconds} 前需除以 1000</p>
      */
     public static final long FRONT_REFRESH_TOKEN_EXPIRE = 30 * 24 * 60 * 60 * 1000L;
 

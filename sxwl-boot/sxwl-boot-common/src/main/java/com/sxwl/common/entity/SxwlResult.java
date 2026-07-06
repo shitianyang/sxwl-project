@@ -154,6 +154,19 @@ public class SxwlResult<T> {
     }
 
     /**
+     * 失败返回（自定义错误码 + 消息 + 数据）
+     *
+     * @param code    错误码（10002~19999）
+     * @param message 错误描述
+     * @param data    响应数据（如"部分成功，3 条失败"时返回失败明细）
+     * @param <T>     数据类型
+     * @return 自定义 code，带 data
+     */
+    public static <T> SxwlResult<T> error(int code, String message, T data) {
+        return new SxwlResult<>(code, message, data);
+    }
+
+    /**
      * 401 未认证
      *
      * @param message 错误描述

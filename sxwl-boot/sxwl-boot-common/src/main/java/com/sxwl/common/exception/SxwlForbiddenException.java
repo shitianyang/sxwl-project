@@ -21,7 +21,7 @@ import com.sxwl.common.enums.SxwlStatusEnum;
  * @author shitianyang
  * @since 0.1.0
  */
-public class SxwlForbiddenException extends SxwlBusinessException {
+public final class SxwlForbiddenException extends SxwlBusinessException {
 
     /**
      * 使用默认消息创建 403 异常
