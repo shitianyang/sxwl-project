@@ -21,9 +21,30 @@
     <dependencies>
         <dependency>
             <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-module-auth</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-module-system</artifactId>
             <version>0.1.0</version>
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

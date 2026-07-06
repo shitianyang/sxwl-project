@@ -30,7 +30,7 @@
         <postgre.version>42.7.8</postgre.version>
         <rustfs.version>2.42.27</rustfs.version>
         <jjwt.version>0.13.0</jjwt.version>
-        <bcprov.version>1.83</bcprov.version>
+        <bcprov.version>1.84</bcprov.version>
         <flowable.version>7.2.0</flowable.version>
         <poi.version>5.2.5</poi.version>
     </properties>
