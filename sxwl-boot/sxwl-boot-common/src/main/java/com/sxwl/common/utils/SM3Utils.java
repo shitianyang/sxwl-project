@@ -1,6 +1,7 @@
 package com.sxwl.common.utils;
 
 import com.sxwl.common.exception.SxwlBusinessException;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

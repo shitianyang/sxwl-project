@@ -85,7 +85,7 @@ public class SxwlRedisLockManager {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new com.sxwl.common.exception.SxwlBusinessException("获取分布式锁被中断: " + key, e);
+                throw new com.sxwl.common.exception.SxwlBusinessException(500, "获取分布式锁被中断: " + key, e);
             }
         }
         throw new com.sxwl.common.exception.SxwlBusinessException("获取分布式锁超时: " + key);
