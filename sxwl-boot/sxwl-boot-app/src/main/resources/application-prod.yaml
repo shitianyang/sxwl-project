@@ -27,3 +27,15 @@ spring:
           max-idle: 8                  # 最大空闲连接数
           min-idle: 2                  # 最小空闲连接数
           max-wait: 3000               # 获取连接最大等待时间（毫秒）
+
+# ==================== 自定义配置 ====================
+sxwl:
+  web:
+    allowed-origins: "*"              # CORS 允许来源（逗号分隔，* = 所有）
+    request-log-enabled: false         # 生产关闭请求日志，减少 IO
+  mybatis:
+    slow-sql-threshold: 3000           # 生产阈值放宽，仅记录真正慢的查询
+  redis:
+    lock-default-timeout: 10
+    rate-limit-default-window: 60
+    repeat-submit-interval: 3
