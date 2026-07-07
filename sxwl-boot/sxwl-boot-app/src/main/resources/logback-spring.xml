@@ -80,6 +80,22 @@
         </root>
     </springProfile>
 
+    <!-- ==================== 测试环境配置 ==================== -->
+    <springProfile name="test">
+        <!-- 项目代码：DEBUG -->
+        <logger name="com.sxwl" level="DEBUG"/>
+        <!-- MyBatis SQL 日志 -->
+        <logger name="org.mybatis" level="DEBUG"/>
+        <!-- Spring Web -->
+        <logger name="org.springframework.web" level="INFO"/>
+        <!-- HikariCP 连接池 -->
+        <logger name="com.zaxxer.hikari" level="INFO"/>
+        <!-- 根日志级别 -->
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
     <!-- ==================== 生产环境配置 ==================== -->
     <springProfile name="prod">
         <!-- 项目代码：INFO -->

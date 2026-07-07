@@ -10,6 +10,7 @@ import org.apache.ibatis.logging.slf4j.Slf4jImpl;
 import org.mybatis.spring.annotation.MapperScan;
 import org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -81,6 +82,7 @@ public class SxwlMybatisAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnBean(SxwlDataScopeProvider.class)
     public SxwlDataScopeInterceptor dataScopeInterceptor(SxwlDataScopeProvider provider) {
         return new SxwlDataScopeInterceptor(provider);
     }

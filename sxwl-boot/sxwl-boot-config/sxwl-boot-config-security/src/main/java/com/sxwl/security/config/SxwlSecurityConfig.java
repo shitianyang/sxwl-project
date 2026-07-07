@@ -56,6 +56,9 @@ public class SxwlSecurityConfig {
         httpSecurity
                 // 禁用 CSRF（前后端分离，Token 鉴权不需要 CSRF）
                 .csrf(AbstractHttpConfigurer::disable)
+                // 禁用表单登录 / HTTP Basic（纯 JWT，不需要 UserDetailsService）
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
                 // 无状态会话
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 放行规则
