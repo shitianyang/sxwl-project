@@ -39,3 +39,5 @@ sxwl:
     lock-default-timeout: 10
     rate-limit-default-window: 60
     repeat-submit-interval: 3
+  security:
+    jwt-secret: sxwl-test-jwt-secret-key-2026  # JWT 签名密钥（测试环境明文即可）

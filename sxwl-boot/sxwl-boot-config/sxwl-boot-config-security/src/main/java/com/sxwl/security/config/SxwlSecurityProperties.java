@@ -62,6 +62,11 @@ public class SxwlSecurityProperties {
     /** 触发图形验证码的失败次数 */
     private int captchaTriggerCount = 3;
 
+    // ==================== 加密 ====================
+
+    /** SM2 私钥（十六进制，PKCS#8 编码），留空则跳过解密（开发环境兼容） */
+    private String sm2PrivateKey = "";
+
     // ==================== 在线用户 ====================
 
     /** 单用户最大并发设备数（0=不限制） */
@@ -171,6 +176,14 @@ public class SxwlSecurityProperties {
 
     public void setCaptchaTriggerCount(int captchaTriggerCount) {
         this.captchaTriggerCount = captchaTriggerCount;
+    }
+
+    public String getSm2PrivateKey() {
+        return sm2PrivateKey;
+    }
+
+    public void setSm2PrivateKey(String sm2PrivateKey) {
+        this.sm2PrivateKey = sm2PrivateKey;
     }
 
     public int getMaxDevicesPerUser() {

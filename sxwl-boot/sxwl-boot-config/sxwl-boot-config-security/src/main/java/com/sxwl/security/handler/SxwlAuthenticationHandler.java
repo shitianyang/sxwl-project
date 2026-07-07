@@ -1,14 +1,11 @@
 package com.sxwl.security.handler;
 
-import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.common.utils.SxwlJwtUtils;
 import com.sxwl.common.utils.SxwlRedisKeyUtils;
 import com.sxwl.redis.helper.SxwlRedisHelper;
 import com.sxwl.security.config.SxwlSecurityProperties;
-import com.sxwl.security.model.SxwlLoginRequest;
 import com.sxwl.security.model.SxwlLoginUser;
 import com.sxwl.security.model.SxwlTokenPair;
-import com.sxwl.security.spi.SxwlAuthenticationStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,10 +17,11 @@ import java.util.*;
  * <p>
  * 核心职责：
  * <ol>
- *   <li>策略路由：根据 loginType 分发到对应的 {@link SxwlAuthenticationStrategy} 实现</li>
  *   <li>Token 签发：{@link #createTokenPair} 生成 access + refresh Token 并写入 Redis 白名单</li>
  *   <li>登出吊销：{@link #logout} 批量删除用户所有 Token</li>
  * </ol>
+ * <p>
+ * 认证逻辑由 Controller 直接调用对应的 {@code SxwlAuthenticationStrategy} 实现，不经过本类路由。
  * </p>
  *
  * @author shitianyang
@@ -34,33 +32,13 @@ public class SxwlAuthenticationHandler {
 
     private static final Logger log = LoggerFactory.getLogger(SxwlAuthenticationHandler.class);
 
-    private final List<SxwlAuthenticationStrategy> strategies;
     private final SxwlSecurityProperties securityProperties;
     private final SxwlRedisHelper redisHelper;
 
-    public SxwlAuthenticationHandler(List<SxwlAuthenticationStrategy> strategies,
-                                     SxwlSecurityProperties securityProperties,
+    public SxwlAuthenticationHandler(SxwlSecurityProperties securityProperties,
                                      SxwlRedisHelper redisHelper) {
-        this.strategies = strategies;
         this.securityProperties = securityProperties;
         this.redisHelper = redisHelper;
-    }
-
-    /**
-     * 认证入口：根据 loginType 路由到对应策略
-     *
-     * @param request 登录请求体
-     * @return 认证通过后的 SxwlLoginUser（不含密码）
-     * @throws SxwlBusinessException 不支持的登录类型或认证失败时抛出
-     */
-    public SxwlLoginUser authenticate(SxwlLoginRequest request) {
-        String loginType = request.getLoginType();
-        SxwlAuthenticationStrategy strategy = strategies.stream()
-                .filter(s -> s.supportType().equals(loginType))
-                .findFirst()
-                .orElseThrow(() -> new SxwlBusinessException(400, "不支持的登录类型: " + loginType));
-
-        return strategy.authenticate(request);
     }
 
     /**

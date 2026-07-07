@@ -3,8 +3,8 @@ package com.sxwl.security.model;
 /**
  * 认证凭据
  * <p>
- * 仅在 {@code SxwlUserDetailsService.loadUserByUsername()} → 策略内部 {@code passwordEncoder.matches()}
- * 这条链路上存在，方法返回后随栈销毁。<b>不存入 SecurityContext，不写入 Redis</b>。
+ * 仅在登录策略内部 {@code passwordEncoder.matches()} 这条链路上存在，方法返回后随栈销毁。
+ * <b>不存入 SecurityContext，不写入 Redis</b>。
  * </p>
  *
  * @author shitianyang

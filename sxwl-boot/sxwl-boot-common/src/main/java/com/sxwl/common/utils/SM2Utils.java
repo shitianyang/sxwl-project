@@ -10,9 +10,12 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECPoint;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.math.BigInteger;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Objects;
@@ -47,6 +50,31 @@ public final class SM2Utils {
      */
     private SM2Utils() {
         throw new UnsupportedOperationException("SM2Utils 工具类，不允许实例化");
+    }
+
+    /**
+     * 从 X.509 编码公钥提取裸公钥（04||x||y 格式，供前端 sm-crypto 等 JS 库使用）
+     *
+     * @param x509PublicKeyHex X.509 编码的十六进制公钥
+     * @return 裸公钥十六进制（130 字符，04 + 64 字符 x + 64 字符 y）
+     */
+    public static String toRawPublicKeyHex(String x509PublicKeyHex) {
+        PublicKey publicKey = toPublicKey(x509PublicKeyHex);
+        if (!(publicKey instanceof ECPublicKey ecPub)) {
+            throw new SxwlBusinessException(400, "非 EC 公钥，无法提取裸公钥");
+        }
+        ECPoint w = ecPub.getW();
+        String x = padLeft(w.getAffineX().toString(16), 64);
+        String y = padLeft(w.getAffineY().toString(16), 64);
+        return "04" + x + y;
+    }
+
+    private static String padLeft(String hex, int length) {
+        if (hex.length() >= length) return hex;
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = hex.length(); i < length; i++) sb.append('0');
+        sb.append(hex);
+        return sb.toString();
     }
 
     /**

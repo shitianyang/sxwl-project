@@ -2,7 +2,6 @@ package com.sxwl.mybatis.config;
 
 import com.github.pagehelper.PageInterceptor;
 import com.sxwl.common.constants.SxwlSystemConstants;
-import com.sxwl.common.spi.SxwlDataScopeProvider;
 import com.sxwl.mybatis.interceptor.SxwlAutoFillInterceptor;
 import com.sxwl.mybatis.interceptor.SxwlDataScopeInterceptor;
 import com.sxwl.mybatis.interceptor.SxwlSqlMonitorInterceptor;
@@ -10,7 +9,6 @@ import org.apache.ibatis.logging.slf4j.Slf4jImpl;
 import org.mybatis.spring.annotation.MapperScan;
 import org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -25,7 +23,7 @@ import java.util.Properties;
  * <ul>
  *   <li>MyBatis 核心配置（驼峰映射、SQL 日志）—— 硬编码，不走 YAML</li>
  *   <li>PageHelper 分页插件 —— 硬编码固定参数</li>
- *   <li>数据权限拦截器 —— 依赖 {@link SxwlDataScopeProvider} SPI</li>
+ *   <li>数据权限拦截器 —— 从 SecurityContext 读取 dataScopeOrgIds，不查库</li>
  *   <li>自动填充拦截器 —— INSERT/UPDATE 自动填审计字段</li>
  *   <li>慢查询监控 —— 通过 {@code sxwl.mybatis.slow-sql-threshold} 控制</li>
  * </ul>
@@ -78,13 +76,12 @@ public class SxwlMybatisAutoConfiguration {
     /**
      * 数据权限拦截器
      *
-     * <p>依赖 {@link SxwlDataScopeProvider} SPI（运行时由 module-system 提供实现）。</p>
+     * <p>从 SecurityContext 读取 {@code SxwlPrincipal.dataScopeOrgIds}（登录时由 auth 计算好写入）。</p>
      */
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean(SxwlDataScopeProvider.class)
-    public SxwlDataScopeInterceptor dataScopeInterceptor(SxwlDataScopeProvider provider) {
-        return new SxwlDataScopeInterceptor(provider);
+    public SxwlDataScopeInterceptor dataScopeInterceptor() {
+        return new SxwlDataScopeInterceptor();
     }
 
     /**

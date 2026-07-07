@@ -1,7 +1,6 @@
 package com.sxwl.mybatis.interceptor;
 
 import com.sxwl.common.principal.SxwlPrincipal;
-import com.sxwl.common.spi.SxwlDataScopeProvider;
 import com.sxwl.common.utils.SxwlPrincipalUtils;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
@@ -16,14 +15,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * 数据权限 SQL 拦截器
  *
  * <p>在 SELECT 查询执行前自动拼接数据权限条件，限制当前用户只能看到有权限的数据。
- * 通过 {@link SxwlDataScopeProvider} SPI 获取可见组织 ID 列表，不直接查库。</p>
+ * 从 SecurityContext 读取 {@link SxwlPrincipal#getDataScopeOrgIds()}（登录时由 auth 计算），不查库。</p>
  *
  * <h3>拦截规则</h3>
  * <table>
@@ -50,12 +49,6 @@ public class SxwlDataScopeInterceptor implements Interceptor {
 
     private static final Logger log = LoggerFactory.getLogger(SxwlDataScopeInterceptor.class);
 
-    private final SxwlDataScopeProvider dataScopeProvider;
-
-    public SxwlDataScopeInterceptor(SxwlDataScopeProvider dataScopeProvider) {
-        this.dataScopeProvider = dataScopeProvider;
-    }
-
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         StatementHandler handler = (StatementHandler) invocation.getTarget();
@@ -76,8 +69,8 @@ public class SxwlDataScopeInterceptor implements Interceptor {
         }
         SxwlPrincipal principal = principalOpt.get();
 
-        // 调用 SPI 获取可见组织 ID
-        List<Long> visibleOrgIds = dataScopeProvider.getVisibleOrgIds(principal);
+        // 从 SecurityContext 读数据权限（登录时由 auth 计算好放入）
+        Set<Long> visibleOrgIds = principal.getDataScopeOrgIds();
 
         if (visibleOrgIds == null) {
             // data_scope=1：全部数据，不追加条件
@@ -98,16 +91,16 @@ public class SxwlDataScopeInterceptor implements Interceptor {
     /**
      * 拼接数据权限条件
      */
-    private String buildScopeSql(String originalSql, SxwlPrincipal principal, List<Long> visibleOrgIds) {
+    private String buildScopeSql(String originalSql, SxwlPrincipal principal, Set<Long> visibleOrgIds) {
         if (visibleOrgIds.isEmpty()) {
             // 空集兜底：无可配组织，追加 1=0 返回空结果
             return originalSql + " AND 1=0";
         }
 
         StringBuilder inClause = new StringBuilder();
-        for (int i = 0; i < visibleOrgIds.size(); i++) {
-            if (i > 0) inClause.append(", ");
-            inClause.append(visibleOrgIds.get(i));
+        for (Long orgId : visibleOrgIds) {
+            if (!inClause.isEmpty()) inClause.append(", ");
+            inClause.append(orgId);
         }
         return originalSql + " AND create_org IN (" + inClause + ")";
     }

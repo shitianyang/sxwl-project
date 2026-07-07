@@ -9,7 +9,6 @@ import com.sxwl.security.handler.SxwlAuthenticationHandler;
 import com.sxwl.security.jwt.JwtAuthenticationFilter;
 import com.sxwl.security.password.SxwlPasswordEncoder;
 import com.sxwl.security.password.SxwlPasswordValidator;
-import com.sxwl.security.spi.SxwlAuthenticationStrategy;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,7 +63,7 @@ public class SxwlSecurityConfig {
                 // 放行规则
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/login",
+                                "/auth/login/**",
                                 "/auth/refresh",
                                 "/captcha/**",
                                 "/public/**",
@@ -102,10 +101,9 @@ public class SxwlSecurityConfig {
     }
 
     @Bean
-    public SxwlAuthenticationHandler sxwlAuthenticationHandler(List<SxwlAuthenticationStrategy> strategies,
-                                                               SxwlSecurityProperties properties,
+    public SxwlAuthenticationHandler sxwlAuthenticationHandler(SxwlSecurityProperties properties,
                                                                SxwlRedisHelper redisHelper) {
-        return new SxwlAuthenticationHandler(strategies, properties, redisHelper);
+        return new SxwlAuthenticationHandler(properties, redisHelper);
     }
 
     @Bean

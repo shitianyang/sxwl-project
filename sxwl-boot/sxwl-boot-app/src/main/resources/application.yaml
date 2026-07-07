@@ -3,6 +3,10 @@ spring:
     name: sxwl-boot                    # 应用名称，日志和监控会用到
   profiles:
     active: test                        # 默认激活的环境配置（dev/prod）
+  security:
+    user:
+      name: disabled                    # 禁用默认内存用户（纯 JWT，不走表单登录）
+      password: disabled
   servlet:
     multipart:
       max-file-size: 100MB             # 单个文件最大大小
@@ -10,7 +14,7 @@ spring:
 server:
   port: 30101                          # 应用端口号
   servlet:
-    context-path: /api                 # 接口统一前缀
+    context-path: /sxwl-api                 # 接口统一前缀
   # 关闭 Whitelabel 错误页面
   error:
     whitelabel:
