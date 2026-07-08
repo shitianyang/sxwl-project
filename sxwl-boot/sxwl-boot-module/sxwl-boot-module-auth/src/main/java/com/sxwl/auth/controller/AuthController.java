@@ -195,10 +195,8 @@ public class AuthController {
         // 4. 删除旧白名单
         redisHelper.delete(whiteKey);
 
-        // 5. 签发新 Token 对（handler 内部会写新白名单）
-        SxwlLoginUser loginUser = new SxwlLoginUser();
-        loginUser.setUserId(userId);
-        SxwlTokenPair tokenPair = handler.createTokenPair(loginUser, deviceId, "admin");
+        // 5. 签发新 Token 对（不覆盖用户缓存）
+        SxwlTokenPair tokenPair = handler.refreshTokenPair(userId, deviceId, "admin");
 
         log.info("Token 刷新成功: userId={}, deviceId={}", userId, deviceId);
         return SxwlResult.success(tokenPair);

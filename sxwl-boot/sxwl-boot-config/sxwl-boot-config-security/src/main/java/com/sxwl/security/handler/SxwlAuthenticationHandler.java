@@ -50,7 +50,32 @@ public class SxwlAuthenticationHandler {
      * @return Token 对
      */
     public SxwlTokenPair createTokenPair(SxwlLoginUser loginUser, String deviceId, String clientType) {
-        Long userId = loginUser.getUserId();
+        SxwlTokenPair tokenPair = buildTokenPair(loginUser.getUserId(), deviceId, clientType);
+        // 用户信息缓存（Hash）
+        cacheUserInfo(loginUser);
+        return tokenPair;
+    }
+
+    /**
+     * 刷新 Token 对（仅签新 Token + 写白名单，不覆盖用户缓存）
+     * <p>
+     * 与 {@link #createTokenPair} 的区别：不调 {@link #cacheUserInfo}，
+     * 避免刷新时将空字段写入已有用户缓存。
+     * </p>
+     *
+     * @param userId     用户 ID
+     * @param deviceId   设备标识
+     * @param clientType 客户端类型（admin/front）
+     * @return Token 对
+     */
+    public SxwlTokenPair refreshTokenPair(Long userId, String deviceId, String clientType) {
+        return buildTokenPair(userId, deviceId, clientType);
+    }
+
+    /**
+     * Token 对生成核心逻辑（签 JWT + 写白名单 + 辅助索引）
+     */
+    private SxwlTokenPair buildTokenPair(Long userId, String deviceId, String clientType) {
         String secret = securityProperties.getJwtSecret();
 
         // 确定过期时间
@@ -91,9 +116,6 @@ public class SxwlAuthenticationHandler {
         // 辅助索引（用于批量吊销）
         String userSetKey = SxwlRedisKeyUtils.tokenUserSetKey(clientType, userId);
         redisHelper.sadd(userSetKey, accessJti, refreshJti);
-
-        // 用户信息缓存（Hash）
-        cacheUserInfo(loginUser);
 
         // 在线设备索引
         String devicesSetKey = SxwlRedisKeyUtils.onlineDevicesSetKey(userId);

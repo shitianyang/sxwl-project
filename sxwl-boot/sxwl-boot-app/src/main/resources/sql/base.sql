@@ -378,7 +378,7 @@ COMMENT ON COLUMN "sys_log_info"."log_type" IS '日志类型：1=登录 2=操作
 COMMENT ON COLUMN "sys_log_info"."title" IS '模块标题，如：用户管理';
 COMMENT ON COLUMN "sys_log_info"."description" IS '操作描述，如：删除用户[zhangsan]';
 COMMENT ON COLUMN "sys_log_info"."method" IS '调用方法，如 SysUserController.delete()';
-COMMENT ON COLUMN "sys_log_info"."request_url" IS '请求URL，如 /api/sys/user/1';
+COMMENT ON COLUMN "sys_log_info"."request_url" IS '请求URL，如 /sxwl-api/sys/user/1';
 COMMENT ON COLUMN "sys_log_info"."request_method" IS 'HTTP方法：GET/POST/PUT/DELETE';
 COMMENT ON COLUMN "sys_log_info"."request_param" IS '请求参数（JSON，应用层截断至2000字符）';
 COMMENT ON COLUMN "sys_log_info"."response_result" IS '响应结果（JSON，应用层截断至2000字符）';
@@ -679,7 +679,7 @@ COMMENT ON COLUMN "pla_log_info"."log_type" IS '日志类型：1=登录 2=操作
 COMMENT ON COLUMN "pla_log_info"."title" IS '模块标题，如：平台管理';
 COMMENT ON COLUMN "pla_log_info"."description" IS '操作描述，如：修改系统配置';
 COMMENT ON COLUMN "pla_log_info"."method" IS '调用方法，如 PlaConfigController.update()';
-COMMENT ON COLUMN "pla_log_info"."request_url" IS '请求URL，如 /api/pla/config';
+COMMENT ON COLUMN "pla_log_info"."request_url" IS '请求URL，如 /sxwl-api/pla/config';
 COMMENT ON COLUMN "pla_log_info"."request_method" IS 'HTTP方法：GET/POST/PUT/DELETE';
 COMMENT ON COLUMN "pla_log_info"."request_param" IS '请求参数（JSON，应用层截断至2000字符）';
 COMMENT ON COLUMN "pla_log_info"."response_result" IS '响应结果（JSON，应用层截断至2000字符）';
