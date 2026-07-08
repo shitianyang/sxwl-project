@@ -1,9 +1,9 @@
 spring:
   datasource:
-    # 数据库连接 URL（使用环境变量，生产不落盘敏感信息）
-    url: ${DB_URL:jdbc:postgresql://localhost:30013/sxwl?currentSchema=public&useUnicode=true&characterEncoding=utf8}
-    username: ${DB_USERNAME:postgres}                 # 数据库用户名
-    password: '${DB_PASSWORD}'             # 数据库密码，必须配置
+    # 数据库连接 URL
+    url: jdbc:postgresql://localhost:30013/sxwl?currentSchema=public&useUnicode=true&characterEncoding=utf8
+    username: postgres                 # 数据库用户名
+    password: 123456                   # 数据库密码
     driver-class-name: org.postgresql.Driver
     # HikariCP 连接池配置
     hikari:
@@ -15,9 +15,9 @@ spring:
       pool-name: SxwlHikariPool        # 连接池名称（日志中显示）
   data:
     redis:
-      host: ${REDIS_HOST:localhost}                  # Redis 主机
-      port: ${REDIS_PORT:30011}                      # Redis 端口
-      password: '${REDIS_PASSWORD:}'           # Redis 密码，必须配置
+      host: localhost                  # Redis 主机
+      port: 30011                      # Redis 端口
+      password: 123456                 # Redis 密码
       database: 0                      # 使用的数据库索引（0-15）
       timeout: 10000                   # 连接超时（毫秒）
       # Lettuce 连接池配置
@@ -40,5 +40,5 @@ sxwl:
     rate-limit-default-window: 60
     repeat-submit-interval: 3
   security:
-    jwt-secret: '${JWT_SECRET}'  # JWT 签名密钥，生产必须配置环境变量
-    sm2-private-key: '${SM2_PRIVATE_KEY}'  # SM2 私钥，生产必须配置环境变量
+    jwt-secret: 05e2b6fd0e7ad75bffec5bacdf72c8f071c337aba8bc5e9eb51698ccfbb46b32  # JWT 签名密钥
+    sm2-private-key: 308193020100301306072a8648ce3d020106082a811ccf5501822d0479307702010104203148f2aa2ef7f32db3a9b64849ffe5875011ce45830a0b77ce4115eff244c372a00a06082a811ccf5501822da1440342000441245b0a89d4578c6a2ed3aab50c4842495726692c10d802638a005bc1c1cee329596bcd925937a1a774ac3d0dfbb776c523922d3269ab82ea4f0fb55e2706f7  # SM2 私钥
