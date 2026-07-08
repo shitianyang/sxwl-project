@@ -19,6 +19,7 @@
     "react-router-dom": "7.17.0",
     "remark-gfm": "4.0.1",
     "sass": "1.101.0",
+    "sm-crypto": "0.4.0",
     "zustand": "5.0.14"
   },
   "devDependencies": {
