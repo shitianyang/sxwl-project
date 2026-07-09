@@ -45,6 +45,9 @@ sxwl-react/.env.local
 sxwl-react/.env.development.local
 sxwl-react/.env.production.local
 
+# 根目录统一环境变量（含密钥，禁止提交）
+/.env
+
 # TypeScript
 sxwl-react/*.tsbuildinfo
 

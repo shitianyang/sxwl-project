@@ -42,6 +42,11 @@
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
         </dependency>
+        <!-- spring-security-core（仅 SecurityContextHolder API，供 SxwlPrincipalUtils 使用） -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

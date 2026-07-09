@@ -14,5 +14,11 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 31001,
     strictPort: true,
+    proxy: {
+      '/sxwl-api': {
+        target: 'http://127.0.0.1:30101',
+        changeOrigin: true,
+      },
+    },
   },
 })

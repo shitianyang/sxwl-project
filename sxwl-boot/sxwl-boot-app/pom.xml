@@ -29,6 +29,12 @@
             <artifactId>sxwl-boot-module-system</artifactId>
             <version>0.1.0</version>
         </dependency>
+        <!-- 测试依赖（JUnit 5 + Mockito + Spring Test） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

@@ -3,14 +3,19 @@ package com.sxwl.web.advice;
 import com.sxwl.common.entity.SxwlResult;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.common.exception.SxwlForbiddenException;
+import com.sxwl.common.exception.SxwlRepeatSubmitException;
 import com.sxwl.common.exception.SxwlUnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.stream.Collectors;
 
@@ -31,6 +36,7 @@ import java.util.stream.Collectors;
  * @date 2026/6/28
  * @since 0.1.0
  */
+@RestControllerAdvice
 public class SxwlGlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(SxwlGlobalExceptionHandler.class);
@@ -62,6 +68,45 @@ public class SxwlGlobalExceptionHandler {
     public SxwlResult<Void> handleBusinessException(SxwlBusinessException e) {
         log.warn("Business exception: code={}, msg={}", e.getCode(), e.getMessage());
         return SxwlResult.error(e.getCode(), e.getMessage());
+    }
+
+    /**
+     * 处理防重复提交异常
+     */
+    @ExceptionHandler(SxwlRepeatSubmitException.class)
+    public SxwlResult<Void> handleRepeatSubmitException(SxwlRepeatSubmitException e) {
+        log.warn("重复提交: {}", e.getMessage());
+        return SxwlResult.error(e.getMessage());
+    }
+
+    /**
+     * 处理 404 接口不存在
+     */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public SxwlResult<Void> handleNotFoundException(NoHandlerFoundException e) {
+        log.warn("接口不存在: {} {}", e.getHttpMethod(), e.getRequestURL());
+        return SxwlResult.error("请求的接口不存在");
+    }
+
+    /**
+     * 处理 405 请求方法不允许
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public SxwlResult<Void> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
+        log.warn("请求方法不支持: {} {}", e.getMethod(), e.getMessage());
+        return SxwlResult.error("请求方式不支持");
+    }
+
+    /**
+     * 处理 415 Content-Type 不支持
+     */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    @ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+    public SxwlResult<Void> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException e) {
+        log.warn("Content-Type 不支持: {}", e.getContentType());
+        return SxwlResult.error("请求内容类型不支持");
     }
 
     /**
