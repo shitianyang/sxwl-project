@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { getItem, setItem, removeItem, STORAGE_KEYS } from '@/utils/storageUtils';
+import { isTokenActive } from '@/utils/tokenUtils';
 
 interface AuthState {
   accessToken: string | null;
@@ -15,47 +17,30 @@ interface AuthState {
   isLoggedIn: () => boolean;
 }
 
-function isJwtActive(token: string | null) {
-  if (!token) return false;
-
-  try {
-    const payload = token.split('.')[1];
-    if (!payload) return false;
-
-    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
-    const decoded = JSON.parse(atob(padded)) as { exp?: number };
-
-    return typeof decoded.exp === 'number' && decoded.exp * 1000 > Date.now();
-  } catch {
-    return false;
-  }
-}
-
 export const useAuthStore = create<AuthState>((set, get) => ({
-  accessToken: localStorage.getItem('accessToken'),
-  refreshToken: localStorage.getItem('refreshToken'),
-  username: localStorage.getItem('username'),
+  accessToken: getItem(STORAGE_KEYS.ACCESS_TOKEN),
+  refreshToken: getItem(STORAGE_KEYS.REFRESH_TOKEN),
+  username: getItem(STORAGE_KEYS.USERNAME),
 
   setTokens: (accessToken, refreshToken, username) => {
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
-    localStorage.setItem('username', username);
+    setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+    setItem(STORAGE_KEYS.USERNAME, username);
     set({ accessToken, refreshToken, username });
   },
 
   setTokenPair: (accessToken, refreshToken) => {
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
+    setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
     set({ accessToken, refreshToken });
   },
 
   clearAuth: () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('username');
+    removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    removeItem(STORAGE_KEYS.USERNAME);
     set({ accessToken: null, refreshToken: null, username: null });
   },
 
-  isLoggedIn: () => isJwtActive(get().accessToken) || isJwtActive(get().refreshToken),
+  isLoggedIn: () => isTokenActive(get().accessToken) || isTokenActive(get().refreshToken),
 }));

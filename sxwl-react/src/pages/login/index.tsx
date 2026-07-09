@@ -1,15 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Form, Input, Button, message, Typography, Space } from 'antd';
-import { loginByPassword } from '@/api/auth';
-import { LockIcon, UserIcon } from '@/components/icons';
+import { Form, message } from 'antd';
+import { loginByPassword } from '@/api/authApi';
 import { useAuthStore } from '@/stores/authStore';
 import { encryptPassword } from '@/utils/sm2Utils';
+import { getItem, setItem, removeItem, STORAGE_KEYS } from '@/utils/storageUtils';
+import { SxwlInput, SxwlButton, SxwlCheckbox } from '@/components';
+import logoSrc from '@/assets/images/logo.png';
 import './index.scss';
 
-const { Title, Text } = Typography;
-
-/** SM2 公钥（裸格式 04||x||y），从环境变量注入，未配置则应用启动即报错 */
+/** SM2 公钥（裸格式 04||x||y），从环境变量注入 */
 const SM2_PUBLIC_KEY = import.meta.env.VITE_SM2_PUBLIC_KEY;
 if (!SM2_PUBLIC_KEY) {
   throw new Error('VITE_SM2_PUBLIC_KEY 环境变量未配置，请在 .env 中设置 SM2 裸公钥');
@@ -18,6 +18,7 @@ if (!SM2_PUBLIC_KEY) {
 interface LoginFormValues {
   username: string;
   password: string;
+  remember?: boolean;
 }
 
 export default function LoginPage() {
@@ -25,13 +26,21 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const setTokens = useAuthStore((s) => s.setTokens);
+  const [form] = Form.useForm<LoginFormValues>();
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
+
+  // 页面加载时恢复已记忆的用户名
+  useEffect(() => {
+    const saved = getItem(STORAGE_KEYS.REMEMBERED_USERNAME);
+    if (saved) {
+      form.setFieldsValue({ username: saved, remember: true });
+    }
+  }, [form]);
 
   const onFinish = async (values: LoginFormValues) => {
     setLoading(true);
     try {
-      // SM2 加密密码（公钥必须配置，不降级明文）
       const passwordToSend = encryptPassword(values.password, SM2_PUBLIC_KEY);
 
       const res = await loginByPassword({
@@ -41,6 +50,13 @@ export default function LoginPage() {
 
       const { accessToken, refreshToken } = res.data.data;
       setTokens(accessToken, refreshToken, values.username);
+
+      if (values.remember) {
+        setItem(STORAGE_KEYS.REMEMBERED_USERNAME, values.username);
+      } else {
+        removeItem(STORAGE_KEYS.REMEMBERED_USERNAME);
+      }
+
       message.success('登录成功');
       navigate(from, { replace: true });
     } catch (err: unknown) {
@@ -54,47 +70,69 @@ export default function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <div className="login-body">
           <div className="login-header">
-            <Title level={2} style={{ marginBottom: 0 }}>Sxwl Admin</Title>
-            <Text type="secondary">欢迎回来，请登录您的账户</Text>
+            <img src={logoSrc} alt="数行未来" className="login-logo" />
+            <h1 className="login-title">数行未来·御权</h1>
+            <p className="login-subtitle">统一权限管控平台</p>
           </div>
 
           <Form<LoginFormValues>
+            form={form}
             name="login"
             size="large"
             onFinish={onFinish}
             autoComplete="off"
-            layout="vertical"
+            layout="horizontal"
+            labelCol={{ style: { width: 56 } }}
+            className="login-form"
+            initialValues={{ remember: false }}
           >
             <Form.Item
               name="username"
+              label="账号"
               rules={[{ required: true, message: '请输入用户名' }]}
             >
-              <Input
-                prefix={<UserIcon />}
-                placeholder="用户名"
+              <SxwlInput
+                placeholder="请输入用户名"
                 autoFocus
+                maxLength={50}
               />
             </Form.Item>
 
             <Form.Item
               name="password"
+              label="密码"
               rules={[{ required: true, message: '请输入密码' }]}
             >
-              <Input.Password
-                prefix={<LockIcon />}
-                placeholder="密码"
+              <SxwlInput
+                type="password"
+                placeholder="请输入密码"
+                maxLength={64}
               />
             </Form.Item>
 
+            <Form.Item name="remember" valuePropName="checked">
+              <SxwlCheckbox className="login-remember">记住用户名</SxwlCheckbox>
+            </Form.Item>
+
             <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading} block>
+              <SxwlButton
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                block
+                className="login-btn"
+              >
                 登 录
-              </Button>
+              </SxwlButton>
             </Form.Item>
           </Form>
-        </Space>
+
+          <div className="login-footer">
+            &copy; {new Date().getFullYear()} 河北数行未来科技有限公司
+          </div>
+        </div>
       </div>
     </div>
   );

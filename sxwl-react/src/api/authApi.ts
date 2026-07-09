@@ -1,4 +1,4 @@
-import request, { type SxwlResult } from './request';
+import { http } from './http';
 
 export interface LoginRequest {
   username: string;
@@ -17,15 +17,15 @@ export interface RefreshRequest {
 
 /** 密码登录 */
 export function loginByPassword(data: LoginRequest) {
-  return request.post<SxwlResult<TokenPair>>('/auth/login/password', data);
+  return http.post<TokenPair>('/auth/login/password', data);
 }
 
 /** 刷新 Token */
 export function refreshToken(data: RefreshRequest) {
-  return request.post<SxwlResult<TokenPair>>('/auth/refresh', data);
+  return http.post<TokenPair>('/auth/refresh', data);
 }
 
 /** 登出 */
 export function logout() {
-  return request.post<SxwlResult<null>>('/auth/logout');
+  return http.post<null>('/auth/logout');
 }

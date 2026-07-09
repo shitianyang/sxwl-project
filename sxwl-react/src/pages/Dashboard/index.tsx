@@ -1,12 +1,12 @@
 import { Button, Typography, Space } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '@/api/auth';
+import { logout } from '@/api/authApi';
 import { LogoutIcon } from '@/components/icons';
 import { useAuthStore } from '@/stores/authStore';
 
 const { Title, Text } = Typography;
 
-export default function HomePage() {
+export default function DashboardPage() {
   const navigate = useNavigate();
   const username = useAuthStore((s) => s.username);
   const clearAuth = useAuthStore((s) => s.clearAuth);

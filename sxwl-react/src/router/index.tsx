@@ -1,6 +1,6 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom';
-import LoginPage from '@/pages/login';
-import HomePage from '@/pages/home';
+import LoginPage from '@/pages/Login';
+import DashboardPage from '@/pages/Dashboard';
 import AuthGuard from './AuthGuard';
 
 const router = createBrowserRouter([
@@ -12,7 +12,7 @@ const router = createBrowserRouter([
     path: '/',
     element: (
       <AuthGuard>
-        <HomePage />
+        <DashboardPage />
       </AuthGuard>
     ),
   },
