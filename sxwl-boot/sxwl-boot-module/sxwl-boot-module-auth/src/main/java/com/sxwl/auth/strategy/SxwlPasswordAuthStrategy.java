@@ -1,7 +1,7 @@
 package com.sxwl.auth.strategy;
 
 import com.sxwl.auth.crypto.SxwlPasswordDecryptor;
-import com.sxwl.auth.mapper.SysUserMapper;
+import com.sxwl.auth.mapper.SysAuthUserMapper;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.security.model.SxwlLoginRequest;
 import com.sxwl.security.model.SxwlLoginUser;
@@ -38,11 +38,11 @@ public class SxwlPasswordAuthStrategy implements SxwlAuthenticationStrategy {
 
     private static final Logger log = LoggerFactory.getLogger(SxwlPasswordAuthStrategy.class);
 
-    private final SysUserMapper sysUserMapper;
+    private final SysAuthUserMapper sysUserMapper;
     private final PasswordEncoder passwordEncoder;
     private final SxwlPasswordDecryptor passwordDecryptor;
 
-    public SxwlPasswordAuthStrategy(SysUserMapper sysUserMapper,
+    public SxwlPasswordAuthStrategy(SysAuthUserMapper sysUserMapper,
                                     PasswordEncoder passwordEncoder,
                                     SxwlPasswordDecryptor passwordDecryptor) {
         this.sysUserMapper = sysUserMapper;

@@ -13,7 +13,7 @@ import java.util.Map;
  * @since 0.1.0
  */
 @Mapper
-public interface SysUserMapper {
+public interface SysAuthUserMapper {
 
     /**
      * 根据用户名查询用户（仅查认证必需字段）

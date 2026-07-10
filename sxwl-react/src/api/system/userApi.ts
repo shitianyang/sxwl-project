@@ -2,11 +2,20 @@
 // 用户管理 API
 // ============================================
 
-import { http, PageResult } from '@/api/http';
+import { http } from '@/api/http';
+
+/** PageInfo 分页响应（与后端 com.github.pagehelper.PageInfo 对齐） */
+export interface PageInfo<T> {
+  list: T[];
+  total: number;
+  pageNum: number;
+  pageSize: number;
+  pages: number;
+}
 
 /** 用户列表项 */
 export interface UserItem {
-  userId: number;
+  id: number;
   username: string;
   realName: string;
   phone: string;
@@ -19,12 +28,13 @@ export interface UserItem {
 export interface UserQuery {
   username?: string;
   status?: number;
-  page: number;
+  current: number;
   pageSize: number;
 }
 
 /** 用户表单（新增/编辑） */
 export interface UserForm {
+  id?: number;
   username: string;
   realName: string;
   phone: string;
@@ -34,21 +44,31 @@ export interface UserForm {
 }
 
 /** 查询用户列表 */
-export function getUserList(params: UserQuery) {
-  return http.get<PageResult<UserItem>>('/system/user/list', params as unknown as Record<string, unknown>);
+export function getUserPageByParams(params: UserQuery) {
+  return http.get<PageInfo<UserItem>>('/system/user/getUserPageByParams', params as unknown as Record<string, unknown>);
+}
+
+/** 查询用户详情 */
+export function getUserById(id: number) {
+  return http.get<UserItem>('/system/user/getUserById', { id });
 }
 
 /** 新增用户 */
 export function createUser(data: UserForm) {
-  return http.post<null>('/system/user/create', data);
+  return http.post<null>('/system/user/createUser', data);
 }
 
 /** 更新用户 */
-export function updateUser(data: UserForm & { userId: number }) {
-  return http.put<null>('/system/user/update', data);
+export function updateUser(data: UserForm) {
+  return http.put<null>('/system/user/updateUser', data);
 }
 
 /** 删除用户 */
-export function deleteUser(userId: number) {
-  return http.deleteReq<null>('/system/user/delete', { userId });
+export function deleteUserById(id: number) {
+  return http.deleteReq<null>('/system/user/deleteUserById', { id });
+}
+
+/** 批量删除用户 */
+export function batchDeleteByIds(ids: number[]) {
+  return http.deleteReq<null>('/system/user/batchDeleteByIds', undefined, ids);
 }

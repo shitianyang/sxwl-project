@@ -139,8 +139,8 @@ export const http = {
     return instance.put<SxwlResult<T>>(url, data);
   },
 
-  deleteReq<T = unknown>(url: string, params?: Record<string, unknown>) {
-    return instance.delete<SxwlResult<T>>(url, { params });
+  deleteReq<T = unknown>(url: string, params?: Record<string, unknown>, data?: unknown) {
+    return instance.delete<SxwlResult<T>>(url, { params, data });
   },
 
   /**

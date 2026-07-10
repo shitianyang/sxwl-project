@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlButton, SxwlIcon, SxwlTag,
@@ -8,34 +8,39 @@ import {
   type FormFieldConfig,
 } from '@/components';
 import type { UserItem } from '@/api/system/userApi';
-// import { getUserList, createUser, updateUser, deleteUser } from '@/api/system/userApi';
-
-// ==================== Demo Data
-
-const DEMO_USERS: UserItem[] = [
-  { userId: 1, username: 'admin', realName: '系统管理员', phone: '13800000000', email: 'admin@sxwl.com', status: 1, createTime: '2026-01-01 00:00:00' },
-  { userId: 2, username: 'zhangsan', realName: '张三', phone: '13800000001', email: 'zhangsan@sxwl.com', status: 1, createTime: '2026-03-15 10:30:00' },
-  { userId: 3, username: 'lisi', realName: '李四', phone: '13800000002', email: 'lisi@sxwl.com', status: 0, createTime: '2026-04-20 14:20:00' },
-  { userId: 4, username: 'wangwu', realName: '王五', phone: '13800000003', email: 'wangwu@sxwl.com', status: 1, createTime: '2026-05-10 09:00:00' },
-  { userId: 5, username: 'zhaoliu', realName: '赵六', phone: '13800000004', email: 'zhaoliu@sxwl.com', status: 1, createTime: '2026-06-01 16:45:00' },
-];
+import { getUserPageByParams, createUser, updateUser, deleteUserById, batchDeleteByIds } from '@/api/system/userApi';
 
 export default function UserPage() {
-  const [data, setData] = useState<UserItem[]>(DEMO_USERS);
+  const [data, setData] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserItem | null>(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const [form] = SxwlForm.useForm();
 
-  const loadData = useCallback(() => {
+  // 搜索参数（不触发重渲染，仅 loadData 时读取）
+  const searchRef = useRef<Record<string, any>>({});
+
+  const loadData = useCallback(async () => {
     setLoading(true);
-    // TODO: 接入后端后替换为 API 调用
-    // getUserList(params).then((res) => setData(res.data.rows)).finally(() => setLoading(false));
-    setTimeout(() => {
-      setData(DEMO_USERS);
+    try {
+      const res = await getUserPageByParams({
+        ...searchRef.current,
+        current: page,
+        pageSize,
+      });
+      setData(res.data.data.list);
+      setTotal(res.data.data.total);
+    } catch {
+      SxwlMessage.error('查询用户列表失败');
+    } finally {
       setLoading(false);
-    }, 300);
-  }, []);
+    }
+  }, [page, pageSize]);
 
   useEffect(() => {
     loadData();
@@ -43,13 +48,15 @@ export default function UserPage() {
 
   // -------- 搜索 & 重置 --------
 
-  const handleSearch = (_values: Record<string, any>) => {
-    // TODO: 传递 values 至 API
-    loadData();
+  const handleSearch = (values: Record<string, any>) => {
+    searchRef.current = values;
+    setPage(1); // 重置到第 1 页
+    // page 变化会触发 useEffect → loadData
   };
 
   const handleReset = () => {
-    loadData();
+    searchRef.current = {};
+    setPage(1);
   };
 
   // -------- 新增 & 编辑 --------
@@ -67,36 +74,66 @@ export default function UserPage() {
     setModalOpen(true);
   };
 
-  const handleDelete = (record: UserItem) => {
-    // TODO: 接入后端 API
-    // deleteUser(record.userId)
-    setData((prev) => prev.filter((item) => item.userId !== record.userId));
-    SxwlMessage.success('删除成功');
+  const handleDelete = async (record: UserItem) => {
+    try {
+      await deleteUserById(record.id);
+      SxwlMessage.success('删除成功');
+      setSelectedRowKeys([]);
+      loadData();
+    } catch {
+      SxwlMessage.error('删除失败');
+    }
+  };
+
+  // -------- 批量删除 --------
+
+  const handleBatchDelete = async () => {
+    if (selectedRowKeys.length === 0) {
+      SxwlMessage.warning('请至少选择一条记录');
+      return;
+    }
+    try {
+      await batchDeleteByIds(selectedRowKeys);
+      SxwlMessage.success('批量删除成功');
+      setSelectedRowKeys([]);
+      loadData();
+    } catch {
+      SxwlMessage.error('批量删除失败');
+    }
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (keys: React.Key[]) => setSelectedRowKeys(keys as number[]),
   };
 
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
+      setConfirmLoading(true);
+
       if (editingUser) {
-        setData((prev) =>
-          prev.map((item) =>
-            item.userId === editingUser.userId ? { ...item, ...values } : item,
-          ),
-        );
+        await updateUser({ ...values, id: editingUser.id });
         SxwlMessage.success('更新成功');
       } else {
-        const newUser: UserItem = {
-          userId: Date.now(),
-          ...values,
-          createTime: new Date().toISOString().replace('T', ' ').substring(0, 19),
-        };
-        setData((prev) => [...prev, newUser]);
+        await createUser(values);
         SxwlMessage.success('创建成功');
       }
+
       setModalOpen(false);
+      loadData();
     } catch {
-      // 表单校验未通过
+      // 表单校验未通过 或 API 错误
+    } finally {
+      setConfirmLoading(false);
     }
+  };
+
+  // -------- 分页 --------
+
+  const handlePageChange = (newPage: number, newPageSize: number) => {
+    setPage(newPage);
+    setPageSize(newPageSize);
   };
 
   // -------- 列定义 --------
@@ -149,6 +186,13 @@ export default function UserPage() {
 
   const toolbarButtons: ToolbarButtonConfig[] = [
     { label: '新增用户', type: 'primary', icon: 'PlusOutlined', onClick: handleAdd },
+    {
+      label: '批量删除',
+      type: 'default',
+      danger: true,
+      icon: 'DeleteOutlined',
+      onClick: handleBatchDelete,
+    },
   ];
 
   const formFields: FormFieldConfig[] = [
@@ -169,6 +213,12 @@ export default function UserPage() {
       maxLength: 100,
     },
     {
+      name: 'password', label: '密码', type: 'input',
+      required: !editingUser,
+      rules: editingUser ? [] : [{ min: 6, max: 32, message: '密码长度为 6-32 个字符' }],
+      maxLength: 32,
+    },
+    {
       name: 'status', label: '状态', type: 'select', initialValue: 1,
       options: [
         { value: 1, label: '启用' },
@@ -184,21 +234,23 @@ export default function UserPage() {
       <SxwlPage
         mode="table"
         paginated
-        rowKey="userId"
+        rowKey="id"
         columns={columns}
         dataSource={data}
         loading={loading}
-        total={data.length}
-        pageSize={10}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        rowSelection={rowSelection}
         breadcrumb={['系统管理', '用户管理']}
         searchFields={searchFields}
         toolbarButtons={toolbarButtons}
         scroll={{ x: 1000 }}
         onSearch={handleSearch}
         onReset={handleReset}
+        onPageChange={handlePageChange}
       />
 
-      {/* 新增/编辑弹窗 */}
       <SxwlFormModal
         title={editingUser ? '编辑用户' : '新增用户'}
         open={modalOpen}
@@ -207,6 +259,7 @@ export default function UserPage() {
         onOk={handleSave}
         onCancel={() => setModalOpen(false)}
         width={520}
+        confirmLoading={confirmLoading}
       />
     </>
   );

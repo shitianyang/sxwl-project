@@ -60,6 +60,8 @@ export interface SxwlPageProps {
   page?: number;
   /** 每页条数 */
   pageSize?: number;
+  /** 表格行选择配置 */
+  rowSelection?: object;
   /** 面包屑（如 ['系统管理', '用户管理']） */
   breadcrumb?: string[];
   /** 搜索字段配置 */
@@ -90,6 +92,7 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
     total,
     page,
     pageSize = 10,
+    rowSelection,
     breadcrumb,
     searchFields,
     toolbarButtons,
@@ -162,6 +165,7 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
         columns={columns}
         dataSource={dataSource}
         loading={loading}
+        rowSelection={rowSelection}
         pagination={
           paginated
             ? {
