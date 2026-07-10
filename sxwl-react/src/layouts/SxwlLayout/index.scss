@@ -18,7 +18,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  padding: 0 16px;
+  gap: 12px;
   color: #fff;
   font-size: 18px;
   font-weight: 700;
@@ -28,13 +29,15 @@
 }
 
 .sxwl-logo-icon {
-  font-size: 24px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .sxwl-logo-text {
-  font-size: 16px;
-  letter-spacing: 1px;
+  font-size: 18px;
+  letter-spacing: 2px;
 }
 
 .sxwl-header {

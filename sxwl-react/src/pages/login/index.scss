@@ -68,8 +68,7 @@
 // ==========================================
 
 .login-form {
-  :global {
-    .ant-form-item {
+  .ant-form-item {
       margin-bottom: 20px;
     }
 
@@ -125,15 +124,13 @@
         }
       }
     }
-  }
 }
 
 .login-remember {
   font-size: 13px;
   color: $text-secondary;
 
-  :global {
-    .ant-checkbox-checked .ant-checkbox-inner {
+  .ant-checkbox-checked .ant-checkbox-inner {
       background-color: $primary-color;
       border-color: $primary-color;
     }
@@ -141,7 +138,6 @@
     .ant-checkbox-wrapper:hover .ant-checkbox-inner {
       border-color: $primary-color;
     }
-  }
 }
 
 .login-btn {

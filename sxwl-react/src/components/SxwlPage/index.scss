@@ -42,15 +42,13 @@
     gap: 12px;
     align-items: center;
 
-    :global {
-      .ant-form-item {
+    .ant-form-item {
         margin-bottom: 0;
       }
 
       .ant-select {
         min-width: 120px;
       }
-    }
   }
 
   // -------- 工具栏 --------

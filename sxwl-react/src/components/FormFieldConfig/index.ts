@@ -23,4 +23,6 @@ export interface FormFieldConfig {
   options?: { value: any; label: string }[];
   /** 最大输入长度 */
   maxLength?: number;
+  /** 是否禁用 */
+  disabled?: boolean;
 }

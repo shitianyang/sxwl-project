@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlButton, SxwlIcon, SxwlTag,
@@ -9,6 +9,8 @@ import {
 } from '@/components';
 import type { UserItem } from '@/api/system/userApi';
 import { getUserPageByParams, createUser, updateUser, deleteUserById, batchDeleteByIds } from '@/api/system/userApi';
+import { getPublicKey } from '@/api/authApi';
+import { encryptPassword } from '@/utils/sm2Utils';
 
 export default function UserPage() {
   const [data, setData] = useState<UserItem[]>([]);
@@ -25,12 +27,12 @@ export default function UserPage() {
   // 搜索参数（不触发重渲染，仅 loadData 时读取）
   const searchRef = useRef<Record<string, any>>({});
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (queryPage?: number) => {
     setLoading(true);
     try {
       const res = await getUserPageByParams({
         ...searchRef.current,
-        current: page,
+        current: queryPage ?? page,
         pageSize,
       });
       setData(res.data.data.list);
@@ -50,13 +52,14 @@ export default function UserPage() {
 
   const handleSearch = (values: Record<string, any>) => {
     searchRef.current = values;
-    setPage(1); // 重置到第 1 页
-    // page 变化会触发 useEffect → loadData
+    setPage(1);
+    loadData(1);
   };
 
   const handleReset = () => {
     searchRef.current = {};
     setPage(1);
+    loadData(1);
   };
 
   // -------- 新增 & 编辑 --------
@@ -113,17 +116,27 @@ export default function UserPage() {
       setConfirmLoading(true);
 
       if (editingUser) {
-        await updateUser({ ...values, id: editingUser.id });
+        // 编辑：密码可选，传值则 SM2 加密
+        const payload = { ...values, id: editingUser.id };
+        if (values.password) {
+          const publicKey = (await getPublicKey()).data.data.publicKey;
+          payload.password = encryptPassword(values.password, publicKey);
+        }
+        await updateUser(payload);
         SxwlMessage.success('更新成功');
       } else {
-        await createUser(values);
+        // 新增：密码必填，SM2 加密后发送
+        const publicKey = (await getPublicKey()).data.data.publicKey;
+        const encryptedPassword = encryptPassword(values.password, publicKey);
+        await createUser({ ...values, password: encryptedPassword });
         SxwlMessage.success('创建成功');
       }
 
       setModalOpen(false);
       loadData();
-    } catch {
-      // 表单校验未通过 或 API 错误
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      SxwlMessage.error(axiosErr?.response?.data?.message || '操作失败');
     } finally {
       setConfirmLoading(false);
     }
@@ -195,15 +208,16 @@ export default function UserPage() {
     },
   ];
 
-  const formFields: FormFieldConfig[] = [
+  const formFields: FormFieldConfig[] = useMemo(() => [
     {
       name: 'username', label: '用户名', type: 'input', required: true,
+      disabled: !!editingUser,
       rules: [{ min: 2, max: 50, message: '用户名长度为 2-50 个字符' }],
       maxLength: 50,
     },
     { name: 'realName', label: '真实姓名', type: 'input', required: true, maxLength: 50 },
     {
-      name: 'phone', label: '手机号', type: 'input',
+      name: 'phone', label: '手机号', type: 'input', required: true,
       rules: [{ pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号' }],
       maxLength: 11,
     },
@@ -225,7 +239,7 @@ export default function UserPage() {
         { value: 0, label: '禁用' },
       ],
     },
-  ];
+  ], [editingUser]);
 
   // -------- 渲染 --------
 

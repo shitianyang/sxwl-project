@@ -15,7 +15,7 @@ import { getItem, STORAGE_KEYS } from '@/utils/storageUtils';
 /** 后端统一响应格式 */
 export interface SxwlResult<T = unknown> {
   code: number;
-  msg: string;
+  message: string;
   data: T;
 }
 
@@ -67,6 +67,12 @@ function onTokenRefreshed(newToken: string) {
 
 instance.interceptors.response.use(
   (response) => {
+    // 检查业务状态码：HTTP 200 但业务 code 非 200 时转为 reject
+    const result = response.data as SxwlResult;
+    if (result && typeof result.code === 'number' && result.code !== 200) {
+      return Promise.reject({ response, config: response.config });
+    }
+
     // X-New-Token 头处理：Token 自动续期
     const newToken = response.headers['x-new-token'];
     if (typeof newToken === 'string' && newToken) {

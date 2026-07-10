@@ -19,7 +19,7 @@
         <id column="id" property="id"/>
     </resultMap>
 
-    <!-- 根据 ID 查询用户（含密码，用于编辑回显） -->
+    <!-- 根据 ID 查询用户（含密码字段，Service 层会置空后返回） -->
     <select id="getUserById" resultMap="SysUserDTOResultMap">
         SELECT
         <include refid="selectUserColumns"/>,

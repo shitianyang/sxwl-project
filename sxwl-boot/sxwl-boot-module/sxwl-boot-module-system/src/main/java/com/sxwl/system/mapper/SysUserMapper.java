@@ -1,5 +1,6 @@
 package com.sxwl.system.mapper;
 
+import com.sxwl.common.annotation.SxwlDataScope;
 import com.sxwl.system.model.dto.SysUserDTO;
 import com.sxwl.system.model.entity.SysUser;
 import com.sxwl.system.model.params.SysUserPageParams;
@@ -21,10 +22,10 @@ import java.util.List;
 public interface SysUserMapper {
 
     /**
-     * 根据 ID 查询用户（含密码，用于编辑回显）
+     * 根据 ID 查询用户
      *
      * @param id 用户 ID
-     * @return 用户 DTO（含密码字段）
+     * @return 用户 DTO（密码由 Service 层置空返回）
      */
     SysUserDTO getUserById(@Param("id") Long id);
 
@@ -34,6 +35,7 @@ public interface SysUserMapper {
      * @param params 分页查询参数（含 username、status 筛选条件）
      * @return 用户 DTO 列表
      */
+    @SxwlDataScope
     List<SysUserDTO> getUserPageByParams(SysUserPageParams params);
 
     /**

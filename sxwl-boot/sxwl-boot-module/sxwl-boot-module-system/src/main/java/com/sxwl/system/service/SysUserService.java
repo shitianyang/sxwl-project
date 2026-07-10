@@ -16,10 +16,10 @@ import java.util.List;
 public interface SysUserService {
 
     /**
-     * 根据 ID 查询用户（含密码，用于编辑回显）
+     * 根据 ID 查询用户（密码由 Service 层置空返回）
      *
      * @param id 用户 ID
-     * @return 用户 DTO（含密码字段），不存在返回 null
+     * @return 用户 DTO（密码字段为 null），不存在返回 10004 异常
      */
     SysUserDTO getUserById(Long id);
 

@@ -2,8 +2,7 @@ package com.sxwl.system.service.impl;
 
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
-import com.sxwl.common.utils.SM2Utils;
-import com.sxwl.security.config.SxwlSecurityProperties;
+import com.sxwl.security.key.SxwlSM2KeyManager;
 import com.sxwl.system.mapper.SysUserMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.sxwl.system.model.dto.SysUserDTO;
@@ -34,15 +33,15 @@ public class SysUserServiceImpl implements SysUserService {
     /** 密码编码器（SM3 哈希） */
     private final PasswordEncoder passwordEncoder;
 
-    /** 安全配置属性 */
-    private final SxwlSecurityProperties securityProperties;
+    /** SM2 密钥管理器（支持密钥轮换和宽限期降级解密） */
+    private final SxwlSM2KeyManager keyManager;
 
     public SysUserServiceImpl(SysUserMapper sysUserMapper,
                               PasswordEncoder passwordEncoder,
-                              SxwlSecurityProperties securityProperties) {
+                              SxwlSM2KeyManager keyManager) {
         this.sysUserMapper = sysUserMapper;
         this.passwordEncoder = passwordEncoder;
-        this.securityProperties = securityProperties;
+        this.keyManager = keyManager;
     }
 
     /**
@@ -57,6 +56,8 @@ public class SysUserServiceImpl implements SysUserService {
         if (dto == null) {
             throw new SxwlBusinessException(10004, "用户不存在或已被删除");
         }
+        // 编辑回显不返回密码，前端不应展示密码字段
+        dto.setPassword(null);
         return dto;
     }
 
@@ -183,13 +184,7 @@ public class SysUserServiceImpl implements SysUserService {
      * @return SM3 哈希后的密文
      */
     private String encodePassword(String encryptedPassword) {
-        String privateKey = securityProperties.getSm2PrivateKey();
-        String plainPassword;
-        if (privateKey != null && !privateKey.isBlank()) {
-            plainPassword = SM2Utils.decryptFromBase64(encryptedPassword, privateKey);
-        } else {
-            plainPassword = encryptedPassword;
-        }
+        String plainPassword = keyManager.decrypt(encryptedPassword);
         return passwordEncoder.encode(plainPassword);
     }
 

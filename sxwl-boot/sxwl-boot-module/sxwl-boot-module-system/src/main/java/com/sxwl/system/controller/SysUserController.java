@@ -28,7 +28,7 @@ public class SysUserController {
     }
 
     /**
-     * 根据 ID 查询用户（含密码，用于编辑回显）
+     * 根据 ID 查询用户（编辑回显，密码置空返回）
      *
      * @param id 用户 ID
      * @return 用户信息

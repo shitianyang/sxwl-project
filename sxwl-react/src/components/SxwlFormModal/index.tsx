@@ -72,11 +72,13 @@ function SxwlFormModal({
               <SxwlSelect
                 placeholder={field.placeholder ?? '请选择'}
                 options={field.options}
+                disabled={field.disabled}
               />
             ) : (
               <SxwlInput
                 placeholder={field.placeholder ?? '请输入'}
                 maxLength={field.maxLength}
+                disabled={field.disabled}
               />
             )}
           </SxwlForm.Item>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { loginByPassword } from '@/api/authApi';
+import { loginByPassword, getPublicKey } from '@/api/authApi';
 import { useAuthStore } from '@/stores/authStore';
 import { encryptPassword } from '@/utils/sm2Utils';
 import { getItem, setItem, removeItem, STORAGE_KEYS } from '@/utils/storageUtils';
@@ -8,10 +8,24 @@ import { SxwlInput, SxwlButton, SxwlCheckbox, SxwlForm, SxwlMessage } from '@/co
 import logoSrc from '@/assets/images/logo.png';
 import './index.scss';
 
-/** SM2 公钥（裸格式 04||x||y），从环境变量注入 */
-const SM2_PUBLIC_KEY = import.meta.env.VITE_SM2_PUBLIC_KEY;
-if (!SM2_PUBLIC_KEY) {
-  throw new Error('VITE_SM2_PUBLIC_KEY 环境变量未配置，请在 .env 中设置 SM2 裸公钥');
+/** SM2 公钥缓存（含过期时间，支持密钥轮换自动刷新） */
+interface CachedKey {
+  publicKey: string;
+  expiresAt: number;
+}
+
+let cachedKey: CachedKey | null = null;
+async function fetchPublicKey(): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  // 缓存有效且未过期（提前 60 秒刷新）
+  if (cachedKey && now < cachedKey.expiresAt - 60) {
+    return cachedKey.publicKey;
+  }
+  // 过期或未缓存→重新获取
+  const res = await getPublicKey();
+  const { publicKey, expiresAt } = res.data.data;
+  cachedKey = { publicKey, expiresAt };
+  return publicKey;
 }
 
 interface LoginFormValues {
@@ -40,7 +54,8 @@ export default function LoginPage() {
   const onFinish = async (values: LoginFormValues) => {
     setLoading(true);
     try {
-      const passwordToSend = encryptPassword(values.password, SM2_PUBLIC_KEY);
+      const publicKey = await fetchPublicKey();
+      const passwordToSend = encryptPassword(values.password, publicKey);
 
       const res = await loginByPassword({
         username: values.username,
@@ -59,8 +74,8 @@ export default function LoginPage() {
       SxwlMessage.success('登录成功');
       navigate(from, { replace: true });
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { msg?: string } } };
-      SxwlMessage.error(axiosErr?.response?.data?.msg || '登录失败，请检查用户名和密码');
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      SxwlMessage.error(axiosErr?.response?.data?.message || '登录失败，请检查用户名和密码');
     } finally {
       setLoading(false);
     }

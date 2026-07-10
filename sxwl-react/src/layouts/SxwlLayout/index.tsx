@@ -7,6 +7,7 @@ import type { MenuProps } from 'antd';
 import { SxwlIcon } from '@/components';
 import { useAuthStore } from '@/stores/authStore';
 import { logout } from '@/api/authApi';
+import logoSrc from '@/assets/images/logo.png';
 import './index.scss';
 
 const { Header, Sider, Content } = Layout;
@@ -71,7 +72,7 @@ export default function SxwlLayout() {
         className="sxwl-sider"
       >
         <div className="sxwl-logo">
-          <span className="sxwl-logo-icon">✦</span>
+          <img src={logoSrc} alt="数行未来" className="sxwl-logo-icon" />
           {!collapsed && <span className="sxwl-logo-text">数行未来·御权</span>}
         </div>
         <Menu

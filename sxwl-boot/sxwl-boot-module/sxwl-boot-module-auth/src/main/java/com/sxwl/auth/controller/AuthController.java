@@ -2,6 +2,7 @@ package com.sxwl.auth.controller;
 
 import com.sxwl.auth.strategy.SxwlPasswordAuthStrategy;
 import com.sxwl.auth.strategy.SxwlSmsAuthStrategy;
+import com.sxwl.common.entity.SxwlPublicKeyVO;
 import com.sxwl.common.entity.SxwlResult;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.common.utils.SxwlJwtUtils;
@@ -13,6 +14,7 @@ import com.sxwl.security.event.SxwlLoginFailureEvent;
 import com.sxwl.security.event.SxwlLoginSuccessEvent;
 import com.sxwl.security.event.SxwlLogoutEvent;
 import com.sxwl.security.handler.SxwlAuthenticationHandler;
+import com.sxwl.security.key.SxwlSM2KeyManager;
 import com.sxwl.security.model.SxwlLoginRequest;
 import com.sxwl.security.model.SxwlLoginUser;
 import com.sxwl.security.model.SxwlRefreshTokenRequest;
@@ -56,6 +58,7 @@ public class AuthController {
     private final ApplicationEventPublisher eventPublisher;
     private final SxwlPasswordAuthStrategy passwordAuthStrategy;
     private final SxwlSmsAuthStrategy smsAuthStrategy;
+    private final SxwlSM2KeyManager keyManager;
 
     public AuthController(SxwlAuthenticationHandler handler,
                           SxwlRedisHelper redisHelper,
@@ -63,7 +66,8 @@ public class AuthController {
                           SxwlCaptchaValidator captchaValidator,
                           ApplicationEventPublisher eventPublisher,
                           SxwlPasswordAuthStrategy passwordAuthStrategy,
-                          SxwlSmsAuthStrategy smsAuthStrategy) {
+                          SxwlSmsAuthStrategy smsAuthStrategy,
+                          SxwlSM2KeyManager keyManager) {
         this.handler = handler;
         this.redisHelper = redisHelper;
         this.properties = properties;
@@ -71,6 +75,21 @@ public class AuthController {
         this.eventPublisher = eventPublisher;
         this.passwordAuthStrategy = passwordAuthStrategy;
         this.smsAuthStrategy = smsAuthStrategy;
+        this.keyManager = keyManager;
+    }
+
+    /**
+     * 获取 SM2 公钥（用于前端密码加密）
+     *
+     * <p>前端在加载登录页时调用此接口获取公钥，代替硬编码在环境变量中。
+     * 返回十六进制裸公钥（04||x||y），即 X.509 SubjectPublicKeyInfo 中的 EC 点编码。</p>
+     *
+     * @return 公钥十六进制字符串，未配置时抛出异常
+     */
+    @GetMapping("/public-key")
+    public SxwlResult<SxwlPublicKeyVO> getPublicKey() {
+        SxwlPublicKeyVO publicKey = keyManager.getCurrentPublicKey();
+        return SxwlResult.success(publicKey);
     }
 
     /**
@@ -204,13 +223,19 @@ public class AuthController {
 
     /**
      * 登出
-     * <p>吊销当前用户所有 Token，发布登出事件。</p>
+     *
+     * <p>吊销当前用户所有 Token，发布登出事件。
+     * 已放行至 permitAll，未登录时静默成功（Token 已失效的场景）。</p>
      */
     @PostMapping("/logout")
     public SxwlResult<Void> logout() {
-        SxwlLoginUser loginUser = SxwlSecurityUtils.getCurrentUser()
-                .orElseThrow(() -> new SxwlBusinessException(401, "未登录"));
+        Optional<SxwlLoginUser> loginUserOpt = SxwlSecurityUtils.getCurrentUser();
+        if (loginUserOpt.isEmpty()) {
+            // 未登录或 Token 已失效，登出必然是成功的
+            return SxwlResult.success();
+        }
 
+        SxwlLoginUser loginUser = loginUserOpt.get();
         handler.logout(loginUser.getUserId(), "admin");
 
         SxwlLogoutEvent logoutEvent = new SxwlLogoutEvent();
