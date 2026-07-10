@@ -1,0 +1,81 @@
+@use '@/styles/variables' as *;
+
+// ==========================================
+// SxwlPage — CRUD 页面骨架
+// ==========================================
+
+.sxwl-page {
+  // -------- 面包屑 --------
+
+  &-breadcrumb {
+    margin-bottom: 16px;
+    font-size: $font-size-sm;
+    color: $text-tertiary;
+
+    .sxwl-page-breadcrumb-sep {
+      margin: 0 6px;
+      color: $text-disabled;
+    }
+
+    .sxwl-page-breadcrumb-item {
+      &.is-current {
+        color: $text-primary;
+        font-weight: 500;
+      }
+    }
+  }
+
+  // -------- 搜索卡片 --------
+
+  &-search {
+    border-radius: $border-radius-lg;
+    margin-bottom: 16px;
+
+    .ant-card-body {
+      padding: 20px 24px;
+    }
+  }
+
+  &-search-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+
+    :global {
+      .ant-form-item {
+        margin-bottom: 0;
+      }
+
+      .ant-select {
+        min-width: 120px;
+      }
+    }
+  }
+
+  // -------- 工具栏 --------
+
+  &-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+  }
+
+  // -------- 表格卡片 --------
+
+  &-table-card {
+    border-radius: $border-radius-lg;
+
+    .ant-card-body {
+      padding: 20px 24px;
+
+      .ant-table-wrapper {
+        .ant-table {
+          .ant-table-container {
+            border-radius: 0 0 $border-radius-lg $border-radius-lg;
+          }
+        }
+      }
+    }
+  }
+}

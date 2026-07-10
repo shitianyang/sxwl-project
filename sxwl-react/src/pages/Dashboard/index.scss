@@ -1,0 +1,139 @@
+@use '@/styles/variables' as *;
+
+// ==========================================
+// 工作台 — 极简科技风
+// ==========================================
+
+.dashboard-page {
+  // 占满整个内容区域，不设置 max-width
+}
+
+// -------- 欢迎横幅 --------
+
+.dashboard-banner {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: $border-radius-lg;
+  padding: 28px 32px;
+  margin-bottom: 16px;
+
+  .banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .banner-title {
+    color: #fff !important;
+    margin-bottom: 4px !important;
+  }
+
+  .banner-desc {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: $font-size-sm;
+  }
+
+  .banner-tip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #22c55e;
+    font-size: $font-size-sm;
+    padding: 6px 14px;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 20px;
+  }
+}
+
+// -------- 统计卡片 --------
+
+.dashboard-stats {
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  border-radius: $border-radius-lg;
+  transition: box-shadow 0.2s, transform 0.2s;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+  }
+
+  .stat-card-body {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .stat-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .stat-card-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .stat-card-value {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    color: $text-primary;
+    line-height: 1.2;
+  }
+
+  .stat-card-label {
+    font-size: $font-size-sm;
+    color: $text-tertiary;
+    margin-top: 2px;
+  }
+}
+
+// -------- 快捷入口 --------
+
+.dashboard-quick-links {
+  border-radius: $border-radius-lg;
+}
+
+.section-title {
+  font-size: $font-size-base;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.quick-link-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px;
+  border-radius: $border-radius;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: $bg-tertiary;
+  }
+
+  .quick-link-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .quick-link-label {
+    font-size: $font-size-sm;
+    color: $text-secondary;
+    text-align: center;
+  }
+}

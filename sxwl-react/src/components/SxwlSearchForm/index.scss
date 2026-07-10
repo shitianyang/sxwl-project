@@ -1,0 +1,31 @@
+@use '@/styles/variables' as *;
+
+// ==========================================
+// SxwlSearchForm — 搜索表单
+// ==========================================
+
+.sxwl-search-form {
+  border-radius: $border-radius-lg;
+  margin-bottom: 16px;
+
+  .ant-card-body {
+    padding: 20px 24px;
+  }
+
+  &__inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+
+    :global {
+      .ant-form-item {
+        margin-bottom: 0;
+      }
+
+      .ant-select {
+        min-width: 120px;
+      }
+    }
+  }
+}

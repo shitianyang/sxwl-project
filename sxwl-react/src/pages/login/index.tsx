@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Form, message } from 'antd';
 import { loginByPassword } from '@/api/authApi';
 import { useAuthStore } from '@/stores/authStore';
 import { encryptPassword } from '@/utils/sm2Utils';
 import { getItem, setItem, removeItem, STORAGE_KEYS } from '@/utils/storageUtils';
-import { SxwlInput, SxwlButton, SxwlCheckbox } from '@/components';
+import { SxwlInput, SxwlButton, SxwlCheckbox, SxwlForm, SxwlMessage } from '@/components';
 import logoSrc from '@/assets/images/logo.png';
 import './index.scss';
 
@@ -26,7 +25,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const setTokens = useAuthStore((s) => s.setTokens);
-  const [form] = Form.useForm<LoginFormValues>();
+  const [form] = SxwlForm.useForm<LoginFormValues>();
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
 
@@ -57,11 +56,11 @@ export default function LoginPage() {
         removeItem(STORAGE_KEYS.REMEMBERED_USERNAME);
       }
 
-      message.success('登录成功');
+      SxwlMessage.success('登录成功');
       navigate(from, { replace: true });
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { msg?: string } } };
-      message.error(axiosErr?.response?.data?.msg || '登录失败，请检查用户名和密码');
+      SxwlMessage.error(axiosErr?.response?.data?.msg || '登录失败，请检查用户名和密码');
     } finally {
       setLoading(false);
     }
@@ -77,7 +76,7 @@ export default function LoginPage() {
             <p className="login-subtitle">统一权限管控平台</p>
           </div>
 
-          <Form<LoginFormValues>
+          <SxwlForm
             form={form}
             name="login"
             size="large"
@@ -88,7 +87,7 @@ export default function LoginPage() {
             className="login-form"
             initialValues={{ remember: false }}
           >
-            <Form.Item
+            <SxwlForm.Item
               name="username"
               label="账号"
               rules={[{ required: true, message: '请输入用户名' }]}
@@ -98,9 +97,9 @@ export default function LoginPage() {
                 autoFocus
                 maxLength={50}
               />
-            </Form.Item>
+            </SxwlForm.Item>
 
-            <Form.Item
+            <SxwlForm.Item
               name="password"
               label="密码"
               rules={[{ required: true, message: '请输入密码' }]}
@@ -110,13 +109,13 @@ export default function LoginPage() {
                 placeholder="请输入密码"
                 maxLength={64}
               />
-            </Form.Item>
+            </SxwlForm.Item>
 
-            <Form.Item name="remember" valuePropName="checked">
+            <SxwlForm.Item name="remember" valuePropName="checked">
               <SxwlCheckbox className="login-remember">记住用户名</SxwlCheckbox>
-            </Form.Item>
+            </SxwlForm.Item>
 
-            <Form.Item>
+            <SxwlForm.Item>
               <SxwlButton
                 type="primary"
                 htmlType="submit"
@@ -126,8 +125,8 @@ export default function LoginPage() {
               >
                 登 录
               </SxwlButton>
-            </Form.Item>
-          </Form>
+            </SxwlForm.Item>
+          </SxwlForm>
 
           <div className="login-footer">
             &copy; {new Date().getFullYear()} 河北数行未来科技有限公司
