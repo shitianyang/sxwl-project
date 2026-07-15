@@ -1,7 +1,7 @@
 import type { CSSProperties, SVGAttributes } from 'react';
-import { createElement, useEffect, useState } from 'react';
+import { createElement } from 'react';
 
-export interface SxwlIconProps {
+export interface SxwlIconProps extends Omit<SVGAttributes<SVGSVGElement>, 'name'> {
   /** 图标名称（PascalCase，如 'UserOutlined'、'EditOutlined'） */
   name: string;
   /** 自定义样式 */
@@ -13,89 +13,70 @@ export interface SxwlIconProps {
 }
 
 /**
- * 图标懒加载器映射 — name → () => Promise<Component>
+ * 只注册项目实际使用的 SVG 图标。
  *
- * import.meta.glob 的 eager: false 让 Vite 为每个 SVG 生成独立 chunk，
- * 图标只在首次使用时才加载。
+ * 不再 glob 全量 assets/icons，避免 Vite 为几百个 SVG 生成独立 chunk。
+ * 新增图标时，把文件路径追加到这里即可。
  */
-const iconLoaders = import.meta.glob('@/assets/icons/*.svg', {
-  eager: false,
-  query: '?react',
-  import: 'default',
-}) as Record<string, () => Promise<React.ComponentType<SVGAttributes<SVGSVGElement>>>>;
+const iconModules = import.meta.glob(
+  [
+    '@/assets/icons/ant-design--apartment-outlined.svg',
+    '@/assets/icons/ant-design--cloud-upload-outlined.svg',
+    '@/assets/icons/ant-design--dashboard-outlined.svg',
+    '@/assets/icons/ant-design--delete-outlined.svg',
+    '@/assets/icons/ant-design--download-outlined.svg',
+    '@/assets/icons/ant-design--edit-outlined.svg',
+    '@/assets/icons/ant-design--eye-outlined.svg',
+    '@/assets/icons/ant-design--file-outlined.svg',
+    '@/assets/icons/ant-design--file-search-outlined.svg',
+    '@/assets/icons/ant-design--file-text-outlined.svg',
+    '@/assets/icons/ant-design--idcard-outlined.svg',
+    '@/assets/icons/ant-design--login-outlined.svg',
+    '@/assets/icons/ant-design--logout-outlined.svg',
+    '@/assets/icons/ant-design--menu-fold-outlined.svg',
+    '@/assets/icons/ant-design--menu-unfold-outlined.svg',
+    '@/assets/icons/ant-design--ordered-list-outlined.svg',
+    '@/assets/icons/ant-design--plus-outlined.svg',
+    '@/assets/icons/ant-design--read-outlined.svg',
+    '@/assets/icons/ant-design--reload-outlined.svg',
+    '@/assets/icons/ant-design--safety-certificate-outlined.svg',
+    '@/assets/icons/ant-design--safety-outlined.svg',
+    '@/assets/icons/ant-design--search-outlined.svg',
+    '@/assets/icons/ant-design--setting-outlined.svg',
+    '@/assets/icons/ant-design--team-outlined.svg',
+    '@/assets/icons/ant-design--user-outlined.svg',
+  ],
+  {
+    eager: true,
+    query: '?react',
+    import: 'default',
+  },
+) as Record<string, React.ComponentType<SVGAttributes<SVGSVGElement>>>;
 
-const iconLoaderMap: Record<
-  string,
-  () => Promise<React.ComponentType<SVGAttributes<SVGSVGElement>>>
-> = {};
-for (const filePath of Object.keys(iconLoaders)) {
+const iconMap: Record<string, React.ComponentType<SVGAttributes<SVGSVGElement>>> = {};
+
+for (const [filePath, IconComponent] of Object.entries(iconModules)) {
   const fileName = filePath.split('/').pop()!;
   const match = fileName.match(/^ant-design--(.+)\.svg$/);
-  if (match) {
-    // kebab-case → PascalCase：'user-outlined' → 'UserOutlined'
-    const iconName = match[1]
-      .split('-')
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join('');
-    iconLoaderMap[iconName] = iconLoaders[filePath];
-  }
+  if (!match) continue;
+
+  const iconName = match[1]
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+  iconMap[iconName] = IconComponent;
 }
 
-/** 已加载组件的运行时缓存 */
-const iconCache = new Map<string, React.ComponentType<SVGAttributes<SVGSVGElement>>>();
+const SxwlIcon = ({ name, className, style, size, ...rest }: SxwlIconProps) => {
+  const IconComponent = iconMap[name];
 
-/**
- * SxwlIcon — 统一图标组件（按需加载）
- *
- * 用法：
- * ```tsx
- * <SxwlIcon name="UserOutlined" />
- * <SxwlIcon name="DashboardOutlined" size={20} style={{ color: '#DE5F0E' }} />
- * ```
- *
- * 图标文件位于 src/assets/icons/，命名规则 ant-design--{kebab-name}.svg。
- * 首次使用指定名称时才会加载对应的 SVG chunk，加载完成后缓存。
- */
-const SxwlIcon = ({ name, className, style, size }: SxwlIconProps) => {
-  const [Component, setComponent] =
-    useState<React.ComponentType<SVGAttributes<SVGSVGElement>> | null>(() => iconCache.get(name) ?? null);
+  if (!IconComponent) {
+    console.warn(`[SxwlIcon] 未注册图标 "${name}"`);
+    return null;
+  }
 
-  useEffect(() => {
-    // 立即清空旧图标，避免 name 变化时短暂闪烁旧图标
-    setComponent(null);
-
-    // 缓存命中
-    if (iconCache.has(name)) {
-      setComponent(() => iconCache.get(name)!);
-      return;
-    }
-
-    const loader = iconLoaderMap[name];
-    if (!loader) {
-      console.warn(`[SxwlIcon] 未找到图标 "${name}"`);
-      return;
-    }
-
-    let cancelled = false;
-    loader()
-      .then((Comp) => {
-        if (!cancelled) {
-          iconCache.set(name, Comp);
-          setComponent(() => Comp);
-        }
-      })
-      .catch((err) => {
-        console.error(`[SxwlIcon] 加载图标 "${name}" 失败:`, err);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [name]);
-
-  if (!Component) return null;
-
-  return createElement(Component, {
+  return createElement(IconComponent, {
+    ...rest,
     className,
     style: { width: size || '1em', height: size || '1em', ...style },
     width: size,

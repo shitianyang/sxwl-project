@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.system.mapper.SysMenuMapper">
+
+    <!-- 通用查询列 -->
+    <sql id="selectMenuColumns">
+        id, menu_name, parent_id, ancestors, menu_type,
+        path, component, perms, icon, is_frame, is_cache,
+        sort, visible, status, description
+    </sql>
+
+    <!-- 结果映射（含 password 字段供 Service 层操作） -->
+    <resultMap id="SysMenuDTOResultMap" type="com.sxwl.system.model.dto.SysMenuDTO" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="menu_name" property="menuName"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="menu_type" property="menuType"/>
+        <result column="is_frame" property="isFrame"/>
+        <result column="is_cache" property="isCache"/>
+    </resultMap>
+
+    <!-- 根据 ID 查询 -->
+    <select id="getMenuById" resultMap="SysMenuDTOResultMap">
+        SELECT <include refid="selectMenuColumns"/>
+        FROM sys_menu_info
+        WHERE id = #{id}
+        AND delete_flag = 0
+    </select>
+
+    <!-- 查询所有菜单（按 sort 升序） -->
+    <select id="selectAllMenus" resultMap="SysMenuDTOResultMap">
+        SELECT <include refid="selectMenuColumns"/>
+        FROM sys_menu_info
+        WHERE delete_flag = 0
+        ORDER BY sort ASC, id ASC
+    </select>
+
+    <!-- 统计子菜单数 -->
+    <select id="countChildrenByParentId" resultType="int">
+        SELECT COUNT(*)
+        FROM sys_menu_info
+        WHERE parent_id = #{parentId}
+        AND delete_flag = 0
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insertMenu" parameterType="com.sxwl.system.model.entity.SysMenu">
+        INSERT INTO sys_menu_info (
+            id, menu_name, parent_id, ancestors, menu_type,
+            path, component, perms, icon, is_frame, is_cache,
+            sort, visible, status, description,
+            create_by, create_org, create_time, update_by, update_time
+        ) VALUES (
+            #{id}, #{menuName}, #{parentId}, #{ancestors}, #{menuType},
+            #{path}, #{component}, #{perms}, #{icon}, #{isFrame}, #{isCache},
+            #{sort}, #{visible}, #{status}, #{description},
+            #{createBy}, #{createOrg}, #{createTime}, #{createBy}, #{createTime}
+        )
+    </insert>
+
+    <!-- 修改 -->
+    <update id="updateMenu" parameterType="com.sxwl.system.model.entity.SysMenu">
+        UPDATE sys_menu_info
+        SET menu_name   = #{menuName},
+            parent_id   = #{parentId},
+            ancestors   = #{ancestors},
+            menu_type   = #{menuType},
+            path        = #{path},
+            component   = #{component},
+            perms       = #{perms},
+            icon        = #{icon},
+            is_frame    = #{isFrame},
+            is_cache    = #{isCache},
+            sort        = #{sort},
+            visible     = #{visible},
+            status      = #{status},
+            description = #{description},
+            update_by   = #{updateBy},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteMenuById">
+        UPDATE sys_menu_info
+        SET delete_flag = 1
+        WHERE id = #{id}
+    </update>
+
+</mapper>

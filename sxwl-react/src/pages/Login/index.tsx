@@ -1,38 +1,49 @@
+// ============================================
+// LoginPage — 登录页
+//
+// 竖向无标签布局，所有提示通过 placeholder 展示。
+// 验证码输入框 + 图片平排显示。
+// ============================================
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { loginByPassword, getPublicKey } from '@/api/authApi';
+import { Input } from 'antd';
+import type { FormInstance } from 'antd';
+import { loginByPassword } from '@/api/authApi';
 import { useAuthStore } from '@/stores/authStore';
 import { encryptPassword } from '@/utils/sm2Utils';
+import { getCachedPublicKey, invalidatePublicKeyCache } from '@/utils/publicKeyUtils';
 import { getItem, setItem, removeItem, STORAGE_KEYS } from '@/utils/storageUtils';
-import { SxwlInput, SxwlButton, SxwlCheckbox, SxwlForm, SxwlMessage } from '@/components';
+import { SxwlButton, SxwlCheckbox, SxwlForm, SxwlInput, SxwlMessage, SxwlCaptcha } from '@/components';
 import logoSrc from '@/assets/images/logo.png';
 import './index.scss';
 
-/** SM2 公钥缓存（含过期时间，支持密钥轮换自动刷新） */
-interface CachedKey {
-  publicKey: string;
-  expiresAt: number;
-}
-
-let cachedKey: CachedKey | null = null;
-async function fetchPublicKey(): Promise<string> {
-  const now = Math.floor(Date.now() / 1000);
-  // 缓存有效且未过期（提前 60 秒刷新）
-  if (cachedKey && now < cachedKey.expiresAt - 60) {
-    return cachedKey.publicKey;
-  }
-  // 过期或未缓存→重新获取
-  const res = await getPublicKey();
-  const { publicKey, expiresAt } = res.data.data;
-  cachedKey = { publicKey, expiresAt };
-  return publicKey;
-}
-
+/** 每次登录都从后端获取最新公钥，防止后端重启后密钥不匹配 */
 interface LoginFormValues {
   username: string;
   password: string;
+  captchaUuid: string;
+  captchaCode: string;
   remember?: boolean;
 }
+
+/** 验证码行：左侧输入框 + 右侧图片，在 Form.Item 内正确绑定 value/onChange */
+const CaptchaInput: React.FC<{
+  form: FormInstance;
+  value?: string;
+  onChange?: (value: string) => void;
+}> = ({ form, value, onChange }) => (
+  <div className="login-captcha-row">
+    <Input
+      value={value}
+      onChange={(e) => onChange?.(e.target.value)}
+      placeholder="验证码"
+      maxLength={4}
+      className="login-captcha-input"
+    />
+    <SxwlCaptcha form={form} />
+  </div>
+);
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -54,12 +65,21 @@ export default function LoginPage() {
   const onFinish = async (values: LoginFormValues) => {
     setLoading(true);
     try {
-      const publicKey = await fetchPublicKey();
+      let publicKey: string;
+      try {
+        publicKey = await getCachedPublicKey();
+      } catch {
+        SxwlMessage.error('密钥服务异常，请稍后重试');
+        return;
+      }
+
       const passwordToSend = encryptPassword(values.password, publicKey);
 
       const res = await loginByPassword({
         username: values.username,
         password: passwordToSend,
+        captchaUuid: values.captchaUuid,
+        captchaCode: values.captchaCode,
       });
 
       const { accessToken, refreshToken } = res.data.data;
@@ -74,8 +94,13 @@ export default function LoginPage() {
       SxwlMessage.success('登录成功');
       navigate(from, { replace: true });
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      SxwlMessage.error(axiosErr?.response?.data?.message || '登录失败，请检查用户名和密码');
+      invalidatePublicKeyCache();
+      const e = err as { response?: { data?: { message?: string } } };
+      if (!e?.response) {
+        SxwlMessage.error('网络连接异常，请检查网络');
+      } else {
+        SxwlMessage.error(e.response.data?.message || '登录失败，请检查用户名和密码');
+      }
     } finally {
       setLoading(false);
     }
@@ -97,33 +122,43 @@ export default function LoginPage() {
             size="large"
             onFinish={onFinish}
             autoComplete="off"
-            layout="horizontal"
-            labelCol={{ style: { width: 56 } }}
+            layout="vertical"
             className="login-form"
             initialValues={{ remember: false }}
           >
             <SxwlForm.Item
               name="username"
-              label="账号"
               rules={[{ required: true, message: '请输入用户名' }]}
             >
               <SxwlInput
-                placeholder="请输入用户名"
-                autoFocus
-                maxLength={50}
-              />
+                    placeholder="请输入用户名"
+                    autoFocus
+                    maxLength={50}
+                    onBlur={(e) => {
+                      const v = e.target.value.trim();
+                      if (v !== e.target.value) form.setFieldsValue({ username: v });
+                    }}
+                  />
             </SxwlForm.Item>
 
             <SxwlForm.Item
               name="password"
-              label="密码"
               rules={[{ required: true, message: '请输入密码' }]}
             >
-              <SxwlInput
-                type="password"
-                placeholder="请输入密码"
-                maxLength={64}
-              />
+              <SxwlInput type="password" placeholder="请输入密码" maxLength={64} />
+            </SxwlForm.Item>
+
+            {/* 验证码：左侧输入框 + 右侧图片 */}
+            <SxwlForm.Item
+              name="captchaCode"
+              rules={[{ required: true, message: '请输入验证码' }]}
+            >
+              <CaptchaInput form={form} />
+            </SxwlForm.Item>
+
+            {/* captchaUuid 隐藏字段 */}
+            <SxwlForm.Item name="captchaUuid" hidden>
+              <SxwlInput />
             </SxwlForm.Item>
 
             <SxwlForm.Item name="remember" valuePropName="checked">
@@ -151,3 +186,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

@@ -3,6 +3,8 @@ import { http } from './http';
 export interface LoginRequest {
   username: string;
   password: string; // SM2 加密后的 Base64 密文
+  captchaUuid: string;
+  captchaCode: string;
 }
 
 export interface TokenPair {
@@ -22,9 +24,20 @@ export interface PublicKeyResult {
   expiresAt: number;
 }
 
+/** 验证码响应 */
+export interface CaptchaResult {
+  uuid: string;
+  base64Image: string;
+}
+
 /** 获取 SM2 公钥 */
 export function getPublicKey() {
   return http.get<PublicKeyResult>('/auth/public-key');
+}
+
+/** 获取图形验证码 */
+export function getCaptchaImage() {
+  return http.get<CaptchaResult>('/captcha/image');
 }
 
 /** 密码登录 */

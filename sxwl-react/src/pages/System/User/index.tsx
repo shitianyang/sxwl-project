@@ -9,8 +9,8 @@ import {
 } from '@/components';
 import type { UserItem } from '@/api/system/userApi';
 import { getUserPageByParams, createUser, updateUser, deleteUserById, batchDeleteByIds } from '@/api/system/userApi';
-import { getPublicKey } from '@/api/authApi';
 import { encryptPassword } from '@/utils/sm2Utils';
+import { getCachedPublicKey, invalidatePublicKeyCache } from '@/utils/publicKeyUtils';
 
 export default function UserPage() {
   const [data, setData] = useState<UserItem[]>([]);
@@ -119,14 +119,14 @@ export default function UserPage() {
         // 编辑：密码可选，传值则 SM2 加密
         const payload = { ...values, id: editingUser.id };
         if (values.password) {
-          const publicKey = (await getPublicKey()).data.data.publicKey;
+          const publicKey = await getCachedPublicKey();
           payload.password = encryptPassword(values.password, publicKey);
         }
         await updateUser(payload);
         SxwlMessage.success('更新成功');
       } else {
         // 新增：密码必填，SM2 加密后发送
-        const publicKey = (await getPublicKey()).data.data.publicKey;
+        const publicKey = await getCachedPublicKey();
         const encryptedPassword = encryptPassword(values.password, publicKey);
         await createUser({ ...values, password: encryptedPassword });
         SxwlMessage.success('创建成功');
@@ -135,6 +135,7 @@ export default function UserPage() {
       setModalOpen(false);
       loadData();
     } catch (err: unknown) {
+      invalidatePublicKeyCache();
       const axiosErr = err as { response?: { data?: { message?: string } } };
       SxwlMessage.error(axiosErr?.response?.data?.message || '操作失败');
     } finally {
@@ -214,23 +215,27 @@ export default function UserPage() {
       disabled: !!editingUser,
       rules: [{ min: 2, max: 50, message: '用户名长度为 2-50 个字符' }],
       maxLength: 50,
+      placeholder: '请输入用户名，2-50个字符',
     },
-    { name: 'realName', label: '真实姓名', type: 'input', required: true, maxLength: 50 },
+    { name: 'realName', label: '真实姓名', type: 'input', required: true, maxLength: 50, placeholder: '请输入真实姓名' },
     {
       name: 'phone', label: '手机号', type: 'input', required: true,
       rules: [{ pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号' }],
       maxLength: 11,
+      placeholder: '请输入手机号',
     },
     {
       name: 'email', label: '邮箱', type: 'input',
       rules: [{ type: 'email', message: '请输入正确的邮箱地址' }],
       maxLength: 100,
+      placeholder: '请输入邮箱，如：user@example.com',
     },
     {
       name: 'password', label: '密码', type: 'input',
       required: !editingUser,
       rules: editingUser ? [] : [{ min: 6, max: 32, message: '密码长度为 6-32 个字符' }],
       maxLength: 32,
+      placeholder: '请输入密码',
     },
     {
       name: 'status', label: '状态', type: 'select', initialValue: 1,
@@ -238,6 +243,7 @@ export default function UserPage() {
         { value: 1, label: '启用' },
         { value: 0, label: '禁用' },
       ],
+      placeholder: '请选择状态',
     },
   ], [editingUser]);
 
@@ -272,7 +278,9 @@ export default function UserPage() {
         fields={formFields}
         onOk={handleSave}
         onCancel={() => setModalOpen(false)}
-        width={520}
+        layout="horizontal"
+        columns={1}
+        width={600}
         confirmLoading={confirmLoading}
       />
     </>

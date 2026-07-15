@@ -8,7 +8,7 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios';
 import { useAuthStore } from '@/stores/authStore';
-import { getItem, STORAGE_KEYS } from '@/utils/storageUtils';
+import { getAuthItem, STORAGE_KEYS } from '@/utils/storageUtils';
 
 // ==================== 类型定义 ====================
 
@@ -32,19 +32,27 @@ export interface PageResult<T> {
 const instance = axios.create({
   baseURL: '/sxwl-api',
   timeout: 15000,
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Client-Type': 'admin',
+    'X-Device-Id': 'web',
+  },
 });
 
 const refreshInstance = axios.create({
   baseURL: '/sxwl-api',
   timeout: 15000,
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Client-Type': 'admin',
+    'X-Device-Id': 'web',
+  },
 });
 
 // ==================== 请求拦截器 ====================
 
 instance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  const token = getAuthItem(STORAGE_KEYS.ACCESS_TOKEN);
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -89,7 +97,7 @@ instance.interceptors.response.use(
 
     // 401 → 尝试刷新 Token（排除刷新接口自身）
     if (response.status === 401 && !config.url?.includes('/auth/refresh')) {
-      const refreshToken = getItem(STORAGE_KEYS.REFRESH_TOKEN);
+      const refreshToken = getAuthItem(STORAGE_KEYS.REFRESH_TOKEN);
       if (!refreshToken) {
         useAuthStore.getState().clearAuth();
         window.location.href = '/login';

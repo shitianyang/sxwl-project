@@ -8,13 +8,16 @@ import { lazy } from 'react';
 /** 组件映射表：key 为后端 sys_menu 表中的 component 字段值 */
 const RouteMap: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
   'system/user/index': lazy(() => import('@/pages/System/User')),
+  'log/operation': lazy(() => import('@/pages/Log/OperationLog')),
+  'log/login': lazy(() => import('@/pages/Log/LoginLog')),
+  'file/index': lazy(() => import('@/pages/File')),
   // 后续页面按需添加
   // 'system/role/index': lazy(() => import('@/pages/System/Role')),
   // 'system/menu/index': lazy(() => import('@/pages/System/Menu')),
   // 'system/organization/index': lazy(() => import('@/pages/System/Organization')),
   // 'system/position/index': lazy(() => import('@/pages/System/Position')),
   // 'system/dict/index': lazy(() => import('@/pages/System/Dict')),
-  // 'system/log/index': lazy(() => import('@/pages/System/Log')),
+  // 'system/log/index': lazy(() => import('@/pages/Log')),
   // 'system/file/index': lazy(() => import('@/pages/System/File')),
 };
 

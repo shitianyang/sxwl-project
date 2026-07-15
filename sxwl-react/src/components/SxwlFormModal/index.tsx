@@ -1,5 +1,6 @@
 import { type JSX } from 'react';
 import type { FormInstance } from 'antd/es/form';
+import { Row, Col } from 'antd';
 import {
   SxwlInput, SxwlSelect, SxwlModal, SxwlForm,
 } from '@/components';
@@ -27,6 +28,11 @@ export interface SxwlFormModalProps {
   confirmLoading?: boolean;
   /** 布局方式 */
   layout?: 'vertical' | 'horizontal';
+  /** 列数（1 或 2），默认 2
+   *  - 1 列：每个字段占一行
+   *  - 2 列：字段左右两列排列，更紧凑
+   */
+  columns?: 1 | 2;
 }
 
 // ==================== Component
@@ -41,7 +47,9 @@ function SxwlFormModal({
   width = 520,
   confirmLoading,
   layout = 'vertical',
+  columns = 2,
 }: SxwlFormModalProps): JSX.Element {
+  const colSpan = columns === 1 ? 24 : 12;
   const buildRules = (field: FormFieldConfig) => {
     const rules = [...(field.rules ?? [])];
     if (field.required) {
@@ -59,30 +67,38 @@ function SxwlFormModal({
       width={width}
       confirmLoading={confirmLoading}
     >
-      <SxwlForm form={form} layout={layout} className="sxwl-form-modal__form">
-        {fields.map((field) => (
-          <SxwlForm.Item
-            key={field.name}
-            name={field.name}
-            label={field.label}
-            rules={buildRules(field)}
-            initialValue={field.initialValue}
-          >
-            {field.type === 'select' ? (
-              <SxwlSelect
-                placeholder={field.placeholder ?? '请选择'}
-                options={field.options}
-                disabled={field.disabled}
-              />
-            ) : (
-              <SxwlInput
-                placeholder={field.placeholder ?? '请输入'}
-                maxLength={field.maxLength}
-                disabled={field.disabled}
-              />
-            )}
-          </SxwlForm.Item>
-        ))}
+      <SxwlForm
+        form={form}
+        layout={layout}
+        className="sxwl-form-modal__form"
+        labelCol={layout === 'horizontal' ? { style: { minWidth: 100 } } : undefined}
+      >
+        <Row gutter={16}>
+          {fields.map((field) => (
+            <Col key={field.name} span={colSpan}>
+              <SxwlForm.Item
+                name={field.name}
+                label={field.label}
+                rules={buildRules(field)}
+                initialValue={field.initialValue}
+              >
+                {field.type === 'select' ? (
+                  <SxwlSelect
+                    placeholder={field.placeholder ?? `请选择${field.label ?? field.name}`}
+                    options={field.options}
+                    disabled={field.disabled}
+                  />
+                ) : (
+                  <SxwlInput
+                    placeholder={field.placeholder ?? `请输入${field.label ?? field.name}`}
+                    maxLength={field.maxLength}
+                    disabled={field.disabled}
+                  />
+                )}
+              </SxwlForm.Item>
+            </Col>
+          ))}
+        </Row>
       </SxwlForm>
     </SxwlModal>
   );

@@ -1,20 +1,23 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/stores/authStore';
 import { SxwlIcon, SxwlCard, SxwlRow, SxwlCol, SxwlTitle, SxwlText } from '@/components';
+import { getDashboardStatistics, type DashboardStatistics } from '@/api/system/dashboardApi';
 import './index.scss';
 
-interface StatCard {
+interface StatCardConfig {
   title: string;
-  value: number;
+  field: keyof DashboardStatistics;
   icon: React.ReactNode;
   color: string;
   bgColor: string;
 }
 
-const STAT_CARDS: StatCard[] = [
-  { title: '用户总数', value: 0, icon: <SxwlIcon name="UserOutlined" />, color: '#3b82f6', bgColor: '#eff6ff' },
-  { title: '角色总数', value: 0, icon: <SxwlIcon name="TeamOutlined" />, color: '#10b981', bgColor: '#ecfdf5' },
-  { title: '菜单总数', value: 0, icon: <SxwlIcon name="ApartmentOutlined" />, color: '#f59e0b', bgColor: '#fffbeb' },
-  { title: '今日日志', value: 0, icon: <SxwlIcon name="FileTextOutlined" />, color: '#ec4899', bgColor: '#fdf2f8' },
+const STAT_CARDS: StatCardConfig[] = [
+  { title: '用户总数', field: 'userCount', icon: <SxwlIcon name="UserOutlined" />, color: '#3b82f6', bgColor: '#eff6ff' },
+  { title: '角色总数', field: 'roleCount', icon: <SxwlIcon name="TeamOutlined" />, color: '#10b981', bgColor: '#ecfdf5' },
+  { title: '菜单总数', field: 'menuCount', icon: <SxwlIcon name="ApartmentOutlined" />, color: '#f59e0b', bgColor: '#fffbeb' },
+  { title: '今日日志', field: 'todayLogCount', icon: <SxwlIcon name="FileTextOutlined" />, color: '#ec4899', bgColor: '#fdf2f8' },
 ];
 
 const QUICK_LINKS = [
@@ -24,12 +27,25 @@ const QUICK_LINKS = [
   { label: '组织架构', icon: <SxwlIcon name="SafetyOutlined" />, path: '/system/organization', color: '#f59e0b' },
   { label: '岗位管理', icon: <SxwlIcon name="ReadOutlined" />, path: '/system/position', color: '#ec4899' },
   { label: '字典管理', icon: <SxwlIcon name="SettingOutlined" />, path: '/system/dict', color: '#06b6d4' },
-  { label: '操作日志', icon: <SxwlIcon name="FileTextOutlined" />, path: '/system/log', color: '#64748b' },
-  { label: '文件管理', icon: <SxwlIcon name="CloudUploadOutlined" />, path: '/system/file', color: '#84cc16' },
+  { label: '操作日志', icon: <SxwlIcon name="FileTextOutlined" />, path: '/log/operation', color: '#64748b' },
+  { label: '登录日志', icon: <SxwlIcon name="LoginOutlined" />, path: '/log/login', color: '#84cc16' },
 ];
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const username = useAuthStore((s) => s.username);
+  const [statistics, setStatistics] = useState<DashboardStatistics | null>(null);
+
+  useEffect(() => {
+    getDashboardStatistics()
+      .then((res) => setStatistics(res.data.data))
+      .catch(() => setStatistics(null));
+  }, []);
+
+  const displayValue = (field: keyof DashboardStatistics): string | number => {
+    if (statistics === null) return '--';
+    return statistics[field] ?? '--';
+  };
 
   return (
     <div className="dashboard-page">
@@ -37,7 +53,7 @@ export default function DashboardPage() {
       <div className="dashboard-banner">
         <div className="banner-content">
           <div className="banner-text">
-            <SxwlTitle level={4} className="banner-title">欢迎回来</SxwlTitle>
+            <SxwlTitle level={4} className="banner-title">欢迎回来{username ? `，${username}` : ''}</SxwlTitle>
             <SxwlText className="banner-desc">数行未来·御权 — 统一权限管控平台</SxwlText>
           </div>
           <div className="banner-tip">
@@ -60,7 +76,7 @@ export default function DashboardPage() {
                   {card.icon}
                 </div>
                 <div className="stat-card-content">
-                  <div className="stat-card-value">{card.value}</div>
+                  <div className="stat-card-value">{displayValue(card.field)}</div>
                   <div className="stat-card-label">{card.title}</div>
                 </div>
               </div>

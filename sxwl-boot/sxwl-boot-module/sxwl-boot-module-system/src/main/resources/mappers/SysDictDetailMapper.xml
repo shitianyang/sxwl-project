@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.system.mapper.SysDictDetailMapper">
+
+    <!-- 通用查询列 -->
+    <sql id="selectDetailColumns">
+        id, dict_id, detail_value, detail_label, description,
+        sort, status, is_default
+    </sql>
+
+    <!-- 根据 ID 查询 -->
+    <select id="getDetailById" resultType="com.sxwl.system.model.dto.SysDictDetailDTO">
+        SELECT <include refid="selectDetailColumns"/>
+        FROM sys_dict_detail_info
+        WHERE id = #{id}
+        AND delete_flag = 0
+    </select>
+
+    <!-- 根据字典 ID 查询所有明细 -->
+    <select id="getDetailListByDictId" resultType="com.sxwl.system.model.dto.SysDictDetailDTO">
+        SELECT <include refid="selectDetailColumns"/>
+        FROM sys_dict_detail_info
+        WHERE dict_id = #{dictId}
+        AND delete_flag = 0
+        ORDER BY sort ASC, id ASC
+    </select>
+
+    <!-- 校验明细值是否唯一 -->
+    <select id="checkDetailValueUnique" resultType="int">
+        SELECT COUNT(*)
+        FROM sys_dict_detail_info
+        WHERE detail_value = #{detailValue}
+        AND delete_flag = 0
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insertDetail" parameterType="com.sxwl.system.model.entity.SysDictDetail">
+        INSERT INTO sys_dict_detail_info (
+            id, dict_id, detail_value, detail_label, description,
+            sort, status, is_default,
+            create_by, create_org, create_time, update_by, update_time
+        ) VALUES (
+            #{id}, #{dictId}, #{detailValue}, #{detailLabel}, #{description},
+            #{sort}, #{status}, #{isDefault},
+            #{createBy}, #{createOrg}, #{createTime}, #{createBy}, #{createTime}
+        )
+    </insert>
+
+    <!-- 修改 -->
+    <update id="updateDetail" parameterType="com.sxwl.system.model.entity.SysDictDetail">
+        UPDATE sys_dict_detail_info
+        SET detail_value  = #{detailValue},
+            detail_label  = #{detailLabel},
+            description   = #{description},
+            sort          = #{sort},
+            status        = #{status},
+            is_default    = #{isDefault},
+            update_by     = #{updateBy},
+            update_time   = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteDetailById">
+        UPDATE sys_dict_detail_info
+        SET delete_flag = 1
+        WHERE id = #{id}
+    </update>
+
+</mapper>

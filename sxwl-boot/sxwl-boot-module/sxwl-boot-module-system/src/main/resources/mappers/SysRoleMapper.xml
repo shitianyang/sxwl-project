@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.system.mapper.SysRoleMapper">
+
+    <!-- 通用查询列 -->
+    <sql id="selectRoleColumns">
+        id, role_code, role_name, data_scope, sort, status, description,
+        TO_CHAR(create_time, 'YYYY-MM-DD HH24:MI:SS') AS createTime
+    </sql>
+
+    <!-- 根据 ID 查询 -->
+    <select id="getRoleById" resultType="com.sxwl.system.model.dto.SysRoleDTO">
+        SELECT <include refid="selectRoleColumns"/>
+        FROM sys_role_info
+        WHERE id = #{id}
+        AND delete_flag = 0
+    </select>
+
+    <!-- 分页查询 -->
+    <select id="getRolePageByParams" resultType="com.sxwl.system.model.dto.SysRoleDTO">
+        SELECT <include refid="selectRoleColumns"/>
+        FROM sys_role_info
+        WHERE delete_flag = 0
+        <if test="roleCode != null and roleCode != ''">
+            AND role_code LIKE CONCAT('%', #{roleCode}, '%')
+        </if>
+        <if test="roleName != null and roleName != ''">
+            AND role_name LIKE CONCAT('%', #{roleName}, '%')
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY sort ASC, create_time DESC
+    </select>
+
+    <!-- 校验角色编码是否唯一 -->
+    <select id="checkRoleCodeUnique" resultType="int">
+        SELECT COUNT(*)
+        FROM sys_role_info
+        WHERE role_code = #{roleCode}
+        AND delete_flag = 0
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insertRole" parameterType="com.sxwl.system.model.entity.SysRole">
+        INSERT INTO sys_role_info (
+            id, role_code, role_name, data_scope, sort, status, description,
+            create_by, create_org, create_time, update_by, update_time
+        ) VALUES (
+            #{id}, #{roleCode}, #{roleName}, #{dataScope}, #{sort}, #{status}, #{description},
+            #{createBy}, #{createOrg}, #{createTime}, #{createBy}, #{createTime}
+        )
+    </insert>
+
+    <!-- 修改 -->
+    <update id="updateRole" parameterType="com.sxwl.system.model.entity.SysRole">
+        UPDATE sys_role_info
+        SET role_code   = #{roleCode},
+            role_name   = #{roleName},
+            data_scope  = #{dataScope},
+            sort        = #{sort},
+            status      = #{status},
+            description = #{description},
+            update_by   = #{updateBy},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteRoleById">
+        UPDATE sys_role_info
+        SET delete_flag = 1
+        WHERE id = #{id}
+    </update>
+
+    <!-- ==================== 角色-菜单关联 ==================== -->
+
+    <!-- 查询角色已分配的菜单 ID 列表 -->
+    <select id="getMenuIdListByRoleId" resultType="long">
+        SELECT menu_id
+        FROM sys_role_menu_info
+        WHERE role_id = #{roleId}
+        AND delete_flag = 0
+    </select>
+
+    <!-- 删除角色所有菜单关联 -->
+    <update id="deleteRoleMenusByRoleId">
+        UPDATE sys_role_menu_info
+        SET delete_flag = 1
+        WHERE role_id = #{roleId}
+    </update>
+
+    <!-- 批量插入角色-菜单关联 -->
+    <insert id="batchInsertRoleMenus">
+        INSERT INTO sys_role_menu_info (id, role_id, menu_id, create_by, create_org, create_time)
+        VALUES
+        <foreach collection="menuIds" item="menuId" index="idx" separator=",">
+            (#{ids[idx]}, #{roleId}, #{menuId}, #{createBy}, #{createOrg}, #{createTime})
+        </foreach>
+    </insert>
+
+    <!-- ==================== 角色-数据权限关联 ==================== -->
+
+    <!-- 查询角色已授权的组织 ID 列表 -->
+    <select id="getDataScopeOrgIdListByRoleId" resultType="long">
+        SELECT org_id
+        FROM sys_role_data_scope_info
+        WHERE role_id = #{roleId}
+        AND delete_flag = 0
+    </select>
+
+    <!-- 删除角色所有数据权限组织关联 -->
+    <update id="deleteRoleDataScopeByRoleId">
+        UPDATE sys_role_data_scope_info
+        SET delete_flag = 1
+        WHERE role_id = #{roleId}
+    </update>
+
+    <!-- 批量插入角色-数据权限组织关联 -->
+    <insert id="batchInsertRoleDataScope">
+        INSERT INTO sys_role_data_scope_info (id, role_id, org_id, create_by, create_org, create_time)
+        VALUES
+        <foreach collection="orgIds" item="orgId" index="idx" separator=",">
+            (#{ids[idx]}, #{roleId}, #{orgId}, #{createBy}, #{createOrg}, #{createTime})
+        </foreach>
+    </insert>
+
+</mapper>

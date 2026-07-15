@@ -1,7 +1,7 @@
 import { type JSX } from 'react';
 import {
   SxwlButton, SxwlIcon,
-  SxwlCard, SxwlTable, SxwlSpace, SxwlSearchForm, SxwlTree,
+  SxwlCard, SxwlTable, SxwlSpace, SxwlSearchForm,
 } from '@/components';
 import './index.scss';
 
@@ -15,7 +15,7 @@ export interface SearchFieldConfig {
   /** 标签文本 */
   label?: string;
   /** 控件类型 */
-  type: 'input' | 'select';
+  type: 'input' | 'select' | 'dateRange';
   /** 占位符 */
   placeholder?: string;
   /** 是否允许清除 */
@@ -24,6 +24,10 @@ export interface SearchFieldConfig {
   options?: { value: string | number; label: string }[];
   /** 控件宽度（仅 select 生效） */
   width?: number;
+  /** dateRange 字段的起始时间输出参数名，默认 {name}Start */
+  dateRangeStartKey?: string;
+  /** dateRange 字段的结束时间输出参数名，默认 {name}End */
+  dateRangeEndKey?: string;
 }
 
 export interface ToolbarButtonConfig {
@@ -50,8 +54,6 @@ export interface SxwlPageProps {
   columns?: any[];
   /** 表格数据源 */
   dataSource?: any[];
-  /** 树形数据（mode='tree' 时使用） */
-  treeData?: any[];
   /** 加载中 */
   loading?: boolean;
   /** 总条数 */
@@ -87,7 +89,6 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
     rowKey = 'id',
     columns,
     dataSource,
-    treeData = [],
     loading,
     total,
     page,
@@ -155,7 +156,18 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
 
   const renderContent = () => {
     if (mode === 'tree') {
-      return <SxwlTree treeData={treeData} defaultExpandAll />;
+      return (
+        <SxwlTable
+          rowKey={rowKey}
+          columns={columns}
+          dataSource={dataSource}
+          loading={loading}
+          rowSelection={rowSelection}
+          pagination={false}
+          expandable={{ defaultExpandAllRows: true }}
+          scroll={scroll}
+        />
+      );
     }
 
     // table | list

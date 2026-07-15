@@ -45,30 +45,30 @@ export interface UserForm {
 
 /** 查询用户列表 */
 export function getUserPageByParams(params: UserQuery) {
-  return http.get<PageInfo<UserItem>>('/system/user/getUserPageByParams', params as unknown as Record<string, unknown>);
+  return http.get<PageInfo<UserItem>>('/system/user/page', params as unknown as Record<string, unknown>);
 }
 
 /** 查询用户详情 */
 export function getUserById(id: number) {
-  return http.get<UserItem>('/system/user/getUserById', { id });
+  return http.get<UserItem>('/system/user/' + id);
 }
 
 /** 新增用户 */
 export function createUser(data: UserForm) {
-  return http.post<null>('/system/user/createUser', data);
+  return http.post<null>('/system/user', data);
 }
 
 /** 更新用户 */
 export function updateUser(data: UserForm) {
-  return http.put<null>('/system/user/updateUser', data);
+  return http.put<null>('/system/user', data);
 }
 
 /** 删除用户 */
 export function deleteUserById(id: number) {
-  return http.deleteReq<null>('/system/user/deleteUserById', { id });
+  return http.deleteReq<null>('/system/user/' + id);
 }
 
 /** 批量删除用户 */
 export function batchDeleteByIds(ids: number[]) {
-  return http.deleteReq<null>('/system/user/batchDeleteByIds', undefined, ids);
+  return http.deleteReq<null>('/system/user/batch', undefined, ids);
 }

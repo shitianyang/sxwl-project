@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.rustfs.mapper.SysFileInfoMapper">
+
+    <!-- 通用查询列（映射到 SysFileDTO） -->
+    <sql id="selectFileColumns">
+        id, file_name, file_url, file_size, file_type, file_suffix, md5, business_type,
+        TO_CHAR(create_time, 'YYYY-MM-DD HH24:MI:SS') AS createTime
+    </sql>
+
+    <!-- 新增 -->
+    <insert id="insertFile" parameterType="com.sxwl.rustfs.model.entity.SysFileInfo">
+        INSERT INTO sys_file_info (
+            id, file_name, object_key, file_url, file_size, file_type, file_suffix,
+            bucket_name, md5, business_type, status, description,
+            create_by, create_org, create_time
+        ) VALUES (
+            #{id}, #{fileName}, #{objectKey}, #{fileUrl}, #{fileSize}, #{fileType}, #{fileSuffix},
+            #{bucketName}, #{md5}, #{businessType}, #{status}, #{description},
+            #{createBy}, #{createOrg}, #{createTime}
+        )
+    </insert>
+
+    <!-- 分页查询 -->
+    <select id="selectFilePageByParams" resultType="com.sxwl.rustfs.model.dto.SysFileDTO">
+        SELECT <include refid="selectFileColumns"/>
+        FROM sys_file_info
+        WHERE delete_flag = 0
+        <if test="fileName != null and fileName != ''">
+            AND file_name LIKE CONCAT('%', #{fileName}, '%')
+        </if>
+        <if test="businessType != null and businessType != ''">
+            AND business_type = #{businessType}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            AND create_time &gt;= TO_TIMESTAMP(#{startTime}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND create_time &lt;= TO_TIMESTAMP(#{endTime}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据 ID 查询 -->
+    <select id="getFileById" resultType="com.sxwl.rustfs.model.entity.SysFileInfo">
+        SELECT * FROM sys_file_info WHERE id = #{id} AND delete_flag = 0
+    </select>
+
+    <select id="getVisibleFileById" resultType="com.sxwl.rustfs.model.entity.SysFileInfo">
+        SELECT * FROM sys_file_info WHERE id = #{id} AND delete_flag = 0
+    </select>
+
+    <!-- 根据 MD5 查询已完成的文件 -->
+    <select id="getFileByMd5" resultType="com.sxwl.rustfs.model.entity.SysFileInfo">
+        SELECT * FROM sys_file_info WHERE md5 = #{md5} AND status = 1 AND delete_flag = 0 LIMIT 1
+    </select>
+
+    <!-- 软删除 -->
+    <update id="deleteFileById">
+        UPDATE sys_file_info
+        SET delete_flag = 1, update_time = NOW()
+        WHERE id = #{id} AND delete_flag = 0
+    </update>
+
+</mapper>

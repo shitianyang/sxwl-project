@@ -17,6 +17,10 @@ function prefixed(key: string) {
   return PREFIX + key;
 }
 
+function authPrefixed(key: string) {
+  return `${PREFIX}auth_${key}`;
+}
+
 /** 存储字符串值 */
 export function setItem(key: string, value: string) {
   localStorage.setItem(prefixed(key), value);
@@ -29,6 +33,19 @@ export function getItem(key: string): string | null {
 
 /** 移除指定键 */
 export function removeItem(key: string) {
+  localStorage.removeItem(prefixed(key));
+}
+
+export function setAuthItem(key: string, value: string) {
+  sessionStorage.setItem(authPrefixed(key), value);
+}
+
+export function getAuthItem(key: string): string | null {
+  return sessionStorage.getItem(authPrefixed(key));
+}
+
+export function removeAuthItem(key: string) {
+  sessionStorage.removeItem(authPrefixed(key));
   localStorage.removeItem(prefixed(key));
 }
 

@@ -10,7 +10,7 @@ export interface FormFieldConfig {
   /** 标签文本 */
   label?: string;
   /** 控件类型 */
-  type: 'input' | 'select' | 'textarea';
+  type: 'input' | 'select' | 'textarea' | 'dateRange';
   /** 占位符 */
   placeholder?: string;
   /** 是否必填（自动添加必填校验） */

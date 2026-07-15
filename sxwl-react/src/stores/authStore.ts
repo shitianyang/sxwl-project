@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getItem, setItem, removeItem, STORAGE_KEYS } from '@/utils/storageUtils';
+import { getAuthItem, setAuthItem, removeAuthItem, STORAGE_KEYS } from '@/utils/storageUtils';
 import { isTokenActive } from '@/utils/tokenUtils';
 
 interface AuthState {
@@ -18,27 +18,27 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
-  accessToken: getItem(STORAGE_KEYS.ACCESS_TOKEN),
-  refreshToken: getItem(STORAGE_KEYS.REFRESH_TOKEN),
-  username: getItem(STORAGE_KEYS.USERNAME),
+  accessToken: getAuthItem(STORAGE_KEYS.ACCESS_TOKEN),
+  refreshToken: getAuthItem(STORAGE_KEYS.REFRESH_TOKEN),
+  username: getAuthItem(STORAGE_KEYS.USERNAME),
 
   setTokens: (accessToken, refreshToken, username) => {
-    setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-    setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
-    setItem(STORAGE_KEYS.USERNAME, username);
+    setAuthItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    setAuthItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+    setAuthItem(STORAGE_KEYS.USERNAME, username);
     set({ accessToken, refreshToken, username });
   },
 
   setTokenPair: (accessToken, refreshToken) => {
-    setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-    setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+    setAuthItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    setAuthItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
     set({ accessToken, refreshToken });
   },
 
   clearAuth: () => {
-    removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-    removeItem(STORAGE_KEYS.USERNAME);
+    removeAuthItem(STORAGE_KEYS.ACCESS_TOKEN);
+    removeAuthItem(STORAGE_KEYS.REFRESH_TOKEN);
+    removeAuthItem(STORAGE_KEYS.USERNAME);
     set({ accessToken: null, refreshToken: null, username: null });
   },
 

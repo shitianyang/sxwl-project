@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.rustfs.mapper.SysFileChunkInfoMapper">
+
+    <!-- 新增单个分片 -->
+    <insert id="insertChunk" parameterType="com.sxwl.rustfs.model.entity.SysFileChunkInfo">
+        INSERT INTO sys_file_chunk_info (
+            id, upload_id, chunk_index, chunk_md5, object_key, chunk_size, status,
+            create_time
+        ) VALUES (
+            #{id}, #{uploadId}, #{chunkIndex}, #{chunkMd5}, #{objectKey}, #{chunkSize}, #{status},
+            #{createTime}
+        )
+    </insert>
+
+    <!-- 批量新增分片 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO sys_file_chunk_info (
+            id, upload_id, chunk_index, chunk_md5, object_key, chunk_size, status,
+            create_time
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id}, #{item.uploadId}, #{item.chunkIndex}, #{item.chunkMd5},
+             #{item.objectKey}, #{item.chunkSize}, #{item.status}, #{item.createTime})
+        </foreach>
+    </insert>
+
+    <!-- 更新分片状态为已上传 -->
+    <update id="updateChunkStatus">
+        UPDATE sys_file_chunk_info
+        SET status = 1, object_key = #{objectKey}
+        WHERE upload_id = #{uploadId} AND chunk_index = #{chunkIndex}
+    </update>
+
+    <!-- 查询已上传的分片序号 -->
+    <select id="getUploadedChunks" resultType="java.lang.Integer">
+        SELECT chunk_index FROM sys_file_chunk_info
+        WHERE upload_id = #{uploadId} AND status = 1 AND delete_flag = 0
+        ORDER BY chunk_index ASC
+    </select>
+
+    <!-- 查询会话的所有分片 -->
+    <select id="getChunksByUploadId" resultType="com.sxwl.rustfs.model.entity.SysFileChunkInfo">
+        SELECT * FROM sys_file_chunk_info
+        WHERE upload_id = #{uploadId} AND delete_flag = 0
+        ORDER BY chunk_index ASC
+    </select>
+
+    <!-- 统计已上传的分片数 -->
+    <select id="countUploadedChunks" resultType="int">
+        SELECT COUNT(*) FROM sys_file_chunk_info
+        WHERE upload_id = #{uploadId} AND status = 1 AND delete_flag = 0
+    </select>
+
+</mapper>
