@@ -11,7 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 密码登录策略
@@ -105,9 +108,84 @@ public class SxwlPasswordAuthStrategy implements SxwlAuthenticationStrategy {
         loginUser.setNickname(nickname != null ? nickname : username);
         loginUser.setStatus(status);
         loginUser.setCreateOrg(createOrg);
-        // dataScopeOrgIds = null 表示全部数据（不限制），后续由角色体系计算后填充
+        fillAuthorization(loginUser);
 
         log.info("密码认证成功: userId={}, username={}", userId, username);
         return loginUser;
+    }
+
+    private void fillAuthorization(SxwlLoginUser loginUser) {
+        List<Map<String, Object>> roleRows = sysUserMapper.selectRolesByUserId(loginUser.getUserId());
+
+        Set<String> roles = new HashSet<>();
+        Set<Long> scopedOrgIds = new HashSet<>();
+        boolean allData = false;
+        Integer strongestScope = null;
+
+        for (Map<String, Object> row : roleRows) {
+            String roleCode = (String) row.get("role_code");
+            if (roleCode != null && !roleCode.isBlank()) {
+                roles.add(roleCode);
+            }
+
+            Long roleId = toLong(row.get("id"));
+            Integer dataScope = toInteger(row.get("data_scope"));
+            if (dataScope == null) {
+                continue;
+            }
+            strongestScope = strongestScope == null ? dataScope : Math.min(strongestScope, dataScope);
+
+            if (dataScope == 1) {
+                allData = true;
+                break;
+            }
+            if (dataScope == 2 || dataScope == 4) {
+                addIfNotNull(scopedOrgIds, loginUser.getCreateOrg());
+            } else if (dataScope == 3) {
+                addIfNotNull(scopedOrgIds, loginUser.getCreateOrg());
+                if (loginUser.getCreateOrg() != null) {
+                    scopedOrgIds.addAll(sysUserMapper.selectSelfAndChildOrgIds(loginUser.getCreateOrg()));
+                }
+            } else if (dataScope == 5 && roleId != null) {
+                scopedOrgIds.addAll(sysUserMapper.selectCustomDataScopeOrgIds(roleId));
+            }
+        }
+
+        Set<String> perms = new HashSet<>(sysUserMapper.selectPermissionsByUserId(loginUser.getUserId()));
+        if (roles.contains("admin") || isBootstrapAdmin(loginUser)) {
+            roles.add("admin");
+            perms.add("*:*:*");
+            allData = true;
+        }
+
+        loginUser.setRoles(roles);
+        loginUser.setPerms(perms);
+        loginUser.setDataScope(allData ? 1 : (strongestScope != null ? strongestScope : 0));
+        loginUser.setDataScopeOrgIds(allData ? null : scopedOrgIds);
+    }
+
+    private void addIfNotNull(Set<Long> values, Long value) {
+        if (value != null) {
+            values.add(value);
+        }
+    }
+
+    private boolean isBootstrapAdmin(SxwlLoginUser loginUser) {
+        return Long.valueOf(1L).equals(loginUser.getUserId())
+                && "admin".equals(loginUser.getUsername());
+    }
+
+    private Long toLong(Object value) {
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        return null;
+    }
+
+    private Integer toInteger(Object value) {
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        return null;
     }
 }

@@ -20,6 +20,7 @@ import com.sxwl.security.model.SxwlLoginUser;
 import com.sxwl.security.model.SxwlRefreshTokenRequest;
 import com.sxwl.security.model.SxwlTokenPair;
 import com.sxwl.security.spi.SxwlAuthenticationStrategy;
+import com.sxwl.security.utils.SxwlClientTypeUtils;
 import com.sxwl.security.utils.SxwlSecurityUtils;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -95,18 +96,14 @@ public class AuthController {
     /**
      * 密码登录
      *
-     * @param request     登录请求体（username + password）
-     * @param captchaUuid 验证码 UUID（连续失败超过阈值时必填）
-     * @param captchaCode 验证码（连续失败超过阈值时必填）
+     * @param request     登录请求体（username + password + captchaUuid + captchaCode）
      * @param httpRequest HTTP 请求
      * @return Token 对
      */
     @PostMapping("/login/password")
     public SxwlResult<SxwlTokenPair> loginByPassword(@Valid @RequestBody SxwlLoginRequest request,
-                                                      @RequestParam(required = false) String captchaUuid,
-                                                      @RequestParam(required = false) String captchaCode,
                                                       HttpServletRequest httpRequest) {
-        return doLogin(request, captchaUuid, captchaCode, httpRequest, "password", passwordAuthStrategy);
+        return doLogin(request, httpRequest, "password", passwordAuthStrategy);
     }
 
     /**
@@ -114,31 +111,23 @@ public class AuthController {
      */
     @PostMapping("/login/sms")
     public SxwlResult<SxwlTokenPair> loginBySms(@Valid @RequestBody SxwlLoginRequest request,
-                                                 @RequestParam(required = false) String captchaUuid,
-                                                 @RequestParam(required = false) String captchaCode,
                                                  HttpServletRequest httpRequest) {
-        return doLogin(request, captchaUuid, captchaCode, httpRequest, "sms", smsAuthStrategy);
+        return doLogin(request, httpRequest, "sms", smsAuthStrategy);
     }
 
     /**
      * 统一登录流程：验证码校验 → 认证 → 签发 Token → 发布事件
      */
     private SxwlResult<SxwlTokenPair> doLogin(SxwlLoginRequest request,
-                                               String captchaUuid, String captchaCode,
                                                HttpServletRequest httpRequest,
                                                String loginType,
                                                SxwlAuthenticationStrategy strategy) {
         String username = request.getUsername();
         String ip = getClientIp(httpRequest);
-
-        // 1. 检查失败次数，超过阈值则校验图形验证码
         String failKey = SxwlRedisKeyUtils.loginFailAccountIpKey(username != null ? username : "unknown", ip);
-        Optional<String> failCountStr = redisHelper.get(failKey);
-        int failCount = failCountStr.map(Integer::parseInt).orElse(0);
-        if (failCount >= properties.getCaptchaTriggerCount()) {
-            log.info("登录失败次数已达阈值，校验验证码: username={}, count={}", username, failCount);
-            captchaValidator.validateImageCaptcha(captchaUuid, captchaCode);
-        }
+
+        // 1. 校验图形验证码（每次登录必填）
+        captchaValidator.validateImageCaptcha(request.getCaptchaUuid(), request.getCaptchaCode());
 
         // 2. 认证
         SxwlLoginUser loginUser;
@@ -166,7 +155,8 @@ public class AuthController {
         if (deviceId == null || deviceId.isBlank()) {
             deviceId = "unknown";
         }
-        SxwlTokenPair tokenPair = handler.createTokenPair(loginUser, deviceId, "admin");
+        String clientType = SxwlClientTypeUtils.resolve(httpRequest);
+        SxwlTokenPair tokenPair = handler.createTokenPair(loginUser, deviceId, clientType);
 
         // 5. 发布登录成功事件
         SxwlLoginSuccessEvent successEvent = new SxwlLoginSuccessEvent();
@@ -187,7 +177,8 @@ public class AuthController {
      * <p>用 refreshToken 换取新的 access + refresh Token 对，旧 Token 同时失效。</p>
      */
     @PostMapping("/refresh")
-    public SxwlResult<SxwlTokenPair> refresh(@Valid @RequestBody SxwlRefreshTokenRequest request) {
+    public SxwlResult<SxwlTokenPair> refresh(@Valid @RequestBody SxwlRefreshTokenRequest request,
+                                             HttpServletRequest httpRequest) {
         String secret = properties.getJwtSecret();
 
         // 1. 解析 refreshToken
@@ -196,6 +187,10 @@ public class AuthController {
         String tokenType = SxwlJwtUtils.resolveTokenType(claims);
         String deviceId = SxwlJwtUtils.resolveDeviceId(claims);
         String jti = SxwlJwtUtils.resolveJwtId(claims);
+        String clientType = SxwlClientTypeUtils.normalize(SxwlJwtUtils.resolveClientType(claims));
+        if (SxwlJwtUtils.resolveClientType(claims) == null) {
+            clientType = SxwlClientTypeUtils.resolve(httpRequest);
+        }
 
         // 2. 校验 Token 类型
         if (!SxwlJwtUtils.TOKEN_TYPE_REFRESH.equals(tokenType)) {
@@ -206,7 +201,7 @@ public class AuthController {
         }
 
         // 3. 校验白名单
-        String whiteKey = SxwlRedisKeyUtils.tokenJwtKey("admin", userId, deviceId, jti);
+        String whiteKey = SxwlRedisKeyUtils.tokenJwtKey(clientType, userId, deviceId, jti);
         if (redisHelper.get(whiteKey).isEmpty()) {
             throw new SxwlBusinessException(401, "Token 已失效或已被吊销");
         }
@@ -215,7 +210,7 @@ public class AuthController {
         redisHelper.delete(whiteKey);
 
         // 5. 签发新 Token 对（不覆盖用户缓存）
-        SxwlTokenPair tokenPair = handler.refreshTokenPair(userId, deviceId, "admin");
+        SxwlTokenPair tokenPair = handler.refreshTokenPair(userId, deviceId, clientType);
 
         log.info("Token 刷新成功: userId={}, deviceId={}", userId, deviceId);
         return SxwlResult.success(tokenPair);
@@ -228,7 +223,7 @@ public class AuthController {
      * 已放行至 permitAll，未登录时静默成功（Token 已失效的场景）。</p>
      */
     @PostMapping("/logout")
-    public SxwlResult<Void> logout() {
+    public SxwlResult<Void> logout(HttpServletRequest httpRequest) {
         Optional<SxwlLoginUser> loginUserOpt = SxwlSecurityUtils.getCurrentUser();
         if (loginUserOpt.isEmpty()) {
             // 未登录或 Token 已失效，登出必然是成功的
@@ -236,7 +231,7 @@ public class AuthController {
         }
 
         SxwlLoginUser loginUser = loginUserOpt.get();
-        handler.logout(loginUser.getUserId(), "admin");
+        handler.logout(loginUser.getUserId(), SxwlClientTypeUtils.resolve(httpRequest));
 
         SxwlLogoutEvent logoutEvent = new SxwlLogoutEvent();
         logoutEvent.setUserId(loginUser.getUserId());

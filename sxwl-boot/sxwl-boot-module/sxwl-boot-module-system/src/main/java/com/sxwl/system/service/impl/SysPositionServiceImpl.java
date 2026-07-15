@@ -1,6 +1,5 @@
 package com.sxwl.system.service.impl;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.system.mapper.SysPositionMapper;
@@ -56,7 +55,6 @@ public class SysPositionServiceImpl implements SysPositionService {
      */
     @Override
     public PageInfo<SysPositionDTO> getPositionPageByParams(SysPositionPageParams params) {
-        PageHelper.startPage(params.getCurrent(), params.getPageSize());
         List<SysPositionDTO> rows = sysPositionMapper.getPositionPageByParams(params);
         return new PageInfo<>(rows);
     }

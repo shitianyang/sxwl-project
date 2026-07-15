@@ -133,16 +133,16 @@ public class SxwlSM2KeyManager {
             // 1. 尝试当前密钥
             try {
                 return SM2Utils.decryptFromBase64(cipherTextBase64, currentKey.privateKeyHex);
-            } catch (Exception ignored) {
-                // 继续尝试历史密钥
+            } catch (Exception e) {
+                log.warn("SM2 解密失败（当前密钥），keyId={}: {}", currentKey.keyId, e.getMessage());
             }
 
             // 2. 尝试历史密钥（最近在前）
             for (SM2ActiveKey prev : previousKeys) {
                 try {
                     return SM2Utils.decryptFromBase64(cipherTextBase64, prev.privateKeyHex);
-                } catch (Exception ignored) {
-                    // 继续尝试下一个
+                } catch (Exception e) {
+                    log.warn("SM2 解密失败（历史密钥），keyId={}: {}", prev.keyId, e.getMessage());
                 }
             }
 

@@ -6,6 +6,7 @@ import com.sxwl.system.model.dto.SysUserDTO;
 import com.sxwl.system.model.params.SysUserPageParams;
 import com.sxwl.system.service.SysUserService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,9 +34,10 @@ public class SysUserController {
      * @param id 用户 ID
      * @return 用户信息
      */
-    @GetMapping("/getUserById")
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:user:query')")
     @SxwlLog(title = "用户管理", description = "查询用户详情[id=#{#id}]")
-    public SysUserDTO getUserById(@RequestParam("id") Long id) {
+    public SysUserDTO getUserById(@PathVariable("id") Long id) {
         return sysUserService.getUserById(id);
     }
 
@@ -45,7 +47,8 @@ public class SysUserController {
      * @param params 分页查询参数（用户名模糊匹配、状态筛选、页码、每页条数）
      * @return 分页用户列表
      */
-    @GetMapping("/getUserPageByParams")
+    @GetMapping("/page")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:user:list')")
     @SxwlLog(title = "用户管理", description = "查询用户列表")
     public PageInfo<SysUserDTO> getUserPageByParams(@Valid SysUserPageParams params) {
         return sysUserService.getUserPageByParams(params);
@@ -57,7 +60,8 @@ public class SysUserController {
      * @param dto 用户信息（用户名、密码、姓名、手机号、邮箱、状态）
      * @return 无数据成功响应
      */
-    @PostMapping("/createUser")
+    @PostMapping
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:user:add')")
     @SxwlLog(title = "用户管理", description = "新增用户[#{#dto.username}]")
     public void createUser(@Valid @RequestBody SysUserDTO dto) {
         sysUserService.createUser(dto);
@@ -69,7 +73,8 @@ public class SysUserController {
      * @param dto 用户信息（含 id，密码可选）
      * @return 无数据成功响应
      */
-    @PutMapping("/updateUser")
+    @PutMapping
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:user:edit')")
     @SxwlLog(title = "用户管理", description = "修改用户[#{#dto.username}]")
     public void updateUser(@Valid @RequestBody SysUserDTO dto) {
         sysUserService.updateUser(dto);
@@ -81,9 +86,10 @@ public class SysUserController {
      * @param id 用户 ID
      * @return 无数据成功响应
      */
-    @DeleteMapping("/deleteUserById")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:user:delete')")
     @SxwlLog(title = "用户管理", description = "删除用户[id=#{#id}]")
-    public void deleteUserById(@RequestParam("id") Long id) {
+    public void deleteUserById(@PathVariable("id") Long id) {
         sysUserService.deleteUserById(id);
     }
 
@@ -93,7 +99,8 @@ public class SysUserController {
      * @param ids 用户 ID 列表
      * @return 无数据成功响应
      */
-    @DeleteMapping("/batchDeleteByIds")
+    @DeleteMapping("/batch")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:user:delete')")
     @SxwlLog(title = "用户管理", description = "批量删除用户[ids=#{#ids}]")
     public void batchDeleteByIds(@RequestBody List<Long> ids) {
         sysUserService.batchDeleteByIds(ids);

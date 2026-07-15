@@ -1,6 +1,5 @@
 package com.sxwl.rustfs.service.impl;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.utils.SxwlSnowFlakeUtils;
 import com.sxwl.rustfs.client.SxwlRustfsTemplate;
@@ -331,7 +330,6 @@ public class SysFileServiceImpl implements SysFileService {
 
     @Override
     public PageInfo<SysFileDTO> getFilePageByParams(SysFilePageParams params) {
-        PageHelper.startPage(params.getCurrent(), params.getPageSize());
         List<SysFileDTO> rows = sysFileInfoMapper.selectFilePageByParams(params);
         return new PageInfo<>(rows);
     }

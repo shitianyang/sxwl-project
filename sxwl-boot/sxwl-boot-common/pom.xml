@@ -39,8 +39,8 @@
         </dependency>
         <!-- validation(校验) -->
         <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <!-- spring-security-core（仅 SecurityContextHolder API，供 SxwlPrincipalUtils 使用） -->
         <dependency>

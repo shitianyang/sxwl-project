@@ -1,6 +1,5 @@
 package com.sxwl.system.service.impl;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.system.mapper.SysRoleMapper;
@@ -63,7 +62,6 @@ public class SysRoleServiceImpl implements SysRoleService {
      */
     @Override
     public PageInfo<SysRoleDTO> getRolePageByParams(SysRolePageParams params) {
-        PageHelper.startPage(params.getCurrent(), params.getPageSize());
         List<SysRoleDTO> rows = sysRoleMapper.getRolePageByParams(params);
         return new PageInfo<>(rows);
     }

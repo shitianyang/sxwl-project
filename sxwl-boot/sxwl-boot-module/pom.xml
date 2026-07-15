@@ -15,6 +15,7 @@
     <modules>
         <module>sxwl-boot-module-system</module>
         <module>sxwl-boot-module-auth</module>
+        <module>sxwl-boot-module-rustfs</module>
     </modules>
 
     <properties>

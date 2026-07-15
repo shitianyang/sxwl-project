@@ -42,8 +42,7 @@ public class SxwlLoginRequest {
     /** 图形验证码 UUID（与 captchaCode 配合） */
     private String captchaUuid;
 
-    /** 设备标识（必填，用于多设备管理） */
-    @NotBlank(message = "设备标识不能为空")
+    /** 设备标识（用于多设备管理，为空时由后端自动填充 "unknown"） */
     private String deviceId;
 
     public String getUsername() {

@@ -94,6 +94,7 @@ public class SxwlAuthenticationHandler {
                 .userId(userId)
                 .tokenType(SxwlJwtUtils.TOKEN_TYPE_ACCESS)
                 .deviceId(deviceId)
+                .clientType(clientType)
                 .jti(accessJti)
                 .expireSeconds(accessExpire)
                 .build(secret);
@@ -102,6 +103,7 @@ public class SxwlAuthenticationHandler {
                 .userId(userId)
                 .tokenType(SxwlJwtUtils.TOKEN_TYPE_REFRESH)
                 .deviceId(deviceId)
+                .clientType(clientType)
                 .jti(refreshJti)
                 .expireSeconds(refreshExpire)
                 .build(secret);

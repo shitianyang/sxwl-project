@@ -750,3 +750,77 @@ CREATE INDEX "idx_pla_file_business_type" ON "pla_file_info" ("business_type");
 CREATE INDEX "idx_pla_file_status" ON "pla_file_info" ("status");
 CREATE INDEX "idx_pla_file_create_by" ON "pla_file_info" ("create_by");
 CREATE INDEX "idx_pla_file_create_time" ON "pla_file_info" ("create_time");
+
+
+-- =====================================================================
+-- 系统文件上传会话表（RustFS 分片上传过程追踪）
+-- =====================================================================
+
+CREATE TABLE "sys_file_session_info" (
+  "id"             int8 NOT NULL,
+  "file_md5"       varchar(64)   NOT NULL,
+  "original_name"  varchar(128)  NOT NULL,
+  "file_size"      int8          NOT NULL,
+  "content_type"   varchar(100),
+  "total_chunks"   int4          NOT NULL,
+  "chunk_size"     int4          NOT NULL,
+  "status"         int2          NOT NULL DEFAULT 0,
+  "create_by"      int8          NOT NULL,
+  "create_org"     int8          NOT NULL,
+  "create_time"    timestamp     NOT NULL,
+  "update_by"      int8,
+  "update_time"    timestamp,
+  "delete_flag"    int2          NOT NULL DEFAULT 0,
+  PRIMARY KEY ("id")
+);
+
+COMMENT ON COLUMN "sys_file_session_info"."id" IS '唯一标识';
+COMMENT ON COLUMN "sys_file_session_info"."file_md5" IS '文件 MD5，用于秒传判断和续传查询';
+COMMENT ON COLUMN "sys_file_session_info"."original_name" IS '原始文件名，合并后写入 sys_file_info.file_name';
+COMMENT ON COLUMN "sys_file_session_info"."file_size" IS '总文件大小（字节）';
+COMMENT ON COLUMN "sys_file_session_info"."content_type" IS 'MIME 类型，如 application/zip';
+COMMENT ON COLUMN "sys_file_session_info"."total_chunks" IS '总分片数，合并时循环读取 0..total_chunks-1';
+COMMENT ON COLUMN "sys_file_session_info"."chunk_size" IS '每个分片的大小（字节），除最后一片外所有分片等大';
+COMMENT ON COLUMN "sys_file_session_info"."status" IS '状态：0=上传中 1=已完成 2=已取消';
+COMMENT ON COLUMN "sys_file_session_info"."create_by" IS '创建人标识';
+COMMENT ON COLUMN "sys_file_session_info"."create_org" IS '创建人所属组织标识';
+COMMENT ON COLUMN "sys_file_session_info"."create_time" IS '创建时间';
+COMMENT ON COLUMN "sys_file_session_info"."update_by" IS '更新人标识';
+COMMENT ON COLUMN "sys_file_session_info"."update_time" IS '更新时间';
+COMMENT ON COLUMN "sys_file_session_info"."delete_flag" IS '删除标志：0=正常 1=已删除';
+COMMENT ON TABLE "sys_file_session_info" IS '系统文件上传会话表';
+
+CREATE INDEX "idx_sys_file_session_md5" ON "sys_file_session_info" ("file_md5");
+CREATE INDEX "idx_sys_file_session_status" ON "sys_file_session_info" ("status");
+
+
+-- =====================================================================
+-- 系统文件分片明细表（RustFS 分片上传追踪）
+-- =====================================================================
+
+CREATE TABLE "sys_file_chunk_info" (
+  "id"           int8 NOT NULL,
+  "upload_id"    int8          NOT NULL,
+  "chunk_index"  int4          NOT NULL,
+  "chunk_md5"    varchar(64),
+  "object_key"   varchar(256)  NOT NULL,
+  "chunk_size"   int8          NOT NULL,
+  "status"       int2          NOT NULL DEFAULT 0,
+  "create_time"  timestamp     NOT NULL,
+  "delete_flag"  int2          NOT NULL DEFAULT 0,
+  PRIMARY KEY ("id")
+);
+
+COMMENT ON COLUMN "sys_file_chunk_info"."id" IS '唯一标识';
+COMMENT ON COLUMN "sys_file_chunk_info"."upload_id" IS '上传会话 ID（关联 sys_file_session_info.id）';
+COMMENT ON COLUMN "sys_file_chunk_info"."chunk_index" IS '分片序号，从 0 开始，合并时按此排序';
+COMMENT ON COLUMN "sys_file_chunk_info"."chunk_md5" IS '分片 MD5，上传时校验，防止传输损坏';
+COMMENT ON COLUMN "sys_file_chunk_info"."object_key" IS 'S3 临时对象键，合并后清理';
+COMMENT ON COLUMN "sys_file_chunk_info"."chunk_size" IS '本分片实际大小（最后一片可能小于 chunk_size）';
+COMMENT ON COLUMN "sys_file_chunk_info"."status" IS '状态：0=待上传 1=已上传';
+COMMENT ON COLUMN "sys_file_chunk_info"."create_time" IS '创建时间';
+COMMENT ON COLUMN "sys_file_chunk_info"."delete_flag" IS '删除标志：0=正常 1=已删除';
+COMMENT ON TABLE "sys_file_chunk_info" IS '系统文件分片明细表';
+
+CREATE INDEX "idx_sys_file_chunk_upload" ON "sys_file_chunk_info" ("upload_id");
+CREATE UNIQUE INDEX "uk_sys_file_chunk" ON "sys_file_chunk_info" ("upload_id", "chunk_index") WHERE "delete_flag" = 0;

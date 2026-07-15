@@ -44,3 +44,11 @@ sxwl:
     sm2-key-rotation-interval-minutes: 1440  # SM2 密钥轮换间隔（分钟），默认 24 小时
     sm2-key-grace-period-minutes: 120        # SM2 历史密钥保留宽限期（分钟），默认 2 小时
     sm2-key-max-history: 1                   # SM2 历史密钥最大保留数（不含当前）
+  rustfs:
+    endpoint: http://localhost:9000      # S3 兼容服务地址（开发环境 MinIO）
+    region: us-east-1
+    access-key: minioadmin
+    secret-key: minioadmin
+    default-bucket: sxwl-files
+    presigned-url-expire: 3600           # 预签名 URL 有效期（秒）
+    temp-path-prefix: tmp/

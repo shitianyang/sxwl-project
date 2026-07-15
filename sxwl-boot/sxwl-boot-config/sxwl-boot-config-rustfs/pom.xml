@@ -5,25 +5,31 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.sxwl</groupId>
-        <artifactId>sxwl-boot</artifactId>
+        <artifactId>sxwl-boot-config</artifactId>
         <version>0.1.0</version>
     </parent>
 
-    <artifactId>sxwl-boot-config</artifactId>
-    <packaging>pom</packaging>
-
-    <modules>
-        <module>sxwl-boot-config-web</module>
-        <module>sxwl-boot-config-mybatis</module>
-        <module>sxwl-boot-config-security</module>
-        <module>sxwl-boot-config-redis</module>
-        <module>sxwl-boot-config-rustfs</module>
-    </modules>
+    <artifactId>sxwl-boot-config-rustfs</artifactId>
+    <packaging>jar</packaging>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <dependencies>
+        <!-- common -->
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-common</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+        <!-- AWS S3 -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

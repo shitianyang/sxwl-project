@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.sxwl</groupId>
-        <artifactId>sxwl-boot</artifactId>
+        <artifactId>sxwl-boot-module</artifactId>
         <version>0.1.0</version>
     </parent>
 
-    <artifactId>sxwl-boot-app</artifactId>
+    <artifactId>sxwl-boot-module-rustfs</artifactId>
     <packaging>jar</packaging>
 
     <properties>
@@ -21,41 +21,24 @@
     <dependencies>
         <dependency>
             <groupId>com.sxwl</groupId>
-            <artifactId>sxwl-boot-module-auth</artifactId>
+            <artifactId>sxwl-boot-config-rustfs</artifactId>
             <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.sxwl</groupId>
-            <artifactId>sxwl-boot-module-system</artifactId>
+            <artifactId>sxwl-boot-config-web</artifactId>
             <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.sxwl</groupId>
-            <artifactId>sxwl-boot-module-rustfs</artifactId>
+            <artifactId>sxwl-boot-config-security</artifactId>
             <version>0.1.0</version>
         </dependency>
-        <!-- 测试依赖（JUnit 5 + Mockito + Spring Test） -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-config-mybatis</artifactId>
+            <version>0.1.0</version>
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring.boot.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>

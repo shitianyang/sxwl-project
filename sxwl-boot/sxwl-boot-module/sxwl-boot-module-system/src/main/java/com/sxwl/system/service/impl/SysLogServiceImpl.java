@@ -1,6 +1,5 @@
 package com.sxwl.system.service.impl;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.sxwl.system.mapper.SysLogMapper;
 import com.sxwl.system.model.dto.SysLogDTO;
@@ -34,7 +33,6 @@ public class SysLogServiceImpl implements SysLogService {
      */
     @Override
     public PageInfo<SysLogDTO> getLogPageByParams(SysLogPageParams params) {
-        PageHelper.startPage(params.getCurrent(), params.getPageSize());
         List<SysLogDTO> rows = sysLogMapper.getLogPageByParams(params);
         return new PageInfo<>(rows);
     }
