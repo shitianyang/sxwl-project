@@ -1,6 +1,5 @@
 package com.sxwl.system.service.impl;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.system.mapper.SysDictDetailMapper;
@@ -65,7 +64,6 @@ public class SysDictServiceImpl implements SysDictService {
      */
     @Override
     public PageInfo<SysDictDTO> getDictPageByParams(SysDictPageParams params) {
-        PageHelper.startPage(params.getCurrent(), params.getPageSize());
         List<SysDictDTO> rows = sysDictMapper.getDictPageByParams(params);
         return new PageInfo<>(rows);
     }
