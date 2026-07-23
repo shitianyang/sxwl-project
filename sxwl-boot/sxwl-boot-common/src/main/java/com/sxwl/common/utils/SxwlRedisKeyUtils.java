@@ -177,4 +177,12 @@ public final class SxwlRedisKeyUtils {
     public static String lockKey(String bizKey) {
         return SxwlRedisKeyConstants.LOCK_PREFIX + bizKey;
     }
+
+    /**
+     * 构建系统参数配置缓存 Key
+     * <p>完整 Key：config:{configKey}
+     */
+    public static String configCacheKey(String configKey) {
+        return SxwlRedisKeyConstants.CONFIG_CACHE_PREFIX + configKey;
+    }
 }

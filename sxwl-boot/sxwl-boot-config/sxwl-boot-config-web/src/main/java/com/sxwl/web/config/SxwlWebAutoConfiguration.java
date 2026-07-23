@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.sxwl.common.constants.SxwlSystemConstants;
+import com.sxwl.common.utils.SxwlIpLocationService;
 import com.sxwl.web.advice.SxwlGlobalExceptionHandler;
 import com.sxwl.web.advice.SxwlResponseBodyAdvice;
 import com.sxwl.web.aspect.SxwlLogAspect;
@@ -18,6 +19,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
+import java.util.Optional;
 
 /**
  * Web 层自动装配
@@ -99,7 +101,8 @@ public class SxwlWebAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public SxwlLogAspect sxwlLogAspect(ApplicationEventPublisher eventPublisher, ObjectMapper objectMapper) {
-        return new SxwlLogAspect(eventPublisher, objectMapper);
+    public SxwlLogAspect sxwlLogAspect(ApplicationEventPublisher eventPublisher, ObjectMapper objectMapper,
+                                         Optional<SxwlIpLocationService> ipLocationService) {
+        return new SxwlLogAspect(eventPublisher, objectMapper, ipLocationService);
     }
 }

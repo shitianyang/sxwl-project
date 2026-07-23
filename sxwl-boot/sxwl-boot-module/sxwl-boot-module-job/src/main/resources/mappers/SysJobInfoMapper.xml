@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.job.mapper.SysJobInfoMapper">
+
+    <sql id="selectJobColumns">
+        id, job_name, job_group, class_name, method_name, method_params,
+        cron_expression, description, status,
+        TO_CHAR(create_time, 'YYYY-MM-DD HH24:MI:SS') AS createTime
+    </sql>
+
+    <select id="getJobById" resultType="com.sxwl.job.model.dto.SysJobDTO">
+        SELECT <include refid="selectJobColumns"/>
+        FROM sys_job_info
+        WHERE id = #{id}
+        AND delete_flag = 0
+    </select>
+
+    <select id="getJobPageByParams" resultType="com.sxwl.job.model.dto.SysJobDTO">
+        SELECT <include refid="selectJobColumns"/>
+        FROM sys_job_info
+        WHERE delete_flag = 0
+        <if test="jobName != null and jobName != ''">
+            AND job_name LIKE CONCAT('%', #{jobName}, '%')
+        </if>
+        <if test="jobGroup != null and jobGroup != ''">
+            AND job_group = #{jobGroup}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="checkJobUnique" resultType="int">
+        SELECT COUNT(*)
+        FROM sys_job_info
+        WHERE job_name = #{jobName} AND job_group = #{jobGroup}
+        AND delete_flag = 0
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <select id="getAllActiveJobs" resultType="com.sxwl.job.model.dto.SysJobDTO">
+        SELECT <include refid="selectJobColumns"/>
+        FROM sys_job_info
+        WHERE status = 1 AND delete_flag = 0
+        ORDER BY create_time ASC
+    </select>
+
+    <insert id="insertJob" parameterType="com.sxwl.job.model.entity.SysJobInfo">
+        INSERT INTO sys_job_info (
+            id, job_name, job_group, class_name, method_name, method_params,
+            cron_expression, description, status,
+            create_by, create_org, create_time, update_by, update_time
+        ) VALUES (
+            #{id}, #{jobName}, #{jobGroup}, #{className}, #{methodName}, #{methodParams},
+            #{cronExpression}, #{description}, #{status},
+            #{createBy}, #{createOrg}, #{createTime}, #{createBy}, #{createTime}
+        )
+    </insert>
+
+    <update id="updateJob" parameterType="com.sxwl.job.model.entity.SysJobInfo">
+        UPDATE sys_job_info
+        SET job_name        = #{jobName},
+            job_group       = #{jobGroup},
+            class_name      = #{className},
+            method_name     = #{methodName},
+            method_params   = #{methodParams},
+            cron_expression = #{cronExpression},
+            description     = #{description},
+            status          = #{status},
+            update_by       = #{updateBy},
+            update_time     = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteJobById">
+        UPDATE sys_job_info
+        SET delete_flag = 1
+        WHERE id = #{id}
+    </update>
+
+</mapper>

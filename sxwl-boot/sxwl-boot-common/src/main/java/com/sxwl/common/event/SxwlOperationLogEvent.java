@@ -59,6 +59,21 @@ public class SxwlOperationLogEvent {
     /** 链路追踪 ID */
     private String traceId;
 
+    /** 原始 User-Agent */
+    private String userAgent;
+
+    /** 浏览器 */
+    private String browser;
+
+    /** 操作系统 */
+    private String os;
+
+    /** 操作地点 */
+    private String operateLocation;
+
+    /** 字段级变更差异 JSON（如：[{"field":"角色","oldValue":"admin","newValue":"user"}]） */
+    private String diff;
+
     // ==================== 构造器 ====================
 
     public SxwlOperationLogEvent() {
@@ -141,6 +156,31 @@ public class SxwlOperationLogEvent {
         return this;
     }
 
+    public SxwlOperationLogEvent userAgent(String userAgent) {
+        this.userAgent = userAgent;
+        return this;
+    }
+
+    public SxwlOperationLogEvent browser(String browser) {
+        this.browser = browser;
+        return this;
+    }
+
+    public SxwlOperationLogEvent os(String os) {
+        this.os = os;
+        return this;
+    }
+
+    public SxwlOperationLogEvent operateLocation(String operateLocation) {
+        this.operateLocation = operateLocation;
+        return this;
+    }
+
+    public SxwlOperationLogEvent diff(String diff) {
+        this.diff = diff;
+        return this;
+    }
+
     // ==================== Getter ====================
 
     public String getTitle() {
@@ -202,4 +242,10 @@ public class SxwlOperationLogEvent {
     public String getTraceId() {
         return traceId;
     }
+
+    public String getUserAgent() { return userAgent; }
+    public String getBrowser() { return browser; }
+    public String getOs() { return os; }
+    public String getOperateLocation() { return operateLocation; }
+    public String getDiff() { return diff; }
 }

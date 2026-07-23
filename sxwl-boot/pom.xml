@@ -33,6 +33,7 @@
         <bcprov.version>1.84</bcprov.version>
         <flowable.version>7.2.0</flowable.version>
         <poi.version>5.2.5</poi.version>
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -109,6 +110,103 @@
                 <artifactId>poi-ooxml</artifactId>
                 <version>${poi.version}</version>
             </dependency>
+            <!-- ==================== 自有模块 ==================== -->
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-module-auth</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-module-system</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-module-codegen</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-module-rustfs</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-module-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-module-notice</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-module-job</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-module-backup</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <!-- ==================== 自有配置类模块 ==================== -->
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-config-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-config-mybatis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-config-security</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-config-redis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-config-rustfs</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-config-freemarker</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-config-monitor</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-config-sse</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-config-websocket</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-config-quartz</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -117,6 +215,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
                     <parameters>true</parameters>
                 </configuration>

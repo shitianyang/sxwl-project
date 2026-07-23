@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.system.mapper.SysDictMapper">
+
+    <!-- 通用查询列 -->
+    <sql id="selectDictColumns">
+        id, dict_code, dict_name, description, status,
+        TO_CHAR(create_time, 'YYYY-MM-DD HH24:MI:SS') AS createTime
+    </sql>
+
+    <!-- 根据 ID 查询 -->
+    <select id="getDictById" resultType="com.sxwl.system.model.dto.SysDictDTO">
+        SELECT <include refid="selectDictColumns"/>
+        FROM sys_dict_info
+        WHERE id = #{id}
+        AND delete_flag = 0
+    </select>
+
+    <!-- 分页查询 -->
+    <select id="getDictPageByParams" resultType="com.sxwl.system.model.dto.SysDictDTO">
+        SELECT <include refid="selectDictColumns"/>
+        FROM sys_dict_info
+        WHERE delete_flag = 0
+        <if test="dictCode != null and dictCode != ''">
+            AND dict_code LIKE CONCAT('%', #{dictCode}, '%')
+        </if>
+        <if test="dictName != null and dictName != ''">
+            AND dict_name LIKE CONCAT('%', #{dictName}, '%')
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY dict_code ASC, create_time DESC
+    </select>
+
+    <!-- 校验字典编码是否唯一 -->
+    <select id="checkDictCodeUnique" resultType="int">
+        SELECT COUNT(*)
+        FROM sys_dict_info
+        WHERE dict_code = #{dictCode}
+        AND delete_flag = 0
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insertDict" parameterType="com.sxwl.system.model.entity.SysDict">
+        INSERT INTO sys_dict_info (
+            id, dict_code, dict_name, description, status,
+            create_by, create_org, create_time, update_by, update_time
+        ) VALUES (
+            #{id}, #{dictCode}, #{dictName}, #{description}, #{status},
+            #{createBy}, #{createOrg}, #{createTime}, #{createBy}, #{createTime}
+        )
+    </insert>
+
+    <!-- 修改 -->
+    <update id="updateDict" parameterType="com.sxwl.system.model.entity.SysDict">
+        UPDATE sys_dict_info
+        SET dict_code   = #{dictCode},
+            dict_name   = #{dictName},
+            description = #{description},
+            status      = #{status},
+            update_by   = #{updateBy},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteDictById">
+        UPDATE sys_dict_info
+        SET delete_flag = 1
+        WHERE id = #{id}
+    </update>
+
+</mapper>

@@ -41,4 +41,14 @@ sxwl:
     repeat-submit-interval: 3
   security:
     jwt-secret: 05e2b6fd0e7ad75bffec5bacdf72c8f071c337aba8bc5e9eb51698ccfbb46b32  # JWT 签名密钥
-    sm2-private-key: 308193020100301306072a8648ce3d020106082a811ccf5501822d0479307702010104203148f2aa2ef7f32db3a9b64849ffe5875011ce45830a0b77ce4115eff244c372a00a06082a811ccf5501822da1440342000441245b0a89d4578c6a2ed3aab50c4842495726692c10d802638a005bc1c1cee329596bcd925937a1a774ac3d0dfbb776c523922d3269ab82ea4f0fb55e2706f7  # SM2 私钥
+    sm2-key-rotation-interval-minutes: 1440  # SM2 密钥轮换间隔（分钟），默认 24 小时
+    sm2-key-grace-period-minutes: 120        # SM2 历史密钥保留宽限期（分钟），默认 2 小时
+    sm2-key-max-history: 1                   # SM2 历史密钥最大保留数（不含当前）
+  rustfs:
+    endpoint: http://localhost:9000      # S3 兼容服务地址（开发环境 Rustfs）
+    region: us-east-1
+    access-key: admin
+    secret-key: 12345678
+    default-bucket: sxwl-files
+    presigned-url-expire: 3600           # 预签名 URL 有效期（秒）
+    temp-path-prefix: tmp/

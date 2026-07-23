@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.system.mapper.SysOrganizationMapper">
+
+    <!-- 通用查询列 -->
+    <sql id="selectOrganizationColumns">
+        id, org_code, org_name, parent_id, ancestors, org_level,
+        org_type, leader_id, phone, sort, status, description
+    </sql>
+
+    <!-- 结果映射 -->
+    <resultMap id="SysOrganizationDTOResultMap" type="com.sxwl.system.model.dto.SysOrganizationDTO" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="org_code" property="orgCode"/>
+        <result column="org_name" property="orgName"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="org_level" property="orgLevel"/>
+        <result column="org_type" property="orgType"/>
+        <result column="leader_id" property="leaderId"/>
+    </resultMap>
+
+    <!-- 根据 ID 查询 -->
+    <select id="getOrganizationById" resultMap="SysOrganizationDTOResultMap">
+        SELECT <include refid="selectOrganizationColumns"/>
+        FROM sys_organization_info
+        WHERE id = #{id}
+        AND delete_flag = 0
+    </select>
+
+    <!-- 查询所有组织（按 sort 升序） -->
+    <select id="selectAllOrganizations" resultMap="SysOrganizationDTOResultMap">
+        SELECT <include refid="selectOrganizationColumns"/>
+        FROM sys_organization_info
+        WHERE delete_flag = 0
+        ORDER BY sort ASC, id ASC
+    </select>
+
+    <!-- 统计子组织数 -->
+    <select id="countChildrenByParentId" resultType="int">
+        SELECT COUNT(*)
+        FROM sys_organization_info
+        WHERE parent_id = #{parentId}
+        AND delete_flag = 0
+    </select>
+
+    <!-- 校验组织编码是否唯一 -->
+    <select id="checkOrgCodeUnique" resultType="int">
+        SELECT COUNT(*)
+        FROM sys_organization_info
+        WHERE org_code = #{orgCode}
+        AND delete_flag = 0
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insertOrganization" parameterType="com.sxwl.system.model.entity.SysOrganization">
+        INSERT INTO sys_organization_info (
+            id, org_code, org_name, parent_id, ancestors, org_level,
+            org_type, leader_id, phone, sort, status, description,
+            create_by, create_org, create_time, update_by, update_time
+        ) VALUES (
+            #{id}, #{orgCode}, #{orgName}, #{parentId}, #{ancestors}, #{orgLevel},
+            #{orgType}, #{leaderId}, #{phone}, #{sort}, #{status}, #{description},
+            #{createBy}, #{createOrg}, #{createTime}, #{createBy}, #{createTime}
+        )
+    </insert>
+
+    <!-- 修改 -->
+    <update id="updateOrganization" parameterType="com.sxwl.system.model.entity.SysOrganization">
+        UPDATE sys_organization_info
+        SET org_code    = #{orgCode},
+            org_name    = #{orgName},
+            parent_id   = #{parentId},
+            ancestors   = #{ancestors},
+            org_level   = #{orgLevel},
+            org_type    = #{orgType},
+            leader_id   = #{leaderId},
+            phone       = #{phone},
+            sort        = #{sort},
+            status      = #{status},
+            description = #{description},
+            update_by   = #{updateBy},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteOrganizationById">
+        UPDATE sys_organization_info
+        SET delete_flag = 1
+        WHERE id = #{id}
+    </update>
+
+</mapper>

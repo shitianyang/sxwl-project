@@ -1,7 +1,7 @@
 package com.sxwl.auth.crypto;
 
 import com.sxwl.common.utils.SM2Utils;
-import com.sxwl.security.config.SxwlSecurityProperties;
+import com.sxwl.security.key.SxwlSM2KeyManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  * SM2 密码解密器
  * <p>
  * 职责：将前端传来的 SM2 加密密码（Base64 密文）还原为明文。
- * 私钥通过 {@link SxwlSecurityProperties#getSm2PrivateKey()} 注入，未配置则启动失败。
+ * 私钥通过 {@link SxwlSM2KeyManager} 管理，支持密钥轮换和宽限期降级解密。
  * </p>
  *
  * <h3>为什么独立成类</h3>
@@ -28,14 +28,10 @@ public class SxwlPasswordDecryptor {
 
     private static final Logger log = LoggerFactory.getLogger(SxwlPasswordDecryptor.class);
 
-    private final String privateKey;
+    private final SxwlSM2KeyManager keyManager;
 
-    public SxwlPasswordDecryptor(SxwlSecurityProperties properties) {
-        this.privateKey = properties.getSm2PrivateKey();
-        if (privateKey == null || privateKey.isBlank()) {
-            throw new IllegalStateException(
-                    "SM2 私钥未配置（sxwl.security.sm2-private-key），拒绝启动。请在 application-*.yaml 中配置私钥");
-        }
+    public SxwlPasswordDecryptor(SxwlSM2KeyManager keyManager) {
+        this.keyManager = keyManager;
     }
 
     /**
@@ -50,7 +46,7 @@ public class SxwlPasswordDecryptor {
             return "";
         }
         try {
-            return SM2Utils.decryptFromBase64(encryptedPassword, privateKey);
+            return keyManager.decrypt(encryptedPassword);
         } catch (Exception e) {
             log.error("SM2 密码解密失败", e);
             throw e;

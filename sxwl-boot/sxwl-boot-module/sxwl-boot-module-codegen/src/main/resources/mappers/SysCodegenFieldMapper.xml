@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.codegen.mapper.SysCodegenFieldMapper">
+
+    <!-- 通用查询列 -->
+    <sql id="selectFieldColumns">
+        id, table_id, column_name, column_type, column_comment,
+        java_type, java_field_name, is_pk, is_insert, is_edit, is_list,
+        is_query, query_type, query_form_type, form_type, form_dict_code,
+        is_required, is_unique, max_length, sort,
+        TO_CHAR(create_time, 'YYYY-MM-DD HH24:MI:SS') AS createTime
+    </sql>
+
+    <!-- 根据表 ID 查询字段列表 -->
+    <select id="getFieldsByTableId" resultType="com.sxwl.codegen.model.dto.SysCodegenFieldDTO">
+        SELECT <include refid="selectFieldColumns"/>
+        FROM sys_codegen_field_info
+        WHERE table_id = #{tableId}
+        AND delete_flag = 0
+        ORDER BY sort ASC
+    </select>
+
+    <!-- 批量新增 -->
+    <insert id="batchInsertFields">
+        INSERT INTO sys_codegen_field_info (
+            id, table_id, column_name, column_type, column_comment,
+            java_type, java_field_name, is_pk, is_insert, is_edit, is_list,
+            is_query, query_type, query_form_type, form_type, form_dict_code,
+            is_required, is_unique, max_length, sort, create_time, delete_flag
+        ) VALUES
+        <foreach collection="fields" item="field" separator=",">
+            (#{field.id}, #{field.tableId}, #{field.columnName}, #{field.columnType}, #{field.columnComment},
+             #{field.javaType}, #{field.javaFieldName}, #{field.isPk}, #{field.isInsert}, #{field.isEdit}, #{field.isList},
+             #{field.isQuery}, #{field.queryType}, #{field.queryFormType}, #{field.formType}, #{field.formDictCode},
+             #{field.isRequired}, #{field.isUnique}, #{field.maxLength}, #{field.sort}, #{field.createTime}, 0)
+        </foreach>
+    </insert>
+
+    <!-- 根据表 ID 删除所有字段配置 -->
+    <update id="deleteFieldsByTableId">
+        UPDATE sys_codegen_field_info
+        SET delete_flag = 1
+        WHERE table_id = #{tableId}
+    </update>
+
+</mapper>

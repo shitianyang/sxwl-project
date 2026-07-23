@@ -37,6 +37,8 @@ public final class SxwlJwtUtils {
     /** 设备标识声明键 */
     public static final String CLAIM_DEVICE_ID = "deviceId";
 
+    public static final String CLAIM_CLIENT_TYPE = "clientType";
+
     /** Token 类型：Access Token */
     public static final String TOKEN_TYPE_ACCESS = "access";
 
@@ -177,6 +179,17 @@ public final class SxwlJwtUtils {
         return null;
     }
 
+    public static String resolveClientType(Claims claims) {
+        if (claims == null) {
+            return null;
+        }
+        Object clientTypeObj = claims.get(CLAIM_CLIENT_TYPE);
+        if (clientTypeObj instanceof String clientType && !clientType.trim().isEmpty()) {
+            return clientType.trim();
+        }
+        return null;
+    }
+
     // ==================== 内部方法 ====================
 
     /**
@@ -225,6 +238,7 @@ public final class SxwlJwtUtils {
         private Long userId;
         private String tokenType;
         private String deviceId;
+        private String clientType;
         private String issuer;
         private Long expireSeconds;
         private String jti;
@@ -254,6 +268,11 @@ public final class SxwlJwtUtils {
          */
         public Builder deviceId(String deviceId) {
             this.deviceId = deviceId;
+            return this;
+        }
+
+        public Builder clientType(String clientType) {
+            this.clientType = clientType;
             return this;
         }
 
@@ -310,6 +329,9 @@ public final class SxwlJwtUtils {
                     ? UUID.randomUUID().toString()
                     : jti.trim();
             String actualIssuer = issuer == null ? "" : issuer.trim();
+            String actualClientType = clientType == null || clientType.trim().isEmpty()
+                    ? "admin"
+                    : clientType.trim();
 
             Instant now = Instant.now();
             Instant expiration = now.plusSeconds(actualExpireSeconds);
@@ -322,6 +344,7 @@ public final class SxwlJwtUtils {
                     .expiration(Date.from(expiration))
                     .claim(CLAIM_TOKEN_TYPE, tokenType.trim())
                     .claim(CLAIM_DEVICE_ID, deviceId.trim())
+                    .claim(CLAIM_CLIENT_TYPE, actualClientType)
                     .signWith(key, Jwts.SIG.HS256)
                     .compact();
         }

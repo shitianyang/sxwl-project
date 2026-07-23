@@ -8,14 +8,14 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios';
 import { useAuthStore } from '@/stores/authStore';
-import { getItem, STORAGE_KEYS } from '@/utils/storageUtils';
+import { getAuthItem, STORAGE_KEYS } from '@/utils/storageUtils';
 
 // ==================== 类型定义 ====================
 
 /** 后端统一响应格式 */
 export interface SxwlResult<T = unknown> {
   code: number;
-  msg: string;
+  message: string;
   data: T;
 }
 
@@ -32,19 +32,27 @@ export interface PageResult<T> {
 const instance = axios.create({
   baseURL: '/sxwl-api',
   timeout: 15000,
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Client-Type': 'admin',
+    'X-Device-Id': 'web',
+  },
 });
 
 const refreshInstance = axios.create({
   baseURL: '/sxwl-api',
   timeout: 15000,
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Client-Type': 'admin',
+    'X-Device-Id': 'web',
+  },
 });
 
 // ==================== 请求拦截器 ====================
 
 instance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  const token = getAuthItem(STORAGE_KEYS.ACCESS_TOKEN);
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -67,6 +75,12 @@ function onTokenRefreshed(newToken: string) {
 
 instance.interceptors.response.use(
   (response) => {
+    // 检查业务状态码：HTTP 200 但业务 code 非 200 时转为 reject
+    const result = response.data as SxwlResult;
+    if (result && typeof result.code === 'number' && result.code !== 200) {
+      return Promise.reject({ response, config: response.config });
+    }
+
     // X-New-Token 头处理：Token 自动续期
     const newToken = response.headers['x-new-token'];
     if (typeof newToken === 'string' && newToken) {
@@ -83,7 +97,7 @@ instance.interceptors.response.use(
 
     // 401 → 尝试刷新 Token（排除刷新接口自身）
     if (response.status === 401 && !config.url?.includes('/auth/refresh')) {
-      const refreshToken = getItem(STORAGE_KEYS.REFRESH_TOKEN);
+      const refreshToken = getAuthItem(STORAGE_KEYS.REFRESH_TOKEN);
       if (!refreshToken) {
         useAuthStore.getState().clearAuth();
         window.location.href = '/login';
@@ -95,7 +109,7 @@ instance.interceptors.response.use(
         try {
           const res = await refreshInstance.post<
             SxwlResult<{ accessToken: string; refreshToken: string }>
-          >('/auth/refresh', { refreshToken, deviceId: 'web' });
+          >('/auth/refresh', { refreshToken, deviceId: useAuthStore.getState().deviceId });
           const { accessToken, refreshToken: newRefresh } = res.data.data;
           useAuthStore.getState().setTokenPair(accessToken, newRefresh);
           isRefreshing = false;
@@ -139,8 +153,8 @@ export const http = {
     return instance.put<SxwlResult<T>>(url, data);
   },
 
-  deleteReq<T = unknown>(url: string, params?: Record<string, unknown>) {
-    return instance.delete<SxwlResult<T>>(url, { params });
+  deleteReq<T = unknown>(url: string, params?: Record<string, unknown>, data?: unknown) {
+    return instance.delete<SxwlResult<T>>(url, { params, data });
   },
 
   /**
@@ -162,6 +176,25 @@ export const http = {
    */
   async download(url: string, params?: Record<string, unknown>, filename?: string) {
     const res = await instance.get(url, { params, responseType: 'blob' });
+    const blob = new Blob([res.data]);
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download =
+      filename ||
+      res.headers['content-disposition']?.split('filename=')[1]?.replace(/['"]/g, '') ||
+      'download';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  },
+
+  /**
+   * POST 文件下载
+   * @param url 下载地址
+   * @param data 请求体
+   * @param filename 保存文件名
+   */
+  async downloadPost(url: string, data?: unknown, filename?: string) {
+    const res = await instance.post(url, data, { responseType: 'blob' });
     const blob = new Blob([res.data]);
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);

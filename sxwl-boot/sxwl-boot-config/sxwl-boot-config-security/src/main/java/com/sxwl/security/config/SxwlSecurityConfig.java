@@ -9,6 +9,7 @@ import com.sxwl.security.handler.SxwlAuthenticationHandler;
 import com.sxwl.security.jwt.JwtAuthenticationFilter;
 import com.sxwl.security.password.SxwlPasswordEncoder;
 import com.sxwl.security.password.SxwlPasswordValidator;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,6 +43,7 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@EnableScheduling
 public class SxwlSecurityConfig {
 
     /**
@@ -65,9 +67,12 @@ public class SxwlSecurityConfig {
                         .requestMatchers(
                                 "/auth/login/**",
                                 "/auth/refresh",
+                                "/auth/logout",
+                                "/auth/public-key",
                                 "/captcha/**",
                                 "/public/**",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/sse/connect"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

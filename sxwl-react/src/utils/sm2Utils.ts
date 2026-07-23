@@ -32,11 +32,15 @@ export function encryptPassword(plainPassword: string, publicKeyHex: string): st
     throw new Error('明文密码和公钥均不能为空');
   }
 
-  // sm-crypto 的 doEncrypt 返回 hex 格式密文（C1C3C2）
+  // sm-crypto 的 doEncrypt 返回 hex 格式密文（C1C3C2），
+  // 但 sm-crypto 输出的 C1 分量不包含 04 前缀（仅 x||y，64 字节），
+  // 而 BouncyCastle 的 SM2Engine 要求 C1 是完整公钥编码（04||x||y，65 字节）
+  // 因此需要在最前面补上 04 前缀
   const cipherHex = sm2.doEncrypt(plainPassword, publicKeyHex, 1); // mode=1 即 C1C3C2
+  const fullCipherHex = '04' + cipherHex;
 
   // 转 Base64（与后端 SM2Utils.decryptFromBase64 对应）
-  const cipherBytes = hexToBytes(cipherHex);
+  const cipherBytes = hexToBytes(fullCipherHex);
   return bytesToBase64(cipherBytes);
 }
 
@@ -44,11 +48,9 @@ export function encryptPassword(plainPassword: string, publicKeyHex: string): st
  * Hex 字符串转 Uint8Array
  */
 function hexToBytes(hex: string): Uint8Array {
-  // 去掉可能的 04 前缀（sm-crypto 输出已处理）
-  const cleanHex = hex.startsWith('04') ? hex.substring(2) : hex;
-  const bytes = new Uint8Array(cleanHex.length / 2);
-  for (let i = 0; i < cleanHex.length; i += 2) {
-    bytes[i / 2] = parseInt(cleanHex.substring(i, i + 2), 16);
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
   }
   return bytes;
 }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.system.mapper.SysMonitorJvmLogMapper">
+
+    <insert id="insert" parameterType="com.sxwl.system.model.entity.SysMonitorJvmLog">
+        INSERT INTO sys_monitor_jvm_log (id, heap_used, heap_max, heap_committed,
+                                         thread_count, peak_thread_count, class_loaded_count, create_time)
+        VALUES (#{id}, #{heapUsed}, #{heapMax}, #{heapCommitted},
+                #{threadCount}, #{peakThreadCount}, #{classLoadedCount}, #{createTime})
+    </insert>
+
+    <select id="selectRecent" resultType="com.sxwl.system.model.entity.SysMonitorJvmLog">
+        SELECT id, heap_used AS heapUsed, heap_max AS heapMax, heap_committed AS heapCommitted,
+               thread_count AS threadCount, peak_thread_count AS peakThreadCount,
+               class_loaded_count AS classLoadedCount, create_time AS createTime
+        FROM sys_monitor_jvm_log
+        ORDER BY create_time DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

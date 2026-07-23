@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.rustfs.mapper.SysFileSessionInfoMapper">
+
+    <!-- 新增上传会话 -->
+    <insert id="insertUpload" parameterType="com.sxwl.rustfs.model.entity.SysFileSessionInfo">
+        INSERT INTO sys_file_session_info (
+            id, file_md5, original_name, file_size, content_type,
+            total_chunks, chunk_size, status,
+            create_by, create_org, create_time
+        ) VALUES (
+            #{id}, #{fileMd5}, #{originalName}, #{fileSize}, #{contentType},
+            #{totalChunks}, #{chunkSize}, #{status},
+            #{createBy}, #{createOrg}, #{createTime}
+        )
+    </insert>
+
+    <!-- 更新会话状态 -->
+    <update id="updateStatus">
+        UPDATE sys_file_session_info
+        SET status = #{status}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据 MD5 查询未完成的会话 -->
+    <select id="getByMd5" resultType="com.sxwl.rustfs.model.entity.SysFileSessionInfo">
+        SELECT * FROM sys_file_session_info
+        WHERE file_md5 = #{fileMd5} AND status = 0 AND delete_flag = 0
+        LIMIT 1
+    </select>
+
+    <!-- 根据 ID 查询 -->
+    <select id="getById" resultType="com.sxwl.rustfs.model.entity.SysFileSessionInfo">
+        SELECT * FROM sys_file_session_info WHERE id = #{id} AND delete_flag = 0
+    </select>
+
+</mapper>

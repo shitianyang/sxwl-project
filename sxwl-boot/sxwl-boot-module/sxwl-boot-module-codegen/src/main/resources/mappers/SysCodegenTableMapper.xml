@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.codegen.mapper.SysCodegenTableMapper">
+
+    <!-- 通用查询列 -->
+    <sql id="selectTableColumns">
+        id, table_name, module_prefix, biz_name, biz_name_cn, biz_name_plural,
+        table_comment, package_name, author, gen_type, status,
+        TO_CHAR(create_time, 'YYYY-MM-DD HH24:MI:SS') AS createTime
+    </sql>
+
+    <!-- 分页查询 -->
+    <select id="getTablePageByParams" resultType="com.sxwl.codegen.model.dto.SysCodegenTableDTO">
+        SELECT <include refid="selectTableColumns"/>
+        FROM sys_codegen_table_info
+        WHERE delete_flag = 0
+        <if test="tableName != null and tableName != ''">
+            AND table_name LIKE CONCAT('%', #{tableName}, '%')
+        </if>
+        <if test="bizNameCn != null and bizNameCn != ''">
+            AND biz_name_cn LIKE CONCAT('%', #{bizNameCn}, '%')
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据 ID 查询 -->
+    <select id="getTableById" resultType="com.sxwl.codegen.model.dto.SysCodegenTableDTO">
+        SELECT <include refid="selectTableColumns"/>
+        FROM sys_codegen_table_info
+        WHERE id = #{id}
+        AND delete_flag = 0
+    </select>
+
+    <!-- 校验表名唯一 -->
+    <select id="checkTableNameUnique" resultType="int">
+        SELECT COUNT(1)
+        FROM sys_codegen_table_info
+        WHERE table_name = #{tableName}
+        AND delete_flag = 0
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insertTable" parameterType="com.sxwl.codegen.model.entity.SysCodegenTable">
+        INSERT INTO sys_codegen_table_info (
+            id, table_name, module_prefix, biz_name, biz_name_cn, biz_name_plural,
+            table_comment, package_name, author, gen_type, status,
+            create_by, create_org, create_time, delete_flag
+        ) VALUES (
+            #{id}, #{tableName}, #{modulePrefix}, #{bizName}, #{bizNameCn}, #{bizNamePlural},
+            #{tableComment}, #{packageName}, #{author}, #{genType}, #{status},
+            #{createBy}, #{createOrg}, #{createTime}, #{deleteFlag}
+        )
+    </insert>
+
+    <!-- 修改 -->
+    <update id="updateTable" parameterType="com.sxwl.codegen.model.entity.SysCodegenTable">
+        UPDATE sys_codegen_table_info
+        SET table_name    = #{tableName},
+            module_prefix = #{modulePrefix},
+            biz_name      = #{bizName},
+            biz_name_cn   = #{bizNameCn},
+            biz_name_plural = #{bizNamePlural},
+            table_comment = #{tableComment},
+            package_name  = #{packageName},
+            author        = #{author},
+            gen_type      = #{genType},
+            status        = #{status},
+            update_by     = #{updateBy},
+            update_time   = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteTableById">
+        UPDATE sys_codegen_table_info
+        SET delete_flag = 1,
+            update_by   = #{updateBy, jdbcType=BIGINT},
+            update_time = #{updateTime, jdbcType=TIMESTAMP}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

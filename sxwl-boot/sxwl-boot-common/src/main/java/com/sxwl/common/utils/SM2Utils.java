@@ -3,6 +3,7 @@ package com.sxwl.common.utils;
 import com.sxwl.common.exception.SxwlBusinessException;
 import org.bouncycastle.crypto.engines.SM2Engine;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ParametersWithRandom;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
@@ -100,6 +101,26 @@ public final class SM2Utils {
     public static SM2KeyPair generateKeyPairHex() {
         KeyPair keyPair = generateKeyPair();
         return new SM2KeyPair(toHex(keyPair.getPublic().getEncoded()), toHex(keyPair.getPrivate().getEncoded()));
+    }
+
+    /**
+     * 从 PKCS#8 编码私钥推导裸公钥（04||x||y 格式，供前端 sm-crypto 等 JS 库使用）
+     *
+     * <p>SM2 公钥 Q = d × G（私钥标量 × 基点），由私钥数学推导得出。
+     * 这样公私钥天然一致，轮换密钥时只需改私钥一处。</p>
+     *
+     * @param privateKeyHex PKCS#8 编码的十六进制私钥
+     * @return 裸公钥十六进制（130 字符，04 + 64 字符 x + 64 字符 y）
+     */
+    public static String deriveRawPublicKeyHex(String privateKeyHex) {
+        Objects.requireNonNull(privateKeyHex, "privateKeyHex 不能为空");
+        try {
+            ECPrivateKeyParameters ecPriv = (ECPrivateKeyParameters) PrivateKeyFactory.createKey(parseHex(privateKeyHex));
+            org.bouncycastle.math.ec.ECPoint q = ecPriv.getParameters().getG().multiply(ecPriv.getD());
+            return toHex(q.getEncoded(false));
+        } catch (Exception e) {
+            throw new SxwlBusinessException(500, "从 SM2 私钥推导公钥失败", e);
+        }
     }
 
     /**

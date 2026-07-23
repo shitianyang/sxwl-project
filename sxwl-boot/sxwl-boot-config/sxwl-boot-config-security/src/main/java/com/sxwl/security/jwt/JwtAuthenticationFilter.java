@@ -5,6 +5,7 @@ import com.sxwl.common.utils.SxwlRedisKeyUtils;
 import com.sxwl.redis.helper.SxwlRedisHelper;
 import com.sxwl.security.config.SxwlSecurityProperties;
 import com.sxwl.security.model.SxwlLoginUser;
+import com.sxwl.security.utils.SxwlClientTypeUtils;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -68,6 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jti = SxwlJwtUtils.resolveJwtId(claims);
             String tokenType = SxwlJwtUtils.resolveTokenType(claims);
             String deviceId = SxwlJwtUtils.resolveDeviceId(claims);
+            String clientType = SxwlClientTypeUtils.normalize(SxwlJwtUtils.resolveClientType(claims));
 
             if (userId == null || jti == null) {
                 filterChain.doFilter(request, response);
@@ -75,7 +77,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 白名单校验
-            String clientType = "admin"; // TODO: 从请求上下文获取
             String whitelistKey = SxwlRedisKeyUtils.tokenJwtKey(clientType, userId, deviceId, jti);
             if (!Boolean.TRUE.equals(redisHelper.exists(whitelistKey))) {
                 log.debug("Token 不在白名单中: userId={}, jti={}", userId, jti);
@@ -114,12 +115,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 从 Authorization Header 提取 Bearer Token
+     * 提取 Token
+     * <p>优先从 Authorization Header 提取，失败时尝试从 query 参数提取（支持 EventSource）。</p>
      */
     private String resolveToken(HttpServletRequest request) {
+        // 1. 优先从 Authorization Header 提取
         String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (bearerToken != null && bearerToken.startsWith(BEARER_PREFIX)) {
             return bearerToken.substring(BEARER_PREFIX.length()).trim();
+        }
+        // 2. 支持从 query 参数提取（EventSource 无法设置自定义请求头）
+        String queryToken = request.getParameter("token");
+        if (queryToken != null && !queryToken.isEmpty()) {
+            return queryToken;
         }
         return null;
     }
@@ -152,11 +160,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 数据范围
-        user.setDataScope(parseInt(userInfo.get("dataScope")));
+        Integer dataScope = parseInt(userInfo.get("dataScope"));
+        user.setDataScope(dataScope);
         String orgIdsStr = userInfo.get("dataScopeOrgIds");
         if (orgIdsStr != null && !orgIdsStr.isEmpty()) {
             user.setDataScopeOrgIds(Arrays.stream(orgIdsStr.split(","))
                     .map(Long::parseLong).collect(Collectors.toSet()));
+        } else if (dataScope != null && dataScope != 1) {
+            user.setDataScopeOrgIds(Set.of());
         }
 
         return user;
@@ -179,6 +190,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .userId(userId)
                     .tokenType(SxwlJwtUtils.TOKEN_TYPE_ACCESS)
                     .deviceId(deviceId)
+                    .clientType(clientType)
                     .jti(newJti)
                     .expireSeconds(securityProperties.getAccessTokenExpire())
                     .build(secret);

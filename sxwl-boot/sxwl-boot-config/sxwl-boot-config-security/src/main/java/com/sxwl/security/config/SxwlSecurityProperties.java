@@ -62,10 +62,16 @@ public class SxwlSecurityProperties {
     /** 触发图形验证码的失败次数 */
     private int captchaTriggerCount = 3;
 
-    // ==================== 加密 ====================
+    // ==================== SM2 密钥轮换 ====================
 
-    /** SM2 私钥（十六进制，PKCS#8 编码），留空则跳过解密（开发环境兼容） */
-    private String sm2PrivateKey = "";
+    /** SM2 密钥轮换间隔（分钟），默认 1440（24 小时轮换一次） */
+    private long sm2KeyRotationIntervalMinutes = 1440;
+
+    /** SM2 历史密钥保留宽限期（分钟），默认 120（2 小时），用于解密旧公钥加密的密码 */
+    private long sm2KeyGracePeriodMinutes = 120;
+
+    /** SM2 历史密钥最大保留数（不含当前），默认 1 */
+    private int sm2KeyMaxHistory = 1;
 
     // ==================== 在线用户 ====================
 
@@ -178,12 +184,28 @@ public class SxwlSecurityProperties {
         this.captchaTriggerCount = captchaTriggerCount;
     }
 
-    public String getSm2PrivateKey() {
-        return sm2PrivateKey;
+    public long getSm2KeyRotationIntervalMinutes() {
+        return sm2KeyRotationIntervalMinutes;
     }
 
-    public void setSm2PrivateKey(String sm2PrivateKey) {
-        this.sm2PrivateKey = sm2PrivateKey;
+    public void setSm2KeyRotationIntervalMinutes(long sm2KeyRotationIntervalMinutes) {
+        this.sm2KeyRotationIntervalMinutes = sm2KeyRotationIntervalMinutes;
+    }
+
+    public long getSm2KeyGracePeriodMinutes() {
+        return sm2KeyGracePeriodMinutes;
+    }
+
+    public void setSm2KeyGracePeriodMinutes(long sm2KeyGracePeriodMinutes) {
+        this.sm2KeyGracePeriodMinutes = sm2KeyGracePeriodMinutes;
+    }
+
+    public int getSm2KeyMaxHistory() {
+        return sm2KeyMaxHistory;
+    }
+
+    public void setSm2KeyMaxHistory(int sm2KeyMaxHistory) {
+        this.sm2KeyMaxHistory = sm2KeyMaxHistory;
     }
 
     public int getMaxDevicesPerUser() {

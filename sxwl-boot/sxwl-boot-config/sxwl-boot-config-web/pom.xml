@@ -30,7 +30,6 @@
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-common</artifactId>
-            <version>0.1.0</version>
         </dependency>
     </dependencies>
 
