@@ -2,6 +2,7 @@ package com.sxwl.system.service.impl;
 
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.utils.SxwlDiffUtils;
 import com.sxwl.system.mapper.SysRoleMapper;
 import com.sxwl.system.model.dto.SysRoleDTO;
 import com.sxwl.system.model.entity.SysRole;
@@ -104,6 +105,18 @@ public class SysRoleServiceImpl implements SysRoleService {
         // 唯一性校验（排除自身）
         if (sysRoleMapper.checkRoleCodeUnique(dto.getRoleCode(), dto.getId()) > 0) {
             throw new SxwlBusinessException(10002, "角色编码已存在");
+        }
+
+        // 查询旧数据并计算字段级变更差异
+        SysRoleDTO oldDto = sysRoleMapper.getRoleById(dto.getId());
+        if (oldDto != null) {
+            SysRole oldEntity = toEntity(oldDto);
+            SysRole newEntity = toEntity(dto);
+            newEntity.setId(dto.getId());
+            String diffJson = SxwlDiffUtils.diff(oldEntity, newEntity);
+            if (diffJson != null) {
+                SxwlDiffUtils.setContextDiff(diffJson);
+            }
         }
 
         SysRole entity = toEntity(dto);

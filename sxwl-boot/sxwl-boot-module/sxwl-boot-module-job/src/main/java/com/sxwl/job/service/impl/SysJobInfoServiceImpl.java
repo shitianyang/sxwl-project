@@ -2,6 +2,7 @@ package com.sxwl.job.service.impl;
 
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.utils.SxwlDiffUtils;
 import com.sxwl.job.mapper.SysJobInfoMapper;
 import com.sxwl.job.model.dto.SysJobDTO;
 import com.sxwl.job.model.entity.SysJobInfo;
@@ -88,6 +89,18 @@ public class SysJobInfoServiceImpl implements SysJobInfoService {
         // 唯一性校验（排除自身）
         if (sysJobInfoMapper.checkJobUnique(dto.getJobName(), dto.getJobGroup(), dto.getId()) > 0) {
             throw new SxwlBusinessException(10002, "任务名称+分组已存在");
+        }
+
+        // 查询旧数据并计算字段级变更差异
+        SysJobDTO oldDto = sysJobInfoMapper.getJobById(dto.getId());
+        if (oldDto != null) {
+            SysJobInfo oldEntity = toEntity(oldDto);
+            SysJobInfo newEntity = toEntity(dto);
+            newEntity.setId(dto.getId());
+            String diffJson = SxwlDiffUtils.diff(oldEntity, newEntity);
+            if (diffJson != null) {
+                SxwlDiffUtils.setContextDiff(diffJson);
+            }
         }
 
         SysJobInfo entity = toEntity(dto);

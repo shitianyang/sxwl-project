@@ -2,6 +2,7 @@ package com.sxwl.system.service.impl;
 
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.utils.SxwlDiffUtils;
 import com.sxwl.system.mapper.SysPositionMapper;
 import com.sxwl.system.model.dto.SysPositionDTO;
 import com.sxwl.system.model.entity.SysPosition;
@@ -97,6 +98,18 @@ public class SysPositionServiceImpl implements SysPositionService {
         // 唯一性校验（排除自身）
         if (sysPositionMapper.checkPositionCodeUnique(dto.getPositionCode(), dto.getId()) > 0) {
             throw new SxwlBusinessException(10002, "岗位编码已存在");
+        }
+
+        // 查询旧数据并计算字段级变更差异
+        SysPositionDTO oldDto = sysPositionMapper.getPositionById(dto.getId());
+        if (oldDto != null) {
+            SysPosition oldEntity = toEntity(oldDto);
+            SysPosition newEntity = toEntity(dto);
+            newEntity.setId(dto.getId());
+            String diffJson = SxwlDiffUtils.diff(oldEntity, newEntity);
+            if (diffJson != null) {
+                SxwlDiffUtils.setContextDiff(diffJson);
+            }
         }
 
         SysPosition entity = toEntity(dto);

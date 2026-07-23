@@ -2,6 +2,7 @@ package com.sxwl.notice.service.impl;
 
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.utils.SxwlDiffUtils;
 import com.sxwl.notice.mapper.SysNoticeInfoMapper;
 import com.sxwl.notice.mapper.SysNoticeReadMapper;
 import com.sxwl.notice.model.dto.SysNoticeDTO;
@@ -79,6 +80,13 @@ public class SysNoticeInfoServiceImpl implements SysNoticeInfoService {
 
         SysNoticeInfo entity = toEntity(dto);
         entity.setId(dto.getId());
+
+        // 计算字段级变更差异
+        SysNoticeInfo oldEntity = toEntity(existing);
+        String diffJson = SxwlDiffUtils.diff(oldEntity, entity);
+        if (diffJson != null) {
+            SxwlDiffUtils.setContextDiff(diffJson);
+        }
 
         int result = sysNoticeInfoMapper.updateNotice(entity);
         if (result == 0) {

@@ -366,6 +366,7 @@ CREATE TABLE "sys_log_info" (
   "error_msg" text,
   "status" int2 NOT NULL DEFAULT 1,
   "trace_id" varchar(64),
+  "diff" text,
   "user_agent" text,
   "browser" varchar(32),
   "os" varchar(32),
@@ -393,6 +394,7 @@ COMMENT ON COLUMN "sys_log_info"."execute_time" IS '执行耗时（毫秒）';
 COMMENT ON COLUMN "sys_log_info"."error_msg" IS '错误信息（异常日志用）';
 COMMENT ON COLUMN "sys_log_info"."status" IS '操作状态：0=失败 1=成功';
 COMMENT ON COLUMN "sys_log_info"."trace_id" IS '链路追踪ID（分布式场景串联一次请求的多条日志）';
+COMMENT ON COLUMN "sys_log_info"."diff" IS '字段级变更差异 JSON（如：[{"field":"角色","oldValue":"admin","newValue":"user"}]）';
 COMMENT ON COLUMN "sys_log_info"."user_agent" IS '原始User-Agent字符串';
 COMMENT ON COLUMN "sys_log_info"."browser" IS '浏览器，如 Chrome/Edge/Firefox';
 COMMENT ON COLUMN "sys_log_info"."os" IS '操作系统，如 Windows/macOS/Android/iOS';
@@ -673,6 +675,10 @@ CREATE TABLE "pla_log_info" (
   "error_msg" text,
   "status" int2 NOT NULL DEFAULT 1,
   "trace_id" varchar(64),
+  "diff" text,
+  "user_agent" text,
+  "browser" varchar(32),
+  "os" varchar(32),
   "create_by" int8 NOT NULL,
   "create_org" int8 NOT NULL,
   "create_time" timestamp NOT NULL,
@@ -697,6 +703,10 @@ COMMENT ON COLUMN "pla_log_info"."execute_time" IS '执行耗时（毫秒）';
 COMMENT ON COLUMN "pla_log_info"."error_msg" IS '错误信息（异常日志用）';
 COMMENT ON COLUMN "pla_log_info"."status" IS '操作状态：0=失败 1=成功';
 COMMENT ON COLUMN "pla_log_info"."trace_id" IS '链路追踪ID（分布式场景串联一次请求的多条日志）';
+COMMENT ON COLUMN "pla_log_info"."diff" IS '字段级变更差异 JSON（如：[{"field":"角色","oldValue":"admin","newValue":"user"}]）';
+COMMENT ON COLUMN "pla_log_info"."user_agent" IS '原始User-Agent字符串';
+COMMENT ON COLUMN "pla_log_info"."browser" IS '浏览器，如 Chrome/Edge/Firefox';
+COMMENT ON COLUMN "pla_log_info"."os" IS '操作系统，如 Windows/macOS/Android/iOS';
 COMMENT ON COLUMN "pla_log_info"."create_by" IS '创建人标识';
 COMMENT ON COLUMN "pla_log_info"."create_org" IS '创建人所属组织标识';
 COMMENT ON COLUMN "pla_log_info"."create_time" IS '创建时间';

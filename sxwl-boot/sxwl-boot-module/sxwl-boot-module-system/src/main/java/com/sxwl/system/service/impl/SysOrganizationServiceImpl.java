@@ -1,6 +1,7 @@
 package com.sxwl.system.service.impl;
 
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.utils.SxwlDiffUtils;
 import com.sxwl.common.utils.SxwlTreeUtils;
 import com.sxwl.system.mapper.SysOrganizationMapper;
 import com.sxwl.system.model.dto.SysOrganizationDTO;
@@ -135,6 +136,15 @@ public class SysOrganizationServiceImpl implements SysOrganizationService {
             } else {
                 entity.setAncestors("0");
                 entity.setParentId(0L);
+            }
+        }
+
+        // 计算字段级变更差异
+        if (old != null) {
+            SysOrganization oldEntity = toEntity(old);
+            String diffJson = SxwlDiffUtils.diff(oldEntity, entity);
+            if (diffJson != null) {
+                SxwlDiffUtils.setContextDiff(diffJson);
             }
         }
 

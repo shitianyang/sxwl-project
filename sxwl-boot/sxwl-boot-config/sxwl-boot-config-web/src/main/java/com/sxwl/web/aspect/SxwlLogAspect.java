@@ -131,16 +131,10 @@ public class SxwlLogAspect {
         // 5. 采集用户信息
         collectUserInfo(event);
 
-        // 6. 采集字段级变更差异（由 Service 层通过 SxwlDiffUtils.setContextDiff() 设置）
-        String contextDiff = SxwlDiffUtils.getAndClearContextDiff();
-        if (contextDiff != null) {
-            event.diff(contextDiff);
-        }
-
-        // 7. 采集 TraceId
+        // 6. 采集 TraceId
         collectTraceId(event);
 
-        // 8. 执行目标方法
+        // 7. 执行目标方法
         Object result;
         try {
             result = joinPoint.proceed();
@@ -148,6 +142,13 @@ public class SxwlLogAspect {
             event.status(1)
                  .executeTime(costMs)
                  .responseResult(buildSuccessSummary(result));
+
+            // 8. 采集字段级变更差异（由 Service 层通过 SxwlDiffUtils.setContextDiff() 设置）
+            String contextDiff = SxwlDiffUtils.getAndClearContextDiff();
+            if (contextDiff != null) {
+                event.diff(contextDiff);
+            }
+
             log.debug("[OPERATION-LOG] {} | {}ms | SUCCESS", event.getMethod(), costMs);
         } catch (Throwable e) {
             long costMs = System.currentTimeMillis() - startTime;
@@ -159,6 +160,13 @@ public class SxwlLogAspect {
                  .executeTime(costMs)
                  .errorMsg(errorMsg)
                  .responseResult("操作失败: " + (errorMsg != null ? errorMsg : e.getClass().getSimpleName()));
+
+            // 采集字段级变更差异（即使失败也尝试记录已经计算好的 diff）
+            String contextDiff = SxwlDiffUtils.getAndClearContextDiff();
+            if (contextDiff != null) {
+                event.diff(contextDiff);
+            }
+
             log.warn("[OPERATION-LOG] {} | {}ms | FAILED: {}", event.getMethod(), costMs, errorMsg);
             // 先发布事件再抛异常（异常失败也要记日志）
             publishEvent(event);

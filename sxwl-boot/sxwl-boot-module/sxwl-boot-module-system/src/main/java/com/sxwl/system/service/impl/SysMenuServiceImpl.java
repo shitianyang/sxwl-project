@@ -1,6 +1,7 @@
 package com.sxwl.system.service.impl;
 
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.utils.SxwlDiffUtils;
 import com.sxwl.common.utils.SxwlTreeUtils;
 import com.sxwl.system.mapper.SysMenuMapper;
 import com.sxwl.system.model.dto.SysMenuDTO;
@@ -135,6 +136,15 @@ public class SysMenuServiceImpl implements SysMenuService {
         } else if (old != null) {
             // parentId 没变，复用旧 ancestors，防止前端未传字段导致 SQL 写入 NULL
             entity.setAncestors(old.getAncestors());
+        }
+
+        // 计算字段级变更差异
+        if (old != null) {
+            SysMenu oldEntity = toEntity(old);
+            String diffJson = SxwlDiffUtils.diff(oldEntity, entity);
+            if (diffJson != null) {
+                SxwlDiffUtils.setContextDiff(diffJson);
+            }
         }
 
         // 校验权限标识唯一性

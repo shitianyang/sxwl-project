@@ -7,6 +7,7 @@ import com.sxwl.config.model.entity.SysConfigInfo;
 import com.sxwl.config.model.params.SysConfigPageParams;
 import com.sxwl.config.service.SysConfigInfoService;
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.utils.SxwlDiffUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -73,6 +74,18 @@ public class SysConfigInfoServiceImpl implements SysConfigInfoService {
         // 唯一性校验（排除自身）
         if (sysConfigInfoMapper.checkConfigKeyUnique(dto.getConfigKey(), dto.getId()) > 0) {
             throw new SxwlBusinessException(10002, "参数键名已存在");
+        }
+
+        // 查询旧数据并计算字段级变更差异
+        SysConfigDTO oldDto = sysConfigInfoMapper.getConfigById(dto.getId());
+        if (oldDto != null) {
+            SysConfigInfo oldEntity = toEntity(oldDto);
+            SysConfigInfo newEntity = toEntity(dto);
+            newEntity.setId(dto.getId());
+            String diffJson = SxwlDiffUtils.diff(oldEntity, newEntity);
+            if (diffJson != null) {
+                SxwlDiffUtils.setContextDiff(diffJson);
+            }
         }
 
         SysConfigInfo entity = toEntity(dto);

@@ -2,6 +2,7 @@ package com.sxwl.system.service.impl;
 
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.utils.SxwlDiffUtils;
 import com.sxwl.security.key.SxwlSM2KeyManager;
 import com.sxwl.system.mapper.SysUserMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -122,7 +123,19 @@ public class SysUserServiceImpl implements SysUserService {
             throw new SxwlBusinessException(10002, "手机号已被占用");
         }
 
-        // 2. 构建实体（审计字段由 SxwlAutoFillInterceptor 自动填充）
+        // 2. 查询旧数据并计算字段级变更差异
+        SysUserDTO oldDto = sysUserMapper.getUserById(dto.getId());
+        if (oldDto != null) {
+            SysUser oldEntity = toEntity(oldDto);
+            SysUser newEntity = toEntity(dto);
+            newEntity.setId(dto.getId());
+            String diffJson = SxwlDiffUtils.diff(oldEntity, newEntity);
+            if (diffJson != null) {
+                SxwlDiffUtils.setContextDiff(diffJson);
+            }
+        }
+
+        // 3. 构建实体（审计字段由 SxwlAutoFillInterceptor 自动填充）
         SysUser entity = toEntity(dto);
 
         // 密码可选——传了才修改

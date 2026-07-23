@@ -2,6 +2,7 @@ package com.sxwl.system.service.impl;
 
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.utils.SxwlDiffUtils;
 import com.sxwl.system.mapper.SysDictDetailMapper;
 import com.sxwl.system.mapper.SysDictMapper;
 import com.sxwl.system.model.dto.SysDictDTO;
@@ -108,6 +109,18 @@ public class SysDictServiceImpl implements SysDictService {
             throw new SxwlBusinessException(10002, "字典编码已存在");
         }
 
+        // 查询旧数据并计算字段级变更差异
+        SysDictDTO oldDto = sysDictMapper.getDictById(dto.getId());
+        if (oldDto != null) {
+            SysDict oldEntity = toEntity(oldDto);
+            SysDict newEntity = toEntity(dto);
+            newEntity.setId(dto.getId());
+            String diffJson = SxwlDiffUtils.diff(oldEntity, newEntity);
+            if (diffJson != null) {
+                SxwlDiffUtils.setContextDiff(diffJson);
+            }
+        }
+
         SysDict entity = toEntity(dto);
         entity.setId(dto.getId());
 
@@ -187,6 +200,18 @@ public class SysDictServiceImpl implements SysDictService {
         // 唯一性校验（排除自身）
         if (sysDictDetailMapper.checkDetailValueUnique(dto.getDetailValue(), dto.getId()) > 0) {
             throw new SxwlBusinessException(10002, "字典明细值已存在");
+        }
+
+        // 查询旧数据并计算字段级变更差异
+        SysDictDetailDTO oldDto = sysDictDetailMapper.getDetailById(dto.getId());
+        if (oldDto != null) {
+            SysDictDetail oldEntity = toDetailEntity(oldDto);
+            SysDictDetail newEntity = toDetailEntity(dto);
+            newEntity.setId(dto.getId());
+            String diffJson = SxwlDiffUtils.diff(oldEntity, newEntity);
+            if (diffJson != null) {
+                SxwlDiffUtils.setContextDiff(diffJson);
+            }
         }
 
         SysDictDetail entity = toDetailEntity(dto);
