@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.notice.mapper.SysNoticeInfoMapper">
+
+    <sql id="selectNoticeColumns">
+        id, title, notice_type, level, status,
+        publish_time, expire_time,
+        TO_CHAR(create_time, 'YYYY-MM-DD HH24:MI:SS') AS createTime
+    </sql>
+
+    <select id="getNoticeById" resultType="com.sxwl.notice.model.dto.SysNoticeDTO">
+        SELECT id, title, content, notice_type, level, status,
+               publish_time, expire_time,
+               TO_CHAR(create_time, 'YYYY-MM-DD HH24:MI:SS') AS createTime
+        FROM sys_notice_info
+        WHERE id = #{id}
+        AND delete_flag = 0
+    </select>
+
+    <select id="getNoticePageByParams" resultType="com.sxwl.notice.model.dto.SysNoticeDTO">
+        SELECT <include refid="selectNoticeColumns"/>
+        FROM sys_notice_info
+        WHERE delete_flag = 0
+        <if test="title != null and title != ''">
+            AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+        <if test="noticeType != null and noticeType != ''">
+            AND notice_type = #{noticeType}
+        </if>
+        <if test="level != null and level != ''">
+            AND level = #{level}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <insert id="insertNotice" parameterType="com.sxwl.notice.model.entity.SysNoticeInfo">
+        INSERT INTO sys_notice_info (
+            id, title, content, notice_type, level, status,
+            publish_time, expire_time,
+            create_by, create_org, create_time, update_by, update_time
+        ) VALUES (
+            #{id}, #{title}, #{content}, #{noticeType}, #{level}, #{status},
+            #{publishTime}, #{expireTime},
+            #{createBy}, #{createOrg}, #{createTime}, #{createBy}, #{createTime}
+        )
+    </insert>
+
+    <update id="updateNotice" parameterType="com.sxwl.notice.model.entity.SysNoticeInfo">
+        UPDATE sys_notice_info
+        SET title       = #{title},
+            content     = #{content},
+            notice_type = #{noticeType},
+            level       = #{level},
+            status      = #{status},
+            expire_time = #{expireTime},
+            update_by   = #{updateBy},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteNoticeById">
+        UPDATE sys_notice_info
+        SET delete_flag = 1
+        WHERE id = #{id}
+    </update>
+
+    <update id="publishNotice">
+        UPDATE sys_notice_info
+        SET status = 1, publish_time = #{publishTime}
+        WHERE id = #{id} AND status = 0 AND delete_flag = 0
+    </update>
+
+    <update id="revokeNotice">
+        UPDATE sys_notice_info
+        SET status = 2
+        WHERE id = #{id} AND status = 1 AND delete_flag = 0
+    </update>
+
+</mapper>

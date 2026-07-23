@@ -7,7 +7,6 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Input } from 'antd';
 import type { FormInstance } from 'antd';
 import { loginByPassword } from '@/api/authApi';
 import { useAuthStore } from '@/stores/authStore';
@@ -34,7 +33,7 @@ const CaptchaInput: React.FC<{
   onChange?: (value: string) => void;
 }> = ({ form, value, onChange }) => (
   <div className="login-captcha-row">
-    <Input
+    <SxwlInput
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
       placeholder="验证码"
@@ -173,7 +172,7 @@ export default function LoginPage() {
                 block
                 className="login-btn"
               >
-                登 录
+                {loading ? null : '登 录'}
               </SxwlButton>
             </SxwlForm.Item>
           </SxwlForm>

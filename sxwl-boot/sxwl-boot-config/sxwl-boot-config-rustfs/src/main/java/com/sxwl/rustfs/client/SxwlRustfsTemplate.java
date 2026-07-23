@@ -1,5 +1,6 @@
 package com.sxwl.rustfs.client;
 
+import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.rustfs.config.SxwlRustfsProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -217,7 +218,7 @@ public class SxwlRustfsTemplate {
                     log.warn("Abort multipart upload failed: bucket={}, key={}, uploadId={}", bucket, destKey, uploadId, ex);
                 }
             }
-            throw new RuntimeException("S3 composeObject failed: bucket=" + bucket + ", destKey=" + destKey, e);
+            throw new SxwlBusinessException(500, "S3 composeObject 合并失败", e);
         }
     }
 

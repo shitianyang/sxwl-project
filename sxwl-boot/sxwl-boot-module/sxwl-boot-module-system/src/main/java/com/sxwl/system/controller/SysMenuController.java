@@ -1,8 +1,11 @@
 package com.sxwl.system.controller;
 
 import com.sxwl.common.annotation.SxwlLog;
+import com.sxwl.common.annotation.SxwlRepeatSubmit;
+import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.system.model.dto.SysMenuDTO;
 import com.sxwl.system.service.SysMenuService;
+import com.sxwl.security.utils.SxwlSecurityUtils;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -64,11 +67,28 @@ public class SysMenuController {
     }
 
     /**
+     * 查询当前用户有权访问的菜单树（用于侧边栏渲染）
+     * <p>无需特殊权限，任何已登录用户均可调用。</p>
+     *
+     * @return 树形菜单列表
+     */
+    @GetMapping("/user-tree")
+    @SxwlLog(title = "菜单管理", description = "查询当前用户菜单树")
+    public List<SysMenuDTO> getUserMenuTree() {
+        Long userId = SxwlSecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new SxwlBusinessException(401, "未登录");
+        }
+        return sysMenuService.getUserMenuTree(userId);
+    }
+
+    /**
      * 新增菜单
      *
      * @param dto 菜单信息
      */
     @PostMapping
+    @SxwlRepeatSubmit
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:menu:add')")
     @SxwlLog(title = "菜单管理", description = "新增菜单[#{#dto.menuName}]")
     public void createMenu(@Valid @RequestBody SysMenuDTO dto) {
@@ -81,6 +101,7 @@ public class SysMenuController {
      * @param dto 菜单信息（含 id）
      */
     @PutMapping
+    @SxwlRepeatSubmit
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:menu:edit')")
     @SxwlLog(title = "菜单管理", description = "修改菜单[#{#dto.menuName}]")
     public void updateMenu(@Valid @RequestBody SysMenuDTO dto) {
@@ -93,6 +114,7 @@ public class SysMenuController {
      * @param id 菜单 ID
      */
     @DeleteMapping("/{id}")
+    @SxwlRepeatSubmit
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:menu:delete')")
     @SxwlLog(title = "菜单管理", description = "删除菜单[id=#{#id}]")
     public void deleteMenuById(@PathVariable("id") Long id) {

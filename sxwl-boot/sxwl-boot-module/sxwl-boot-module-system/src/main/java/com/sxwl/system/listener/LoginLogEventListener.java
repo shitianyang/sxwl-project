@@ -48,6 +48,12 @@ public class LoginLogEventListener {
             entity.setUserName(event.getUsername());
             entity.setStatus(1);
             entity.setExecuteTime(0L);
+            entity.setUserAgent(event.getUserAgent());
+            entity.setBrowser(event.getBrowser());
+            entity.setOs(event.getOs());
+            entity.setOperateLocation(event.getOperateLocation());
+            entity.setRequestUrl(event.getRequestUrl());
+            entity.setRequestMethod(event.getRequestMethod());
 
             LocalDateTime now = LocalDateTime.now();
             entity.setCreateBy(event.getUserId());

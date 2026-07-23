@@ -1,76 +1,118 @@
-import { lazy, Suspense } from 'react';
-import type { ReactNode } from 'react';
-import { Navigate, createBrowserRouter } from 'react-router-dom';
+import { lazy, Suspense, useMemo } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Spin } from 'antd';
 import AuthGuard from './AuthGuard';
+import { useAuthStore } from '@/stores/authStore';
+import { useMenuStore } from '@/stores/menuStore';
+import { buildRouteElements } from './dynamicRoutes';
+import { resolveComponent } from './pageResolver';
 
-const LoginPage = lazy(() => import('@/pages/Login'));
 const SxwlLayout = lazy(() => import('@/layouts/SxwlLayout'));
-const DashboardPage = lazy(() => import('@/pages/Dashboard'));
-const NotFound = lazy(() => import('@/pages/Error/NotFound'));
-const Forbidden = lazy(() => import('@/pages/Error/Forbidden'));
-const ServerError = lazy(() => import('@/pages/Error/ServerError'));
-const UserPage = lazy(() => import('@/pages/System/User'));
-const PositionPage = lazy(() => import('@/pages/System/Position'));
-const MenuPage = lazy(() => import('@/pages/System/Menu'));
-const OrganizationPage = lazy(() => import('@/pages/System/Organization'));
-const DictPage = lazy(() => import('@/pages/System/Dict'));
-const RolePage = lazy(() => import('@/pages/System/Role'));
-const OperationLogPage = lazy(() => import('@/pages/Log/OperationLog'));
-const LoginLogPage = lazy(() => import('@/pages/Log/LoginLog'));
-const FilePage = lazy(() => import('@/pages/File'));
 
-function routeElement(element: ReactNode) {
-  return <Suspense fallback={null}>{element}</Suspense>;
+/** 未登录重定向：携带当前路径，登录后可回到原页面 */
+function LoginRedirect() {
+  const location = useLocation();
+  return <Navigate to="/login" state={{ from: location }} replace />;
 }
 
-const router = createBrowserRouter([
-  // ==================== 公开路由 ====================
-  {
-    path: '/login',
-    element: routeElement(<LoginPage />),
-  },
-  {
-    path: '/403',
-    element: routeElement(<Forbidden />),
-  },
-  {
-    path: '/404',
-    element: routeElement(<NotFound />),
-  },
-  {
-    path: '/500',
-    element: routeElement(<ServerError />),
-  },
+/**
+ * 登录守卫：未登录时重定向到 /login（携带 from 状态）
+ * 路由树始终存在，避免条件渲染导致的路由时序问题
+ */
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn());
+  const location = useLocation();
 
-  // ==================== 受保护路由（需登录） ====================
-  {
-    path: '/',
-    element: (
-      <AuthGuard>
-        {routeElement(<SxwlLayout />)}
-      </AuthGuard>
-    ),
-    children: [
-      { index: true, element: <Navigate to="/dashboard" replace /> },
-      { path: 'dashboard', element: routeElement(<DashboardPage />) },
-      { path: 'system/user', element: routeElement(<UserPage />) },
-      { path: 'system/position', element: routeElement(<PositionPage />) },
-      { path: 'system/menu', element: routeElement(<MenuPage />) },
-      { path: 'system/organization', element: routeElement(<OrganizationPage />) },
-      { path: 'system/dict', element: routeElement(<DictPage />) },
-      { path: 'system/role', element: routeElement(<RolePage />) },
-      { path: 'log/operation', element: routeElement(<OperationLogPage />) },
-      { path: 'log/login', element: routeElement(<LoginLogPage />) },
-      { path: 'file', element: routeElement(<FilePage />) },
-      // TODO: 后续接入动态路由
-    ],
-  },
+  if (!isLoggedIn) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
-  // ==================== 兜底路由 ====================
-  {
-    path: '*',
-    element: <Navigate to="/404" replace />,
-  },
-]);
+  return <>{children}</>;
+}
 
-export default router;
+/**
+ * 受保护区域内的兜底路由：
+ * - 菜单未加载时返回 null（不触发 404 重定向）
+ * - 菜单加载后仍未匹配 → 跳转 404
+ */
+function ProtectedCatchAll() {
+  const loaded = useMenuStore((s) => s.loaded);
+  if (!loaded) return null;
+  return <Navigate to="/404" replace />;
+}
+
+/**
+ * 公开路由配置（基础设施页面，不存储在 DB 中）
+ * 通过 import.meta.glob + resolveComponent 自动解析组件，无手动 lazy import
+ */
+const PUBLIC_ROUTES: Array<{ path: string; component: string }> = [
+  { path: 'login', component: 'Login' },
+  { path: '404', component: 'Error/NotFound' },
+  { path: '403', component: 'Error/Forbidden' },
+  { path: '500', component: 'Error/ServerError' },
+];
+
+/**
+ * 应用路由根组件
+ * - 公开路由：代码定义的基础页面（login/403/404/500）
+ * - 受保护路由：始终渲染，ProtectedRoute 守卫登录态
+ * - 兜底路由：未登录进 /login（携带 from state）
+ */
+export default function AppRouter() {
+  const menuTree = useMenuStore((s) => s.menuTree);
+
+  const publicRouteElements = useMemo(
+    () =>
+      PUBLIC_ROUTES
+        .map((route) => {
+          const Component = resolveComponent(route.component);
+          if (!Component) return null;
+          return (
+            <Route
+              key={route.path}
+              path={'/' + route.path}
+              element={
+                <Suspense fallback={<Spin style={{ display: 'block', margin: '100px auto' }} />}>
+                  <Component />
+                </Suspense>
+              }
+            />
+          );
+        })
+        .filter(Boolean),
+    [],
+  );
+
+  const dynamicRoutes = useMemo(() => buildRouteElements(menuTree), [menuTree]);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* ==================== 公开路由（代码定义） ==================== */}
+        {publicRouteElements}
+
+        {/* ==================== 受保护路由（始终存在，不受登录态影响） ==================== */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <AuthGuard>
+                <Suspense fallback={null}>
+                  <SxwlLayout />
+                </Suspense>
+              </AuthGuard>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          {dynamicRoutes}
+          {/* 菜单未加载时不跳转，加载后仍未匹配才跳 404 */}
+          <Route path="*" element={<ProtectedCatchAll />} />
+        </Route>
+
+        {/* ==================== 兜底路由 ==================== */}
+        <Route path="*" element={<LoginRedirect />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}

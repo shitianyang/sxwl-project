@@ -5,6 +5,7 @@ import com.sxwl.auth.strategy.SxwlSmsAuthStrategy;
 import com.sxwl.common.entity.SxwlPublicKeyVO;
 import com.sxwl.common.entity.SxwlResult;
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.utils.SxwlIpLocationService;
 import com.sxwl.common.utils.SxwlJwtUtils;
 import com.sxwl.common.utils.SxwlRedisKeyUtils;
 import com.sxwl.redis.helper.SxwlRedisHelper;
@@ -60,6 +61,7 @@ public class AuthController {
     private final SxwlPasswordAuthStrategy passwordAuthStrategy;
     private final SxwlSmsAuthStrategy smsAuthStrategy;
     private final SxwlSM2KeyManager keyManager;
+    private final Optional<SxwlIpLocationService> ipLocationService;
 
     public AuthController(SxwlAuthenticationHandler handler,
                           SxwlRedisHelper redisHelper,
@@ -68,7 +70,8 @@ public class AuthController {
                           ApplicationEventPublisher eventPublisher,
                           SxwlPasswordAuthStrategy passwordAuthStrategy,
                           SxwlSmsAuthStrategy smsAuthStrategy,
-                          SxwlSM2KeyManager keyManager) {
+                          SxwlSM2KeyManager keyManager,
+                          Optional<SxwlIpLocationService> ipLocationService) {
         this.handler = handler;
         this.redisHelper = redisHelper;
         this.properties = properties;
@@ -77,6 +80,7 @@ public class AuthController {
         this.passwordAuthStrategy = passwordAuthStrategy;
         this.smsAuthStrategy = smsAuthStrategy;
         this.keyManager = keyManager;
+        this.ipLocationService = ipLocationService;
     }
 
     /**
@@ -124,6 +128,8 @@ public class AuthController {
                                                SxwlAuthenticationStrategy strategy) {
         String username = request.getUsername();
         String ip = getClientIp(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
+        String location = ipLocationService.map(svc -> svc.getLocation(ip)).orElse(null);
         String failKey = SxwlRedisKeyUtils.loginFailAccountIpKey(username != null ? username : "unknown", ip);
 
         // 1. 校验图形验证码（每次登录必填）
@@ -143,6 +149,10 @@ public class AuthController {
             failureEvent.setFailReason(e.getMessage());
             failureEvent.setFailCount((int) newCount);
             failureEvent.setTime(LocalDateTime.now());
+            failureEvent.setUserAgent(userAgent);
+            failureEvent.setOperateLocation(location);
+            failureEvent.setBrowser(parseBrowser(userAgent));
+            failureEvent.setOs(parseOs(userAgent));
             eventPublisher.publishEvent(failureEvent);
             throw e;
         }
@@ -156,7 +166,7 @@ public class AuthController {
             deviceId = "unknown";
         }
         String clientType = SxwlClientTypeUtils.resolve(httpRequest);
-        SxwlTokenPair tokenPair = handler.createTokenPair(loginUser, deviceId, clientType);
+        SxwlTokenPair tokenPair = handler.createTokenPair(loginUser, deviceId, clientType, ip, userAgent);
 
         // 5. 发布登录成功事件
         SxwlLoginSuccessEvent successEvent = new SxwlLoginSuccessEvent();
@@ -166,6 +176,12 @@ public class AuthController {
         successEvent.setDeviceId(deviceId);
         successEvent.setLoginType(loginType);
         successEvent.setTime(LocalDateTime.now());
+        successEvent.setUserAgent(userAgent);
+        successEvent.setOperateLocation(location);
+        successEvent.setBrowser(parseBrowser(userAgent));
+        successEvent.setOs(parseOs(userAgent));
+        successEvent.setRequestUrl(httpRequest.getRequestURI());
+        successEvent.setRequestMethod(httpRequest.getMethod());
         eventPublisher.publishEvent(successEvent);
 
         log.info("登录成功: userId={}, username={}, loginType={}", loginUser.getUserId(), username, loginType);
@@ -259,5 +275,26 @@ public class AuthController {
             ip = ip.split(",")[0].trim();
         }
         return ip;
+    }
+
+    /** 从 User-Agent 解析浏览器 */
+    private String parseBrowser(String userAgent) {
+        if (userAgent == null || userAgent.isBlank()) return "未知";
+        if (userAgent.contains("Edg")) return "Edge";
+        if (userAgent.contains("Chrome")) return "Chrome";
+        if (userAgent.contains("Firefox")) return "Firefox";
+        if (userAgent.contains("Safari")) return "Safari";
+        return "其他";
+    }
+
+    /** 从 User-Agent 解析操作系统 */
+    private String parseOs(String userAgent) {
+        if (userAgent == null || userAgent.isBlank()) return "未知";
+        if (userAgent.contains("Windows NT")) return "Windows";
+        if (userAgent.contains("Mac OS X")) return "macOS";
+        if (userAgent.contains("Linux") && !userAgent.contains("Android")) return "Linux";
+        if (userAgent.contains("Android")) return "Android";
+        if (userAgent.contains("iPhone") || userAgent.contains("iPad")) return "iOS";
+        return "其他";
     }
 }

@@ -8,7 +8,8 @@
         id, log_type, title, description, method,
         request_url, request_method, request_param, response_result,
         operate_ip, operate_location, user_id, user_name,
-        execute_time, error_msg, status, trace_id,
+        execute_time, error_msg, status, trace_id, diff,
+        user_agent, browser, os,
         TO_CHAR(create_time, 'YYYY-MM-DD HH24:MI:SS') AS createTime
     </sql>
 
@@ -44,13 +45,15 @@
             id, log_type, title, description, method,
             request_url, request_method, request_param, response_result,
             operate_ip, operate_location, user_id, user_name,
-            execute_time, error_msg, status, trace_id,
+            execute_time, error_msg, status, trace_id, diff,
+            user_agent, browser, os,
             create_by, create_org, create_time
         ) VALUES (
             #{id}, #{logType}, #{title}, #{description}, #{method},
             #{requestUrl}, #{requestMethod}, #{requestParam}, #{responseResult},
             #{operateIp}, #{operateLocation}, #{userId}, #{userName},
-            #{executeTime}, #{errorMsg}, #{status}, #{traceId},
+            #{executeTime}, #{errorMsg}, #{status}, #{traceId}, #{diff},
+            #{userAgent}, #{browser}, #{os},
             #{createBy}, #{createOrg}, #{createTime}
         )
     </insert>

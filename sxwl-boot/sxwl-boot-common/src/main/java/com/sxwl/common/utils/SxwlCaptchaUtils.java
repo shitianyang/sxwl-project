@@ -7,6 +7,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * 验证码工具类
@@ -56,6 +58,11 @@ public final class SxwlCaptchaUtils {
     private static final String NUMERIC_CHAR_POOL = "123456789";
 
     private static final SecureRandom RANDOM = new SecureRandom();
+
+    /**
+     * 缓存常用 Font 对象，避免反复触发字体子系统枚举（首次 new Font 会全量扫描字体）
+     */
+    private static final ConcurrentMap<String, Font> FONT_CACHE = new ConcurrentHashMap<>();
 
     private SxwlCaptchaUtils() {
         throw new UnsupportedOperationException("SxwlCaptchaUtils 工具类，不允许实例化");
@@ -177,9 +184,9 @@ public final class SxwlCaptchaUtils {
             g.fillOval(x, y, 2, 2);
         }
 
-        // 字体（加粗，高度自适应）
+        // 字体（加粗，高度自适应，从缓存获取）
         int fontSize = Math.max(18, height - 8);
-        Font font = new Font("Arial", Font.BOLD, fontSize);
+        Font font = cachedFont("Arial", Font.BOLD, fontSize);
         g.setFont(font);
         FontMetrics fm = g.getFontMetrics();
 
@@ -265,6 +272,14 @@ public final class SxwlCaptchaUtils {
         int g = minBrightness + RANDOM.nextInt(maxBrightness - minBrightness + 1);
         int b = minBrightness + RANDOM.nextInt(maxBrightness - minBrightness + 1);
         return new Color(r, g, b);
+    }
+
+    /**
+     * 获取或创建 Font（缓存复用，避免反复调用 new Font 触发字体枚举）
+     */
+    private static Font cachedFont(String name, int style, int size) {
+        String key = name + "|" + style + "|" + size;
+        return FONT_CACHE.computeIfAbsent(key, k -> new Font(name, style, size));
     }
 
     // ==================== 结果模型 ====================

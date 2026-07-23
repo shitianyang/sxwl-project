@@ -41,6 +41,11 @@
     padding: 6px 14px;
     background: rgba(34, 197, 94, 0.1);
     border-radius: 20px;
+
+    &.banner-tip--error {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+    }
   }
 }
 

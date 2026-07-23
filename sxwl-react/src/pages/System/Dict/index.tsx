@@ -73,14 +73,11 @@ export default function DictPage() {
 
   const handleAdd = () => {
     setEditingDict(null);
-    form.resetFields();
-    form.setFieldsValue({ status: 1 });
     setModalOpen(true);
   };
 
   const handleEdit = (record: DictItem) => {
     setEditingDict(record);
-    form.setFieldsValue(record);
     setModalOpen(true);
   };
 
@@ -140,14 +137,11 @@ export default function DictPage() {
 
   const handleAddDetail = () => {
     setEditingDetail(null);
-    detailForm.resetFields();
-    detailForm.setFieldsValue({ dictId: currentDictId, sort: 0, status: 1, isDefault: 0 });
     setDetailFormOpen(true);
   };
 
   const handleEditDetail = (record: DictDetailItem) => {
     setEditingDetail(record);
-    detailForm.setFieldsValue(record);
     setDetailFormOpen(true);
   };
 
@@ -338,6 +332,8 @@ export default function DictPage() {
         columns={1}
         width={560}
         confirmLoading={confirmLoading}
+        initialValues={{ status: 1 }}
+        editingData={editingDict}
       />
 
       {/* 字典明细弹窗 */}
@@ -375,6 +371,8 @@ export default function DictPage() {
           columns={1}
           width={560}
           confirmLoading={detailConfirmLoading}
+          initialValues={{ dictId: currentDictId, sort: 0, status: 1, isDefault: 0 }}
+          editingData={editingDetail}
         />
       </SxwlModal>
     </>

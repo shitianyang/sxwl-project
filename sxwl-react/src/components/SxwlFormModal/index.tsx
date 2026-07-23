@@ -1,8 +1,8 @@
-import { type JSX } from 'react';
+import { type JSX, useEffect } from 'react';
 import type { FormInstance } from 'antd/es/form';
 import { Row, Col } from 'antd';
 import {
-  SxwlInput, SxwlSelect, SxwlModal, SxwlForm,
+  SxwlInput, SxwlSelect, SxwlModal, SxwlForm, SxwlMarkdownEditor,
 } from '@/components';
 import type { FormFieldConfig } from '@/components/FormFieldConfig';
 import './index.scss';
@@ -33,6 +33,12 @@ export interface SxwlFormModalProps {
    *  - 2 列：字段左右两列排列，更紧凑
    */
   columns?: 1 | 2;
+  /** 关闭时是否卸载子组件（重新打开时全新创建） */
+  destroyOnHidden?: boolean;
+  /** 新增时默认值（弹窗打开时自动 resetFields + setFieldsValue） */
+  initialValues?: Record<string, any>;
+  /** 编辑时初始数据（弹窗打开时自动 resetFields + setFieldsValue，优先级高于 initialValues） */
+  editingData?: Record<string, any>;
 }
 
 // ==================== Component
@@ -48,6 +54,9 @@ function SxwlFormModal({
   confirmLoading,
   layout = 'vertical',
   columns = 2,
+  destroyOnHidden,
+  initialValues,
+  editingData,
 }: SxwlFormModalProps): JSX.Element {
   const colSpan = columns === 1 ? 24 : 12;
   const buildRules = (field: FormFieldConfig) => {
@@ -58,6 +67,18 @@ function SxwlFormModal({
     return rules;
   };
 
+  // 弹窗打开时自动初始化表单，此时 Form 已在 DOM 中（formHooked=true），无警告
+  useEffect(() => {
+    if (open) {
+      form.resetFields();
+      if (editingData) {
+        form.setFieldsValue(editingData);
+      } else if (initialValues) {
+        form.setFieldsValue(initialValues);
+      }
+    }
+  }, [open]);
+
   return (
     <SxwlModal
       title={title}
@@ -66,12 +87,14 @@ function SxwlFormModal({
       onCancel={onCancel}
       width={width}
       confirmLoading={confirmLoading}
+      destroyOnHidden={destroyOnHidden}
     >
       <SxwlForm
         form={form}
         layout={layout}
         className="sxwl-form-modal__form"
         labelCol={layout === 'horizontal' ? { style: { minWidth: 100 } } : undefined}
+        preserve={false}
       >
         <Row gutter={16}>
           {fields.map((field) => (
@@ -87,6 +110,12 @@ function SxwlFormModal({
                     placeholder={field.placeholder ?? `请选择${field.label ?? field.name}`}
                     options={field.options}
                     disabled={field.disabled}
+                  />
+                ) : field.type === 'markdown' ? (
+                  <SxwlMarkdownEditor
+                    placeholder={field.placeholder ?? '支持 Markdown 格式...'}
+                    minRows={6}
+                    maxRows={24}
                   />
                 ) : (
                   <SxwlInput

@@ -8,7 +8,8 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
-import { Modal, Button, Skeleton, Typography } from 'antd';
+import { Button, Skeleton, Typography } from 'antd';
+import { SxwlModal } from '@/components';
 import type { SysFileDTO } from '@/api/system/fileApi';
 import { getPresignedUrl, downloadFile } from '@/api/system/fileApi';
 import SxwlIcon from '../SxwlIcon';
@@ -163,7 +164,7 @@ const SxwlFilePreview: React.FC<SxwlFilePreviewProps> = ({ open, onClose, file }
   };
 
   return (
-    <Modal
+    <SxwlModal
       title={
         <span>
           <SxwlIcon name="EyeOutlined" style={{ marginRight: 8 }} />
@@ -180,10 +181,10 @@ const SxwlFilePreview: React.FC<SxwlFilePreviewProps> = ({ open, onClose, file }
         ) : null
       }
       width={800}
-      destroyOnClose
+      destroyOnHidden
     >
       {loading ? <Skeleton active /> : renderPreview()}
-    </Modal>
+    </SxwlModal>
   );
 };
 

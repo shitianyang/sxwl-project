@@ -1,0 +1,134 @@
+@use '@/styles/variables' as *;
+
+/* ===== Header 通知铃铛 ===== */
+
+.sxwl-header-notice-badge {
+  margin-right: 16px;
+  cursor: pointer;
+  line-height: 64px;
+}
+
+.sxwl-header-notice-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.sxwl-header-notice-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  height: 64px;
+  width: 40px;
+  border-radius: 0;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+}
+
+/* ===== Popover 弹窗 ===== */
+
+.sxwl-header-notice-overlay {
+  .ant-popover-inner {
+    padding: 0;
+  }
+}
+
+.sxwl-header-notice-popover {
+  width: 360px;
+  max-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sxwl-header-notice-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.sxwl-header-notice-loading {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+/* ===== 公告列表 ===== */
+
+.sxwl-header-notice-list {
+  overflow-y: auto;
+  max-height: 380px;
+}
+
+.sxwl-header-notice-item {
+  padding: 10px 16px !important;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &.unread {
+    background: #f6ffed;
+  }
+
+  &:hover {
+    background: #fafafa;
+  }
+
+  .ant-list-item-meta-title {
+    margin-bottom: 2px !important;
+  }
+}
+
+.sxwl-header-notice-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff4d4f;
+  vertical-align: middle;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+/* ===== SSE 连接状态点 ===== */
+
+.sxwl-header-notice-sse-wrapper {
+  display: inline-flex;
+  align-items: center;
+  line-height: 64px;
+  margin-right: 4px;
+  cursor: default;
+}
+
+.sxwl-header-notice-sse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  vertical-align: middle;
+  flex-shrink: 0;
+  transition: background 0.3s;
+
+  &.connected {
+    background: #52c41a;
+    box-shadow: 0 0 4px rgba(82, 196, 26, 0.6);
+  }
+
+  &.connecting {
+    background: #faad14;
+    animation: sxwl-sse-pulse 1s ease-in-out infinite;
+  }
+
+  &.disconnected {
+    background: #ff4d4f;
+  }
+}
+
+@keyframes sxwl-sse-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}

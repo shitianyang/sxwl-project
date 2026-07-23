@@ -1,5 +1,6 @@
 package com.sxwl.security.handler;
 
+import com.sxwl.common.constants.SxwlRedisKeyConstants;
 import com.sxwl.common.utils.SxwlJwtUtils;
 import com.sxwl.common.utils.SxwlRedisKeyUtils;
 import com.sxwl.redis.helper.SxwlRedisHelper;
@@ -10,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -49,10 +52,12 @@ public class SxwlAuthenticationHandler {
      * @param clientType 客户端类型（admin/front）
      * @return Token 对
      */
-    public SxwlTokenPair createTokenPair(SxwlLoginUser loginUser, String deviceId, String clientType) {
+    public SxwlTokenPair createTokenPair(SxwlLoginUser loginUser, String deviceId, String clientType, String ip, String userAgent) {
         SxwlTokenPair tokenPair = buildTokenPair(loginUser.getUserId(), deviceId, clientType);
         // 用户信息缓存（Hash）
         cacheUserInfo(loginUser);
+        // 在线用户数据
+        cacheOnlineUserInfo(loginUser, deviceId, ip, userAgent);
         return tokenPair;
     }
 
@@ -191,5 +196,50 @@ public class SxwlAuthenticationHandler {
 
     private String nullSafe(String value) {
         return value != null ? value : "";
+    }
+
+    /**
+     * 缓存在线用户数据到 Redis
+     * <p>写两条数据：online:users 集合 + online:user:{userId}:{deviceId} 详情 Hash。</p>
+     */
+    private void cacheOnlineUserInfo(SxwlLoginUser loginUser, String deviceId, String ip, String userAgent) {
+        // 1. 加入在线用户集合
+        redisHelper.sadd(SxwlRedisKeyConstants.ONLINE_USERS_KEY, String.valueOf(loginUser.getUserId()));
+
+        // 2. 在线用户详情 Hash
+        String onlineUserKey = SxwlRedisKeyUtils.onlineUserDeviceKey(loginUser.getUserId(), deviceId);
+        Map<String, String> userMap = new LinkedHashMap<>();
+        userMap.put("username", nullSafe(loginUser.getUsername()));
+        userMap.put("ip", nullSafe(ip));
+        userMap.put("browser", parseBrowser(userAgent));
+        userMap.put("os", parseOs(userAgent));
+        userMap.put("loginTime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+        redisHelper.hmset(onlineUserKey, userMap);
+        long refreshExpire = securityProperties.getRefreshTokenExpire();
+        redisHelper.expire(onlineUserKey, Duration.ofSeconds(refreshExpire));
+
+        log.info("在线用户缓存: userId={}, deviceId={}", loginUser.getUserId(), deviceId);
+    }
+
+    /** 从 User-Agent 解析浏览器 */
+    private String parseBrowser(String userAgent) {
+        if (userAgent == null || userAgent.isBlank()) return "未知";
+        if (userAgent.contains("Edg")) return "Edge";
+        if (userAgent.contains("Chrome")) return "Chrome";
+        if (userAgent.contains("Firefox")) return "Firefox";
+        if (userAgent.contains("Safari")) return "Safari";
+        return "其他";
+    }
+
+    /** 从 User-Agent 解析操作系统 */
+    private String parseOs(String userAgent) {
+        if (userAgent == null || userAgent.isBlank()) return "未知";
+        if (userAgent.contains("Windows NT")) return "Windows";
+        if (userAgent.contains("Mac OS X")) return "macOS";
+        if (userAgent.contains("Linux") && !userAgent.contains("Android")) return "Linux";
+        if (userAgent.contains("Android")) return "Android";
+        if (userAgent.contains("iPhone") || userAgent.contains("iPad")) return "iOS";
+        return "其他";
     }
 }

@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
   REFRESH_TOKEN: 'refreshToken',
   USERNAME: 'username',
   REMEMBERED_USERNAME: 'rememberedUsername',
+  DEVICE_ID: 'deviceId',
 } as const;
 
 const PREFIX = 'sxwl_';

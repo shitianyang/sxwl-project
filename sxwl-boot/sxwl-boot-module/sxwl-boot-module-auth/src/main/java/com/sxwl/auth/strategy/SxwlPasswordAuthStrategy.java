@@ -152,7 +152,7 @@ public class SxwlPasswordAuthStrategy implements SxwlAuthenticationStrategy {
         }
 
         Set<String> perms = new HashSet<>(sysUserMapper.selectPermissionsByUserId(loginUser.getUserId()));
-        if (roles.contains("admin") || isBootstrapAdmin(loginUser)) {
+        if (allData) {
             roles.add("admin");
             perms.add("*:*:*");
             allData = true;
@@ -168,11 +168,6 @@ public class SxwlPasswordAuthStrategy implements SxwlAuthenticationStrategy {
         if (value != null) {
             values.add(value);
         }
-    }
-
-    private boolean isBootstrapAdmin(SxwlLoginUser loginUser) {
-        return Long.valueOf(1L).equals(loginUser.getUserId())
-                && "admin".equals(loginUser.getUsername());
     }
 
     private Long toLong(Object value) {

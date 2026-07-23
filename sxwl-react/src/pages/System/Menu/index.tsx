@@ -33,6 +33,14 @@ export default function MenuPage() {
   const [isRoot, setIsRoot] = useState(false);
   const [form] = SxwlForm.useForm();
 
+  // 新增弹窗的默认值（编辑时为 undefined，由 editingData 控制）
+  const formInitialValues = useMemo(() => {
+    if (editingMenu) return undefined;
+    const values: Record<string, any> = { menuType, sort: 0, visible: 1, status: 1, isFrame: 0, isCache: 0 };
+    if (parentId !== undefined) values.parentId = parentId;
+    return values;
+  }, [editingMenu, parentId, menuType]);
+
   const loadTree = useCallback(async () => {
     setLoading(true);
     try {
@@ -71,8 +79,6 @@ export default function MenuPage() {
     setParentId(undefined);
     setMenuType(1);
     setIsRoot(true);
-    form.resetFields();
-    form.setFieldsValue({ menuType: 1, sort: 0, visible: 1, status: 1, isFrame: 0, isCache: 0 });
     setModalOpen(true);
   };
 
@@ -81,8 +87,6 @@ export default function MenuPage() {
     setParentId(record.id);
     setMenuType(2);
     setIsRoot(false);
-    form.resetFields();
-    form.setFieldsValue({ menuType: 2, parentId: record.id, sort: 0, visible: 1, status: 1, isFrame: 0, isCache: 0 });
     setModalOpen(true);
   };
 
@@ -94,7 +98,6 @@ export default function MenuPage() {
       setParentId(menu.parentId);
       setMenuType(menu.menuType);
       setIsRoot(menu.parentId === 0);
-      form.setFieldsValue(menu);
       setModalOpen(true);
     } catch {
       SxwlMessage.error('获取菜单详情失败');
@@ -207,23 +210,14 @@ export default function MenuPage() {
       options: flatTree.map(n => ({ value: n.key as number, label: n.title as string })),
       onChange: handleParentIdChange,
     },
-    { name: 'path', label: '路由路径', type: 'input', maxLength: 128, placeholder: '路由路径，如：/sys/user',
-      hidden: menuType === 3,
-    },
-    { name: 'component', label: '组件路径', type: 'input', maxLength: 128, placeholder: '组件路径，如：system/user/index',
-      hidden: menuType !== 2,
-    },
-    { name: 'perms', label: '权限标识', type: 'input', maxLength: 64, placeholder: '权限标识，如：system:user:list',
-      hidden: menuType === 1,
-    },
-    { name: 'icon', label: '菜单图标', type: 'input', maxLength: 64, placeholder: '图标名，如：UserOutlined',
-      hidden: menuType === 3,
-    },
+    { name: 'path', label: '路由路径', type: 'input', maxLength: 128, placeholder: '路由路径，如：/sys/user' },
+    { name: 'component', label: '组件路径', type: 'input', maxLength: 128, placeholder: '组件路径，如：system/user/index' },
+    { name: 'perms', label: '权限标识', type: 'input', maxLength: 64, placeholder: '权限标识，如：system:user:list' },
+    { name: 'icon', label: '菜单图标', type: 'input', maxLength: 64, placeholder: '图标名，如：UserOutlined' },
     { name: 'sort', label: '排序', type: 'input', required: true, initialValue: 0, placeholder: '排序号，越小越靠前' },
     {
       name: 'visible', label: '是否可见', type: 'select', initialValue: 1,
       options: [{ value: 1, label: '显示' }, { value: 0, label: '隐藏' }],
-      hidden: menuType === 3,
       placeholder: '请选择是否可见',
     },
     {
@@ -233,12 +227,10 @@ export default function MenuPage() {
     },
     { name: 'isFrame', label: '是否外链', type: 'select', initialValue: 0,
       options: [{ value: 0, label: '内嵌' }, { value: 1, label: '外链' }],
-      hidden: menuType === 3,
       placeholder: '请选择是否外链',
     },
     { name: 'isCache', label: '是否缓存', type: 'select', initialValue: 0,
       options: [{ value: 0, label: '不缓存' }, { value: 1, label: '缓存' }],
-      hidden: menuType !== 2,
       placeholder: '请选择是否缓存',
     },
     { name: 'description', label: '描述', type: 'input', maxLength: 200, placeholder: '请输入描述' },
@@ -268,6 +260,8 @@ export default function MenuPage() {
         onCancel={() => setModalOpen(false)}
         width={640}
         confirmLoading={confirmLoading}
+        initialValues={formInitialValues}
+        editingData={editingMenu}
       />
     </>
   );

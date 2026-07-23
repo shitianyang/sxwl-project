@@ -19,6 +19,9 @@ export default defineConfig({
       '/sxwl-api': {
         target: 'http://127.0.0.1:30101',
         changeOrigin: true,
+        // SSE 长连接不超时
+        timeout: 0,
+        proxyTimeout: 0,
       },
     },
   },

@@ -3,6 +3,7 @@ package com.sxwl.security.key;
 import com.sxwl.common.entity.SxwlPublicKeyVO;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.common.utils.SM2Utils;
+import com.sxwl.redis.helper.SxwlRedisHelper;
 import com.sxwl.security.config.SxwlSecurityProperties;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -14,6 +15,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HexFormat;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -44,6 +46,9 @@ public class SxwlSM2KeyManager {
     private static final Random RANDOM = new Random();
     private static final HexFormat HEX = HexFormat.of();
 
+    /** Redis 操作封装（持久化 SM2 密钥对，确保重启不丢失） */
+    private static final String REDIS_KEY = "sxwl:sm2:key-store";
+
     /** 读写锁保护内部状态 */
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -68,18 +73,29 @@ public class SxwlSM2KeyManager {
         return t;
     });
 
-    public SxwlSM2KeyManager(SxwlSecurityProperties properties) {
+    private final SxwlRedisHelper redisHelper;
+
+    public SxwlSM2KeyManager(SxwlSecurityProperties properties, SxwlRedisHelper redisHelper) {
         this.rotationIntervalMinutes = properties.getSm2KeyRotationIntervalMinutes();
         this.gracePeriodMinutes = properties.getSm2KeyGracePeriodMinutes();
         this.maxHistory = properties.getSm2KeyMaxHistory();
+        this.redisHelper = redisHelper;
     }
 
     @PostConstruct
     public void init() {
-        // 1. 生成随机初始密钥对
-        currentKey = generateNewKey();
-        log.info("SM2 初始密钥已生成: keyId={}", currentKey.keyId);
-        // 2. 启动定时轮换
+        // 1. 优先从 Redis 恢复密钥对（确保重启不丢失）
+        boolean loaded = loadFromRedis();
+        if (!loaded) {
+            // 2. Redis 无数据，生成新密钥对
+            currentKey = generateNewKey();
+            saveToRedis(currentKey);
+            log.info("SM2 初始密钥已生成并持久化到 Redis: keyId={}", currentKey.keyId);
+        } else {
+            log.info("SM2 密钥已从 Redis 恢复: keyId={}", currentKey.keyId);
+        }
+
+        // 3. 启动定时轮换
         scheduler.scheduleWithFixedDelay(
                 this::rotate,
                 rotationIntervalMinutes,
@@ -157,6 +173,7 @@ public class SxwlSM2KeyManager {
      * 执行一次密钥轮换
      * <p>
      * 由定时任务调用，也可手动触发。生成新随机密钥对，历史密钥按宽限期和最大数量管理。
+     * 新密钥会持久化到 Redis，确保重启后仍可解密用此公钥加密的密码。
      * </p>
      */
     public void rotate() {
@@ -169,6 +186,7 @@ public class SxwlSM2KeyManager {
 
             // 2. 生成新的随机密钥对
             currentKey = generateNewKey();
+            saveToRedis(currentKey);
 
             // 3. 清理超过宽限期的历史密钥
             Instant cutoff = Instant.now().minus(gracePeriodMinutes, ChronoUnit.MINUTES);
@@ -202,6 +220,65 @@ public class SxwlSM2KeyManager {
         byte[] buf = new byte[len];
         RANDOM.nextBytes(buf);
         return buf;
+    }
+
+    /**
+     * 将当前密钥持久化到 Redis Hash
+     * <p>
+     * 存储字段：keyId, privateKeyHex, publicKeyRaw, createdAt, expiresAt
+     * </p>
+     */
+    private void saveToRedis(SM2ActiveKey key) {
+        try {
+            redisHelper.hmset(REDIS_KEY, Map.of(
+                    "keyId", key.keyId,
+                    "privateKeyHex", key.privateKeyHex,
+                    "publicKeyRaw", key.publicKeyRaw,
+                    "createdAt", String.valueOf(key.createdAt.toEpochMilli()),
+                    "expiresAt", String.valueOf(key.expiresAt)
+            ));
+        } catch (Exception e) {
+            log.warn("SM2 密钥持久化到 Redis 失败（不影响运行）: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 从 Redis 恢复当前密钥对
+     *
+     * @return true 表示成功恢复
+     */
+    private boolean loadFromRedis() {
+        try {
+            Map<String, String> data = redisHelper.hgetAll(REDIS_KEY);
+            if (data == null || data.isEmpty()
+                    || data.get("privateKeyHex") == null
+                    || data.get("publicKeyRaw") == null) {
+                return false;
+            }
+
+            String keyId = data.get("keyId");
+            String privateKeyHex = data.get("privateKeyHex");
+            String publicKeyRaw = data.get("publicKeyRaw");
+            long createdAtEpoch = Long.parseLong(data.getOrDefault("createdAt", "0"));
+            long expiresAt = Long.parseLong(data.getOrDefault("expiresAt", "0"));
+
+            Instant createdAt = createdAtEpoch > 0
+                    ? Instant.ofEpochMilli(createdAtEpoch)
+                    : Instant.now();
+
+            // 验证私钥和公钥是否匹配
+            String derivedPublicKey = SM2Utils.deriveRawPublicKeyHex(privateKeyHex);
+            if (!derivedPublicKey.equals(publicKeyRaw)) {
+                log.warn("Redis 中存储的 SM2 公私钥不匹配，将重新生成");
+                return false;
+            }
+
+            currentKey = new SM2ActiveKey(keyId, privateKeyHex, publicKeyRaw, createdAt, expiresAt);
+            return true;
+        } catch (Exception e) {
+            log.warn("从 Redis 恢复 SM2 密钥失败，将重新生成: {}", e.getMessage());
+            return false;
+        }
     }
 
     /**

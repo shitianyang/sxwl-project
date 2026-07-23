@@ -1,8 +1,7 @@
-import { RouterProvider } from 'react-router-dom'
+import AppRouter from '@/router'
 import { App as AntApp, ConfigProvider } from 'antd'
 import zhCN from 'antd/locale/zh_CN'
 import { useEffect } from 'react'
-import router from '@/router'
 import { THEME_CONFIG } from '@/config'
 import { initMessageInstance } from '@/components/SxwlMessage'
 
@@ -28,7 +27,7 @@ export default function App() {
       }}
     >
       <AntApp>
-        <RouterProvider router={router} />
+        <AppRouter />
         <MessageInitializer />
       </AntApp>
     </ConfigProvider>

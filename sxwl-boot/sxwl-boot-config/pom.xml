@@ -18,6 +18,11 @@
         <module>sxwl-boot-config-security</module>
         <module>sxwl-boot-config-redis</module>
         <module>sxwl-boot-config-rustfs</module>
+        <module>sxwl-boot-config-freemarker</module>
+        <module>sxwl-boot-config-monitor</module>
+        <module>sxwl-boot-config-sse</module>
+        <module>sxwl-boot-config-websocket</module>
+        <module>sxwl-boot-config-quartz</module>
     </modules>
 
     <properties>

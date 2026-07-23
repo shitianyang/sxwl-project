@@ -66,14 +66,11 @@ export default function UserPage() {
 
   const handleAdd = () => {
     setEditingUser(null);
-    form.resetFields();
-    form.setFieldsValue({ status: 1 });
     setModalOpen(true);
   };
 
   const handleEdit = (record: UserItem) => {
     setEditingUser(record);
-    form.setFieldsValue(record);
     setModalOpen(true);
   };
 
@@ -282,6 +279,8 @@ export default function UserPage() {
         columns={1}
         width={600}
         confirmLoading={confirmLoading}
+        initialValues={{ status: 1 }}
+        editingData={editingUser}
       />
     </>
   );

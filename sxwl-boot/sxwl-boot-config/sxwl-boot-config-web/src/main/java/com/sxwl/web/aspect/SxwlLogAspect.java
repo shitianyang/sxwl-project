@@ -4,8 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sxwl.common.annotation.SxwlLog;
 import com.sxwl.common.event.SxwlOperationLogEvent;
+import com.sxwl.common.utils.SxwlDiffUtils;
+import com.sxwl.common.utils.SxwlIpLocationService;
 import com.sxwl.common.utils.SxwlPrincipalUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -16,6 +19,7 @@ import org.slf4j.MDC;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.expression.common.TemplateParserContext;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
@@ -25,6 +29,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -88,9 +93,13 @@ public class SxwlLogAspect {
     private final ExpressionParser spelParser;
     private final ParameterNameDiscoverer parameterNameDiscoverer;
 
-    public SxwlLogAspect(ApplicationEventPublisher eventPublisher, ObjectMapper objectMapper) {
+        private final Optional<SxwlIpLocationService> ipLocationService;
+
+    public SxwlLogAspect(ApplicationEventPublisher eventPublisher, ObjectMapper objectMapper,
+                         Optional<SxwlIpLocationService> ipLocationService) {
         this.eventPublisher = eventPublisher;
         this.objectMapper = objectMapper;
+        this.ipLocationService = ipLocationService;
         this.spelParser = new SpelExpressionParser();
         this.parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
     }
@@ -122,10 +131,16 @@ public class SxwlLogAspect {
         // 5. 采集用户信息
         collectUserInfo(event);
 
-        // 6. 采集 TraceId
+        // 6. 采集字段级变更差异（由 Service 层通过 SxwlDiffUtils.setContextDiff() 设置）
+        String contextDiff = SxwlDiffUtils.getAndClearContextDiff();
+        if (contextDiff != null) {
+            event.diff(contextDiff);
+        }
+
+        // 7. 采集 TraceId
         collectTraceId(event);
 
-        // 7. 执行目标方法
+        // 8. 执行目标方法
         Object result;
         try {
             result = joinPoint.proceed();
@@ -150,7 +165,7 @@ public class SxwlLogAspect {
             throw e;
         }
 
-        // 8. 发布事件
+        // 9. 发布事件
         publishEvent(event);
         return result;
     }
@@ -177,7 +192,7 @@ public class SxwlLogAspect {
                 }
             }
 
-            Expression expression = spelParser.parseExpression(spel);
+            Expression expression = spelParser.parseExpression(spel, new TemplateParserContext());
             Object value = expression.getValue(context);
             return value != null ? value.toString() : null;
         } catch (Exception e) {
@@ -195,9 +210,21 @@ public class SxwlLogAspect {
             return;
         }
         HttpServletRequest request = attrs.getRequest();
+        String userAgent = request.getHeader("User-Agent");
+        String ip = getClientIp(request);
+
+        // operateLocation（可选，无实现时返回 null）
+        String location = ipLocationService
+                .map(svc -> svc.getLocation(ip))
+                .orElse(null);
+
         event.requestUrl(request.getRequestURI())
              .requestMethod(request.getMethod())
-             .operateIp(getClientIp(request))
+             .operateIp(ip)
+             .operateLocation(location)
+             .userAgent(userAgent)
+             .browser(parseBrowser(userAgent))
+             .os(parseOs(userAgent))
              .requestParam(buildRequestParam(joinPoint));
     }
 
@@ -257,7 +284,7 @@ public class SxwlLogAspect {
     }
 
     /**
-     * 构建请求参数 JSON（脱敏 + 截断）
+     * 构建请求参数 JSON（脱敏 + 截断），过滤 Servlet 容器对象
      */
     private String buildRequestParam(ProceedingJoinPoint joinPoint) {
         Object[] args = joinPoint.getArgs();
@@ -265,8 +292,16 @@ public class SxwlLogAspect {
             return null;
         }
         try {
-            // 单参数直接序列化，多参数用数组
-            Object toSerialize = args.length == 1 ? args[0] : args;
+            // 过滤掉 HttpServletRequest / HttpServletResponse 等容器对象
+            Object[] filtered = java.util.Arrays.stream(args)
+                    .filter(arg -> !(arg instanceof jakarta.servlet.ServletRequest)
+                            && !(arg instanceof jakarta.servlet.ServletResponse)
+                            && !(arg instanceof java.io.InputStream)
+                            && !(arg instanceof java.io.OutputStream))
+                    .toArray();
+            if (filtered.length == 0) return null;
+
+            Object toSerialize = filtered.length == 1 ? filtered[0] : filtered;
             String json = objectMapper.writeValueAsString(toSerialize);
             // 脱敏
             json = maskSensitiveFields(json);
@@ -295,13 +330,21 @@ public class SxwlLogAspect {
     }
 
     /**
-     * 构建成功响应的摘要
+     * 构建成功响应的摘要（序列化响应体）
      */
     private String buildSuccessSummary(Object result) {
         if (result == null) {
             return "操作成功";
         }
-        return "操作成功";
+        try {
+            String json = objectMapper.writeValueAsString(result);
+            if (json.length() > MAX_PARAM_LENGTH) {
+                json = json.substring(0, MAX_PARAM_LENGTH) + "...[truncated]";
+            }
+            return json;
+        } catch (Exception e) {
+            return "操作成功";
+        }
     }
 
     /**
@@ -313,5 +356,26 @@ public class SxwlLogAspect {
         } catch (Exception e) {
             log.error("操作日志事件发布失败: {}", event.getMethod(), e);
         }
+    }
+
+    /** 从 User-Agent 解析浏览器 */
+    private String parseBrowser(String userAgent) {
+        if (userAgent == null || userAgent.isBlank()) return "未知";
+        if (userAgent.contains("Edg")) return "Edge";
+        if (userAgent.contains("Chrome")) return "Chrome";
+        if (userAgent.contains("Firefox")) return "Firefox";
+        if (userAgent.contains("Safari")) return "Safari";
+        return "其他";
+    }
+
+    /** 从 User-Agent 解析操作系统 */
+    private String parseOs(String userAgent) {
+        if (userAgent == null || userAgent.isBlank()) return "未知";
+        if (userAgent.contains("Windows NT")) return "Windows";
+        if (userAgent.contains("Mac OS X")) return "macOS";
+        if (userAgent.contains("Linux") && !userAgent.contains("Android")) return "Linux";
+        if (userAgent.contains("Android")) return "Android";
+        if (userAgent.contains("iPhone") || userAgent.contains("iPad")) return "iOS";
+        return "其他";
     }
 }

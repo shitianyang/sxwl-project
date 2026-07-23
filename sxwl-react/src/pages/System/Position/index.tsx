@@ -64,14 +64,11 @@ export default function PositionPage() {
 
   const handleAdd = () => {
     setEditingPosition(null);
-    form.resetFields();
-    form.setFieldsValue({ status: 1, sort: 0 });
     setModalOpen(true);
   };
 
   const handleEdit = (record: PositionItem) => {
     setEditingPosition(record);
-    form.setFieldsValue(record);
     setModalOpen(true);
   };
 
@@ -247,6 +244,8 @@ export default function PositionPage() {
         columns={1}
         width={560}
         confirmLoading={confirmLoading}
+        initialValues={{ status: 1, sort: 0 }}
+        editingData={editingPosition}
       />
     </>
   );

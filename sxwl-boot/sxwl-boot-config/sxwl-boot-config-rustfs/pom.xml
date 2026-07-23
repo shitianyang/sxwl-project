@@ -23,12 +23,17 @@
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-common</artifactId>
-            <version>0.1.0</version>
         </dependency>
         <!-- AWS S3 -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

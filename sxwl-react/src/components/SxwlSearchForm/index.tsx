@@ -18,9 +18,9 @@ export interface SxwlSearchFormProps {
   onReset?: () => void;
 }
 
-// ==================== Component
+// ==================== Inner Component
 
-function SxwlSearchForm({ fields, onSearch, onReset }: SxwlSearchFormProps): JSX.Element {
+function SxwlSearchFormInner({ fields, onSearch, onReset }: SxwlSearchFormProps): JSX.Element {
   const [form] = SxwlForm.useForm();
 
   const handleSearch = () => {
@@ -47,8 +47,6 @@ function SxwlSearchForm({ fields, onSearch, onReset }: SxwlSearchFormProps): JSX
     form.resetFields();
     onReset?.();
   };
-
-  if (!fields?.length) return <></>;
 
   return (
     <SxwlCard className="sxwl-search-form">
@@ -88,5 +86,11 @@ function SxwlSearchForm({ fields, onSearch, onReset }: SxwlSearchFormProps): JSX
   );
 }
 
-export default SxwlSearchForm;
+// ==================== Outer Guard
 
+function SxwlSearchForm(props: SxwlSearchFormProps): JSX.Element | null {
+  if (!props.fields?.length) return null;
+  return <SxwlSearchFormInner {...props} />;
+}
+
+export default SxwlSearchForm;

@@ -89,6 +89,14 @@ public class SysMenuServiceImpl implements SysMenuService {
             entity.setParentId(0L);
         }
 
+        // 校验权限标识唯一性
+        if (entity.getPerms() != null && !entity.getPerms().isEmpty()) {
+            int permsCount = sysMenuMapper.checkPermsUnique(entity.getPerms(), null);
+            if (permsCount > 0) {
+                throw new SxwlBusinessException(10001, "权限标识已存在");
+            }
+        }
+
         int result = sysMenuMapper.insertMenu(entity);
         if (result != 1) {
             log.error("新增菜单失败: menuName={}, result={}", dto.getMenuName(), result);
@@ -124,6 +132,17 @@ public class SysMenuServiceImpl implements SysMenuService {
                 entity.setAncestors("0");
                 entity.setParentId(0L);
             }
+        } else if (old != null) {
+            // parentId 没变，复用旧 ancestors，防止前端未传字段导致 SQL 写入 NULL
+            entity.setAncestors(old.getAncestors());
+        }
+
+        // 校验权限标识唯一性
+        if (entity.getPerms() != null && !entity.getPerms().isEmpty()) {
+            int permsCount = sysMenuMapper.checkPermsUnique(entity.getPerms(), entity.getId());
+            if (permsCount > 0) {
+                throw new SxwlBusinessException(10001, "权限标识已存在");
+            }
         }
 
         int result = sysMenuMapper.updateMenu(entity);
@@ -156,6 +175,18 @@ public class SysMenuServiceImpl implements SysMenuService {
         }
         log.info("删除菜单成功: id={}", id);
         return affected;
+    }
+
+    /**
+     * 查询当前用户有权访问的菜单树
+     *
+     * @param userId 用户 ID
+     * @return 树形菜单列表
+     */
+    @Override
+    public List<SysMenuDTO> getUserMenuTree(Long userId) {
+        List<SysMenuDTO> allMenus = sysMenuMapper.selectMenusByUserId(userId);
+        return SxwlTreeUtils.buildTree(allMenus);
     }
 
     // ==================== 私有方法 ====================

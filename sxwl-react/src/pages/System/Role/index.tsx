@@ -98,14 +98,11 @@ export default function RolePage() {
 
   const handleAdd = () => {
     setEditingRole(null);
-    form.resetFields();
-    form.setFieldsValue({ dataScope: 4, sort: 0, status: 1 });
     setModalOpen(true);
   };
 
   const handleEdit = (record: RoleItem) => {
     setEditingRole(record);
-    form.setFieldsValue(record);
     setModalOpen(true);
   };
 
@@ -342,6 +339,8 @@ export default function RolePage() {
         columns={1}
         width={600}
         confirmLoading={confirmLoading}
+        initialValues={{ dataScope: 4, sort: 0, status: 1 }}
+        editingData={editingRole}
       />
 
       {/* 菜单分配弹窗 */}

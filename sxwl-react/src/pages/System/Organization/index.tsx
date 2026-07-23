@@ -30,6 +30,17 @@ export default function OrganizationPage() {
   const [flatTree, setFlatTree] = useState<DataNode[]>([]);
   const [form] = SxwlForm.useForm();
 
+  // 新增时的上级组织 ID（handleAddChild 设置）
+  const [addParentId, setAddParentId] = useState<number | undefined>(undefined);
+
+  // 新增弹窗默认值（编辑时为 undefined，由 editingData 控制）
+  const formInitialValues = useMemo(() => {
+    if (editingOrg) return undefined;
+    const values: Record<string, any> = { orgLevel: 2, sort: 0, status: 1 };
+    if (addParentId !== undefined) values.parentId = addParentId;
+    return values;
+  }, [editingOrg, addParentId]);
+
   const loadTree = useCallback(async () => {
     setLoading(true);
     try {
@@ -65,15 +76,13 @@ export default function OrganizationPage() {
 
   const handleAdd = () => {
     setEditingOrg(null);
-    form.resetFields();
-    form.setFieldsValue({ orgLevel: 2, sort: 0, status: 1 });
+    setAddParentId(undefined);
     setModalOpen(true);
   };
 
   const handleAddChild = (record: OrganizationTreeItem) => {
     setEditingOrg(null);
-    form.resetFields();
-    form.setFieldsValue({ parentId: record.id, orgLevel: 2, sort: 0, status: 1 });
+    setAddParentId(record.id);
     setModalOpen(true);
   };
 
@@ -82,7 +91,7 @@ export default function OrganizationPage() {
       const res = await getOrganizationById(record.id);
       const org = res.data.data;
       setEditingOrg(org);
-      form.setFieldsValue(org);
+      setAddParentId(undefined);
       setModalOpen(true);
     } catch {
       SxwlMessage.error('获取组织详情失败');
@@ -219,6 +228,8 @@ export default function OrganizationPage() {
         onCancel={() => setModalOpen(false)}
         width={600}
         confirmLoading={confirmLoading}
+        initialValues={formInitialValues}
+        editingData={editingOrg}
       />
     </>
   );

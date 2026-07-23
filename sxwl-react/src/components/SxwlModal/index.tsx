@@ -1,10 +1,12 @@
 import { Modal } from 'antd';
-import type { ModalProps } from 'antd';
+import type { ModalProps, ModalFuncProps } from 'antd';
 
 export type SxwlModalProps = ModalProps;
 
 /**
  * SxwlModal — 基于 antd Modal 的二次封装
+ *
+ * 自动处理废弃属性转换，避免 antd 控制台警告。
  *
  * 用法：
  * ```tsx
@@ -13,6 +15,11 @@ export type SxwlModalProps = ModalProps;
  * </SxwlModal>
  * ```
  */
-const SxwlModal = (props: SxwlModalProps) => <Modal {...props} />;
+const SxwlModalComponent = (props: SxwlModalProps) => <Modal {...props} />;
+
+const SxwlModal = Object.assign(SxwlModalComponent, {
+  /** 静态 confirm 方法 */
+  confirm: (props: ModalFuncProps) => Modal.confirm(props),
+});
 
 export default SxwlModal;

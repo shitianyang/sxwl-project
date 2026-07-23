@@ -23,7 +23,6 @@
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-common</artifactId>
-            <version>0.1.0</version>
         </dependency>
         <!-- spring-boot-starter-security -->
         <dependency>
@@ -39,7 +38,6 @@
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-config-redis</artifactId>
-            <version>0.1.0</version>
         </dependency>
         <!-- spring-boot-starter-web（Filter/Servlet API） -->
         <dependency>

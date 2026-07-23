@@ -1,65 +1,57 @@
 // ============================================
 // 动态路由构建工具
-// 根据后端返回的菜单树 + routeMap 生成 RouteObject
+// 根据后端返回的菜单树 + routeMap 生成 Route 元素
 // ============================================
 
-import { Suspense } from 'react';
+import { type ReactNode, Suspense } from 'react';
 import { Spin } from 'antd';
-import { Navigate } from 'react-router-dom';
-import type { RouteObject } from 'react-router-dom';
-import RouteMap from './routeMap';
-
-/** 菜单节点（来自后端 sys_menu 表） */
-export interface MenuNode {
-  menuId: number;
-  menuName: string;
-  parentId: number | null;
-  path: string;
-  component: string | null;
-  redirect: string | null;
-  visible: boolean;
-  keepAlive: boolean;
-  children?: MenuNode[];
-}
+import { Route } from 'react-router-dom';
+import type { MenuTreeItem } from '@/api/system/menuApi';
+import { resolveComponent } from './pageResolver';
 
 /**
- * 从菜单树构建 React Router 路由配置
- * @param menus 菜单树
- * @returns RouteObject[]
+ * 从菜单树递归构建 React Router Route 元素
+ * @param menus 后端返回的菜单树
+ * @returns Route 元素数组，可直接放在 <Routes> 中
  */
-export function buildRoutes(menus: MenuNode[]): RouteObject[] {
+export function buildRouteElements(menus: MenuTreeItem[]): ReactNode[] {
   return menus
-    .filter((menu) => menu.visible && menu.path)
+    .filter((menu) => {
+      // 只处理可见且启用的菜单，过滤外链菜单
+      return menu.visible === 1 && menu.status === 1 && menu.isFrame !== 1;
+    })
     .map((menu) => {
-      const route: RouteObject = {
-        path: menu.path,
-      };
+      const children = menu.children?.length ? buildRouteElements(menu.children) : [];
 
-      // 有 component 字段 → 查找映射加载组件
-      if (menu.component && RouteMap[menu.component]) {
-        const Component = RouteMap[menu.component];
-        route.element = (
-          <Suspense fallback={<Spin style={{ display: 'block', margin: '100px auto' }} />}>
-            <Component />
-          </Suspense>
+      // 有 component → 可导航的页面（渲染组件）
+      if (menu.component) {
+        const Component = resolveComponent(menu.component);
+        if (!Component) return null;
+        return (
+          <Route
+            key={menu.path}
+            path={menu.path}
+            element={
+              <Suspense fallback={<Spin style={{ display: 'block', margin: '100px auto' }} />}>
+                <Component />
+              </Suspense>
+            }
+          >
+            {children}
+          </Route>
         );
       }
 
-      // 有 redirect → 重定向
-      if (menu.redirect) {
-        route.children = [
-          { index: true, path: '', element: <Navigate to={menu.redirect} replace /> },
-        ];
+      // 目录节点（无 component）→ 只透传子路由
+      if (children.length > 0) {
+        return (
+          <Route key={menu.path || menu.id} path={menu.path || undefined}>
+            {children}
+          </Route>
+        );
       }
 
-      // 递归处理子菜单
-      if (menu.children?.length) {
-        const childRoutes = buildRoutes(menu.children);
-        if (childRoutes.length) {
-          route.children = [...(route.children || []), ...childRoutes];
-        }
-      }
-
-      return route;
-    });
+      return null;
+    })
+    .filter(Boolean);
 }

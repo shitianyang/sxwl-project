@@ -71,7 +71,8 @@ public class SxwlSecurityConfig {
                                 "/auth/public-key",
                                 "/captcha/**",
                                 "/public/**",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/sse/connect"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

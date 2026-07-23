@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.config.mapper.SysConfigInfoMapper">
+
+    <!-- 通用查询列 -->
+    <sql id="selectConfigColumns">
+        id, config_key, config_name, config_value, config_type, description, status,
+        TO_CHAR(create_time, 'YYYY-MM-DD HH24:MI:SS') AS createTime
+    </sql>
+
+    <!-- 根据 ID 查询 -->
+    <select id="getConfigById" resultType="com.sxwl.config.model.dto.SysConfigDTO">
+        SELECT <include refid="selectConfigColumns"/>
+        FROM sys_config_info
+        WHERE id = #{id}
+        AND delete_flag = 0
+    </select>
+
+    <!-- 根据键名查询 -->
+    <select id="getConfigByKey" resultType="com.sxwl.config.model.dto.SysConfigDTO">
+        SELECT <include refid="selectConfigColumns"/>
+        FROM sys_config_info
+        WHERE config_key = #{configKey}
+        AND delete_flag = 0
+        LIMIT 1
+    </select>
+
+    <!-- 分页查询 -->
+    <select id="getConfigPageByParams" resultType="com.sxwl.config.model.dto.SysConfigDTO">
+        SELECT <include refid="selectConfigColumns"/>
+        FROM sys_config_info
+        WHERE delete_flag = 0
+        <if test="configKey != null and configKey != ''">
+            AND config_key LIKE CONCAT('%', #{configKey}, '%')
+        </if>
+        <if test="configName != null and configName != ''">
+            AND config_name LIKE CONCAT('%', #{configName}, '%')
+        </if>
+        <if test="configType != null and configType != ''">
+            AND config_type = #{configType}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY config_key ASC, create_time DESC
+    </select>
+
+    <!-- 查询所有启用的配置 -->
+    <select id="selectAllEnabledConfigs" resultType="com.sxwl.config.model.dto.SysConfigDTO">
+        SELECT <include refid="selectConfigColumns"/>
+        FROM sys_config_info
+        WHERE status = 1
+        AND delete_flag = 0
+    </select>
+
+    <!-- 校验键名是否唯一 -->
+    <select id="checkConfigKeyUnique" resultType="int">
+        SELECT COUNT(*)
+        FROM sys_config_info
+        WHERE config_key = #{configKey}
+        AND delete_flag = 0
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insertConfig" parameterType="com.sxwl.config.model.entity.SysConfigInfo">
+        INSERT INTO sys_config_info (
+            id, config_key, config_name, config_value, config_type, description, status,
+            create_by, create_org, create_time, update_by, update_time
+        ) VALUES (
+            #{id}, #{configKey}, #{configName}, #{configValue}, #{configType}, #{description}, #{status},
+            #{createBy}, #{createOrg}, #{createTime}, #{createBy}, #{createTime}
+        )
+    </insert>
+
+    <!-- 修改 -->
+    <update id="updateConfig" parameterType="com.sxwl.config.model.entity.SysConfigInfo">
+        UPDATE sys_config_info
+        SET config_name  = #{configName},
+            config_value = #{configValue},
+            config_type  = #{configType},
+            description  = #{description},
+            status       = #{status},
+            update_by    = #{updateBy},
+            update_time  = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteConfigById">
+        UPDATE sys_config_info
+        SET delete_flag = 1
+        WHERE id = #{id}
+    </update>
+
+</mapper>

@@ -22,17 +22,34 @@
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-module-auth</artifactId>
-            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-module-system</artifactId>
-            <version>0.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-module-codegen</artifactId>
         </dependency>
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-module-rustfs</artifactId>
-            <version>0.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-module-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-module-notice</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-module-job</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-module-backup</artifactId>
         </dependency>
         <!-- 测试依赖（JUnit 5 + Mockito + Spring Test） -->
         <dependency>

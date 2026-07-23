@@ -60,6 +60,18 @@ public class SysLog extends SxwlBasicField {
     /** 链路追踪ID */
     private String traceId;
 
+    /** 用户代理（原始 User-Agent） */
+    private String userAgent;
+
+    /** 操作系统 */
+    private String browser;
+
+    /** 浏览器 */
+    private String os;
+
+    /** 字段级变更差异 JSON */
+    private String diff;
+
     public Integer getLogType() { return logType; }
     public void setLogType(Integer logType) { this.logType = logType; }
 
@@ -107,4 +119,16 @@ public class SysLog extends SxwlBasicField {
 
     public String getTraceId() { return traceId; }
     public void setTraceId(String traceId) { this.traceId = traceId; }
+
+    public String getUserAgent() { return userAgent; }
+    public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
+
+    public String getBrowser() { return browser; }
+    public void setBrowser(String browser) { this.browser = browser; }
+
+    public String getOs() { return os; }
+    public void setOs(String os) { this.os = os; }
+
+    public String getDiff() { return diff; }
+    public void setDiff(String diff) { this.diff = diff; }
 }

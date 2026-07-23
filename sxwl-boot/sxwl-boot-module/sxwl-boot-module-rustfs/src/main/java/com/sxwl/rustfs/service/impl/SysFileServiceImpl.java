@@ -1,6 +1,7 @@
 package com.sxwl.rustfs.service.impl;
 
 import com.github.pagehelper.PageInfo;
+import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.common.utils.SxwlSnowFlakeUtils;
 import com.sxwl.rustfs.client.SxwlRustfsTemplate;
 import com.sxwl.rustfs.config.SxwlRustfsProperties;
@@ -140,7 +141,7 @@ public class SysFileServiceImpl implements SysFileService {
                     file.getSize(),
                     file.getContentType());
         } catch (Exception e) {
-            throw new RuntimeException("分片上传到 S3 失败: uploadId=" + uploadId + ", chunkIndex=" + chunkIndex, e);
+            throw new SxwlBusinessException(10001, "分片上传到 S3 失败: uploadId=" + uploadId + ", chunkIndex=" + chunkIndex, e);
         }
 
         // 更新分片状态
@@ -202,7 +203,7 @@ public class SysFileServiceImpl implements SysFileService {
         try {
             rustfsTemplate.composeObject(bucket, sourceKeys, finalObjectKey);
         } catch (Exception e) {
-            throw new RuntimeException("分片合并失败: uploadId=" + uploadId, e);
+            throw new SxwlBusinessException(10001, "分片合并失败: uploadId=" + uploadId, e);
         }
 
         // 写入 sys_file_info
@@ -255,7 +256,7 @@ public class SysFileServiceImpl implements SysFileService {
         try (InputStream inputStream = file.getInputStream()) {
             rustfsTemplate.upload(bucket, objectKey, inputStream, file.getSize(), contentType);
         } catch (Exception e) {
-            throw new RuntimeException("简单上传到 S3 失败: " + originalName, e);
+            throw new SxwlBusinessException(10001, "简单上传到 S3 失败: " + originalName, e);
         }
 
         // 写入 sys_file_info

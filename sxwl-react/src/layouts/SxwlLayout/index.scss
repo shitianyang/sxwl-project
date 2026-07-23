@@ -59,6 +59,20 @@
   align-items: center;
 }
 
+.sxwl-header-center {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.85);
+  user-select: none;
+}
+
+.sxwl-header-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .sxwl-user-dropdown {
   cursor: pointer;
   padding: 4px 12px;

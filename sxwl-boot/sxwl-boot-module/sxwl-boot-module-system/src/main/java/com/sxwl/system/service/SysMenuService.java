@@ -58,4 +58,13 @@ public interface SysMenuService {
      * @return 影响行数
      */
     int deleteMenuById(Long id);
+
+    /**
+     * 查询当前用户有权访问的菜单树
+     * <p>通过用户-角色-菜单关联过滤，返回树形结构。</p>
+     *
+     * @param userId 用户 ID
+     * @return 树形菜单列表
+     */
+    List<SysMenuDTO> getUserMenuTree(Long userId);
 }

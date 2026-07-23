@@ -43,6 +43,16 @@ public interface SysMenuMapper {
     int countChildrenByParentId(@Param("parentId") Long parentId);
 
     /**
+     * 校验权限标识是否唯一（排除指定 ID）
+     *
+     * @param perms     权限标识
+     * @param excludeId 排除的菜单 ID（编辑时使用）
+     * @return 冲突数量
+     */
+    int checkPermsUnique(@Param("perms") String perms,
+                         @Param("excludeId") Long excludeId);
+
+    /**
      * 新增菜单
      *
      * @param entity 菜单实体
@@ -65,4 +75,13 @@ public interface SysMenuMapper {
      * @return 影响行数
      */
     int deleteMenuById(@Param("id") Long id);
+
+    /**
+     * 根据用户 ID 查询有权限的菜单列表（按 sort 升序）
+     * <p>通过角色-菜单关联获取当前用户可访问的所有菜单。</p>
+     *
+     * @param userId 用户 ID
+     * @return 菜单 DTO 列表（平铺）
+     */
+    List<SysMenuDTO> selectMenusByUserId(@Param("userId") Long userId);
 }

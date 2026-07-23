@@ -43,33 +43,60 @@ public class SxwlRequestLogFilter implements Filter {
         }
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
         long startTime = System.currentTimeMillis();
 
-        // 包装 request/response 以便读取 body（按需使用）
+        // SSE (text/event-stream) 响应需要直接流式输出到客户端，
+        // ContentCachingResponseWrapper 会缓冲所有响应体，
+        // 导致前端 EventSource 永远收不到响应头，"open" 事件永不触发
+        if (isSseRequest(httpRequest)) {
+            try {
+                chain.doFilter(httpRequest, httpResponse);
+            } finally {
+                logRequest(httpRequest, httpResponse, startTime);
+            }
+            return;
+        }
+
+        // 非 SSE 请求：包装 response 以便读取响应体用于日志
         ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(httpRequest);
-        ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper((HttpServletResponse) response);
+        ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(httpResponse);
 
         try {
             chain.doFilter(requestWrapper, responseWrapper);
         } finally {
-            long elapsed = System.currentTimeMillis() - startTime;
-            int status = responseWrapper.getStatus();
-            String method = httpRequest.getMethod();
-            String uri = httpRequest.getRequestURI();
-            String query = httpRequest.getQueryString();
-            String fullUri = query != null ? uri + "?" + query : uri;
-            String ip = getClientIp(httpRequest);
-
-            if (status >= 500) {
-                log.error("[REQUEST] {} {} | IP={} | {} | {}ms", method, fullUri, ip, status, elapsed);
-            } else if (status >= 400) {
-                log.warn("[REQUEST] {} {} | IP={} | {} | {}ms", method, fullUri, ip, status, elapsed);
-            } else {
-                log.info("[REQUEST] {} {} | IP={} | {} | {}ms", method, fullUri, ip, status, elapsed);
-            }
-
-            // 将缓存的响应内容写回客户端
+            logRequest(httpRequest, responseWrapper, startTime);
+            // 对于非 SSE 请求，将缓存的响应内容写回客户端
             responseWrapper.copyBodyToResponse();
+        }
+    }
+
+    /**
+     * 判断是否为 SSE 请求：EventSource 在浏览器中会自动设置 Accept: text/event-stream
+     */
+    private boolean isSseRequest(HttpServletRequest request) {
+        String accept = request.getHeader("Accept");
+        return accept != null && accept.contains("text/event-stream");
+    }
+
+    /**
+     * 记录请求日志（提取为方法避免 SSE/非 SSE 分支重复）
+     */
+    private void logRequest(HttpServletRequest request, HttpServletResponse response, long startTime) {
+        long elapsed = System.currentTimeMillis() - startTime;
+        int status = response.getStatus();
+        String method = request.getMethod();
+        String uri = request.getRequestURI();
+        String query = request.getQueryString();
+        String fullUri = query != null ? uri + "?" + query : uri;
+        String ip = getClientIp(request);
+
+        if (status >= 500) {
+            log.error("[REQUEST] {} {} | IP={} | {} | {}ms", method, fullUri, ip, status, elapsed);
+        } else if (status >= 400) {
+            log.warn("[REQUEST] {} {} | IP={} | {} | {}ms", method, fullUri, ip, status, elapsed);
+        } else {
+            log.info("[REQUEST] {} {} | IP={} | {} | {}ms", method, fullUri, ip, status, elapsed);
         }
     }
 

@@ -64,9 +64,9 @@ const SxwlImageUpload: React.FC<SxwlImageUploadProps> = ({
           style={{ display: 'none' }}
           src={previewUrl}
           preview={{
-            visible: previewOpen,
+            open: previewOpen,
             src: previewUrl,
-            onVisibleChange: (vis) => setPreviewOpen(vis),
+            onOpenChange: (vis) => setPreviewOpen(vis),
           }}
         />
       )}

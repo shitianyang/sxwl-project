@@ -109,7 +109,7 @@ instance.interceptors.response.use(
         try {
           const res = await refreshInstance.post<
             SxwlResult<{ accessToken: string; refreshToken: string }>
-          >('/auth/refresh', { refreshToken, deviceId: 'web' });
+          >('/auth/refresh', { refreshToken, deviceId: useAuthStore.getState().deviceId });
           const { accessToken, refreshToken: newRefresh } = res.data.data;
           useAuthStore.getState().setTokenPair(accessToken, newRefresh);
           isRefreshing = false;
@@ -176,6 +176,25 @@ export const http = {
    */
   async download(url: string, params?: Record<string, unknown>, filename?: string) {
     const res = await instance.get(url, { params, responseType: 'blob' });
+    const blob = new Blob([res.data]);
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download =
+      filename ||
+      res.headers['content-disposition']?.split('filename=')[1]?.replace(/['"]/g, '') ||
+      'download';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  },
+
+  /**
+   * POST 文件下载
+   * @param url 下载地址
+   * @param data 请求体
+   * @param filename 保存文件名
+   */
+  async downloadPost(url: string, data?: unknown, filename?: string) {
+    const res = await instance.post(url, data, { responseType: 'blob' });
     const blob = new Blob([res.data]);
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);

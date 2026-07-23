@@ -32,6 +32,9 @@ export interface SysLogItem {
   errorMsg: string;
   status: number;        // 0=失败 1=成功
   traceId: string;
+  userAgent: string;
+  browser: string;
+  os: string;
   createTime: string;
 }
 

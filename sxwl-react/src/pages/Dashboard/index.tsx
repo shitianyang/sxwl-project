@@ -35,11 +35,19 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const username = useAuthStore((s) => s.username);
   const [statistics, setStatistics] = useState<DashboardStatistics | null>(null);
+  const [systemStatus, setSystemStatus] = useState<'loading' | 'ok' | 'error'>('loading');
 
   useEffect(() => {
+    setSystemStatus('loading');
     getDashboardStatistics()
-      .then((res) => setStatistics(res.data.data))
-      .catch(() => setStatistics(null));
+      .then((res) => {
+        setStatistics(res.data.data);
+        setSystemStatus('ok');
+      })
+      .catch(() => {
+        setStatistics(null);
+        setSystemStatus('error');
+      });
   }, []);
 
   const displayValue = (field: keyof DashboardStatistics): string | number => {
@@ -56,9 +64,13 @@ export default function DashboardPage() {
             <SxwlTitle level={4} className="banner-title">欢迎回来{username ? `，${username}` : ''}</SxwlTitle>
             <SxwlText className="banner-desc">数行未来·御权 — 统一权限管控平台</SxwlText>
           </div>
-          <div className="banner-tip">
-            <SxwlIcon name="SafetyOutlined" />
-            <span>系统运行正常</span>
+          <div className={`banner-tip ${systemStatus === 'error' ? 'banner-tip--error' : ''}`}>
+            <SxwlIcon name={systemStatus === 'error' ? 'CloseCircleOutlined' : 'SafetyOutlined'} />
+            <span>
+              {systemStatus === 'loading' ? '系统检查中...' :
+               systemStatus === 'error' ? '系统异常' :
+               '系统运行正常'}
+            </span>
           </div>
         </div>
       </div>

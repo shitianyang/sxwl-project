@@ -115,12 +115,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 从 Authorization Header 提取 Bearer Token
+     * 提取 Token
+     * <p>优先从 Authorization Header 提取，失败时尝试从 query 参数提取（支持 EventSource）。</p>
      */
     private String resolveToken(HttpServletRequest request) {
+        // 1. 优先从 Authorization Header 提取
         String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (bearerToken != null && bearerToken.startsWith(BEARER_PREFIX)) {
             return bearerToken.substring(BEARER_PREFIX.length()).trim();
+        }
+        // 2. 支持从 query 参数提取（EventSource 无法设置自定义请求头）
+        String queryToken = request.getParameter("token");
+        if (queryToken != null && !queryToken.isEmpty()) {
+            return queryToken;
         }
         return null;
     }

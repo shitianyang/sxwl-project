@@ -48,6 +48,11 @@ export function getMenuTree() {
   return http.get<MenuTreeItem[]>('/system/menu/tree');
 }
 
+/** 查询当前用户有权访问的菜单树（侧边栏用） */
+export function getUserMenuTree() {
+  return http.get<MenuTreeItem[]>('/system/menu/user-tree');
+}
+
 /** 查询所有菜单（平铺） */
 export function getAllMenuList() {
   return http.get<MenuTreeItem[]>('/system/menu/all');

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.job.mapper.SysJobLogMapper">
+
+    <sql id="selectLogColumns">
+        id, job_id, job_name, job_group, class_name, method_name, method_params,
+        cron_expression, status, execute_time, error_msg, fire_time,
+        TO_CHAR(create_time, 'YYYY-MM-DD HH24:MI:SS') AS createTime
+    </sql>
+
+    <select id="getLogById" resultType="com.sxwl.job.model.dto.SysJobLogDTO">
+        SELECT <include refid="selectLogColumns"/>
+        FROM sys_job_log_info
+        WHERE id = #{id}
+        AND delete_flag = 0
+    </select>
+
+    <select id="getLogPageByParams" resultType="com.sxwl.job.model.dto.SysJobLogDTO">
+        SELECT <include refid="selectLogColumns"/>
+        FROM sys_job_log_info
+        WHERE delete_flag = 0
+        <if test="jobId != null">
+            AND job_id = #{jobId}
+        </if>
+        <if test="jobName != null and jobName != ''">
+            AND job_name LIKE CONCAT('%', #{jobName}, '%')
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <insert id="insertLog" parameterType="com.sxwl.job.model.entity.SysJobLogInfo">
+        INSERT INTO sys_job_log_info (
+            id, job_id, job_name, job_group, class_name, method_name, method_params,
+            cron_expression, status, execute_time, error_msg, fire_time,
+            create_by, create_org, create_time, update_by, update_time
+        ) VALUES (
+            #{id}, #{jobId}, #{jobName}, #{jobGroup}, #{className}, #{methodName}, #{methodParams},
+            #{cronExpression}, #{status}, #{executeTime}, #{errorMsg}, #{fireTime},
+            #{createBy}, #{createOrg}, #{createTime}, #{createBy}, #{createTime}
+        )
+    </insert>
+
+    <delete id="deleteLogById">
+        UPDATE sys_job_log_info
+        SET delete_flag = 1
+        WHERE id = #{id}
+    </delete>
+
+    <delete id="cleanLogBefore">
+        DELETE FROM sys_job_log_info
+        WHERE create_time &lt; NOW() - (#{days} || ' days')::INTERVAL
+    </delete>
+
+</mapper>

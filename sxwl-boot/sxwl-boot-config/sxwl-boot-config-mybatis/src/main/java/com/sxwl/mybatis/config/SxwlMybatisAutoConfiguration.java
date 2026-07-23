@@ -2,6 +2,7 @@ package com.sxwl.mybatis.config;
 
 import com.github.pagehelper.PageInterceptor;
 import com.sxwl.common.constants.SxwlSystemConstants;
+import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.mybatis.interceptor.SxwlAutoFillInterceptor;
 import com.sxwl.mybatis.interceptor.SxwlDataScopeInterceptor;
 import com.sxwl.mybatis.interceptor.SxwlSqlMonitorInterceptor;
@@ -50,7 +51,7 @@ public class SxwlMybatisAutoConfiguration {
             }
             mybatisProperties.setMapperLocations(locations);
         } catch (IOException e) {
-            throw new RuntimeException("无法加载 MyBatis XML 映射文件", e);
+            throw new SxwlBusinessException(500, "无法加载 MyBatis XML 映射文件", e);
         }
     }
 

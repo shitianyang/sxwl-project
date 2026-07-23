@@ -50,6 +50,11 @@ public class SxwlLogEventListener {
             entity.setUserName(event.getUserName());
             entity.setExecuteTime(event.getExecuteTime());
             entity.setErrorMsg(event.getErrorMsg());
+            entity.setUserAgent(event.getUserAgent());
+            entity.setBrowser(event.getBrowser());
+            entity.setOs(event.getOs());
+            entity.setOperateLocation(event.getOperateLocation());
+            entity.setDiff(event.getDiff());
             entity.setStatus(event.getStatus());
             entity.setTraceId(event.getTraceId());
 

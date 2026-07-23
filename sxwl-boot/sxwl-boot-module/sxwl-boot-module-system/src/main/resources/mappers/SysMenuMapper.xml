@@ -36,6 +36,17 @@
         ORDER BY sort ASC, id ASC
     </select>
 
+    <!-- 校验权限标识是否唯一 -->
+    <select id="checkPermsUnique" resultType="int">
+        SELECT COUNT(*)
+        FROM sys_menu_info
+        WHERE perms = #{perms}
+          AND delete_flag = 0
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
     <!-- 统计子菜单数 -->
     <select id="countChildrenByParentId" resultType="int">
         SELECT COUNT(*)
@@ -87,5 +98,18 @@
         SET delete_flag = 1
         WHERE id = #{id}
     </update>
+
+    <!-- 根据用户 ID 查询有权限的菜单（通过角色-菜单关联） -->
+    <select id="selectMenusByUserId" resultMap="SysMenuDTOResultMap">
+        SELECT DISTINCT m.
+        <include refid="selectMenuColumns"/>
+        FROM sys_menu_info m
+        INNER JOIN sys_role_menu_info rm ON rm.menu_id = m.id AND rm.delete_flag = 0
+        INNER JOIN sys_user_role_info ur ON ur.role_id = rm.role_id AND ur.delete_flag = 0
+        WHERE ur.user_id = #{userId}
+          AND m.status = 1
+          AND m.delete_flag = 0
+        ORDER BY m.sort ASC, m.id ASC
+    </select>
 
 </mapper>

@@ -17,7 +17,15 @@ const columns: ColumnsType<SysLogItem> = [
     render: (status: number) =>
       status === 1 ? <SxwlTag color="green">成功</SxwlTag> : <SxwlTag color="red">失败</SxwlTag>,
   },
-  { title: '错误信息', dataIndex: 'errorMsg', key: 'errorMsg', width: 200, ellipsis: true },
+  { title: '错误信息', dataIndex: 'errorMsg', key: 'errorMsg', width: 200, ellipsis: true,
+    render: (val: string) => val || '-',
+  },
+  { title: '浏览器', dataIndex: 'browser', key: 'browser', width: 90,
+    render: (val: string) => val || '-',
+  },
+  { title: '操作系统', dataIndex: 'os', key: 'os', width: 100,
+    render: (val: string) => val || '-',
+  },
   { title: '登录时间', dataIndex: 'createTime', key: 'createTime', width: 180 },
 ];
 
@@ -93,7 +101,7 @@ export default function LoginLogPage() {
       pageSize={pageSize}
       breadcrumb={['日志管理', '登录日志']}
       searchFields={searchFields}
-      scroll={{ x: 1000 }}
+      scroll={{ x: 1200 }}
       onSearch={handleSearch}
       onReset={handleReset}
       onPageChange={handlePageChange}

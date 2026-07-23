@@ -17,7 +17,7 @@ export interface SxwlCaptchaProps {
 
 const SxwlCaptcha: React.FC<SxwlCaptchaProps> = ({ form }) => {
   const [base64Image, setBase64Image] = useState<string>('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const loadCaptcha = useCallback(async () => {
     setLoading(true);
@@ -69,7 +69,7 @@ const SxwlCaptcha: React.FC<SxwlCaptchaProps> = ({ form }) => {
               color: '#999',
             }}
           >
-            加载失败
+            {loading ? '加载中...' : '加载失败'}
           </div>
         )}
       </div>

@@ -22,22 +22,18 @@
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-config-rustfs</artifactId>
-            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-config-web</artifactId>
-            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-config-security</artifactId>
-            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-config-mybatis</artifactId>
-            <version>0.1.0</version>
         </dependency>
     </dependencies>
 

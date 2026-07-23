@@ -212,4 +212,15 @@ public final class SxwlRedisKeyConstants {
      * <br>用途：定时任务互斥、并发操作控制</p>
      */
     public static final String LOCK_PREFIX = "lock:";
+
+    // ==================== 系统参数配置缓存 ====================
+
+    /**
+     * 系统参数配置缓存 Key 前缀
+     * <p>完整 Key：config:{configKey}
+     * <br>Value：参数值（String）
+     * <br>TTL：1 小时
+     * <br>用途：SxwlConfigHelper 的 Redis 缓存层，减少 DB 查询</p>
+     */
+    public static final String CONFIG_CACHE_PREFIX = "config:";
 }
