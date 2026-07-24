@@ -181,7 +181,7 @@ const SxwlFilePreview: React.FC<SxwlFilePreviewProps> = ({ open, onClose, file }
         ) : null
       }
       width={800}
-      destroyOnHidden
+      destroyOnClose
     >
       {loading ? <Skeleton active /> : renderPreview()}
     </SxwlModal>

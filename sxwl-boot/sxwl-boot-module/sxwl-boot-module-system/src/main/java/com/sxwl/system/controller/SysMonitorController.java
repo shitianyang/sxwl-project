@@ -9,6 +9,7 @@ import com.sxwl.system.model.dto.SysDbInfoDTO;
 import com.sxwl.system.model.dto.SysRedisInfoDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -74,9 +75,8 @@ public class SysMonitorController {
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:server:list')")
     public SysRedisInfoDTO redis() {
         SysRedisInfoDTO dto = new SysRedisInfoDTO();
-        try {
-            Properties info = stringRedisTemplate.getRequiredConnectionFactory()
-                    .getConnection().serverCommands().info();
+        try (RedisConnection connection = stringRedisTemplate.getRequiredConnectionFactory().getConnection()) {
+            Properties info = connection.serverCommands().info();
             if (info != null) {
                 dto.setConnectedClients(getLong(info, "connected_clients"));
                 dto.setUsedMemory(getLong(info, "used_memory"));

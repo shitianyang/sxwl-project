@@ -34,7 +34,7 @@ export interface SxwlFormModalProps {
    */
   columns?: 1 | 2;
   /** 关闭时是否卸载子组件（重新打开时全新创建） */
-  destroyOnHidden?: boolean;
+  destroyOnClose?: boolean;
   /** 新增时默认值（弹窗打开时自动 resetFields + setFieldsValue） */
   initialValues?: Record<string, any>;
   /** 编辑时初始数据（弹窗打开时自动 resetFields + setFieldsValue，优先级高于 initialValues） */
@@ -54,7 +54,7 @@ function SxwlFormModal({
   confirmLoading,
   layout = 'vertical',
   columns = 2,
-  destroyOnHidden,
+  destroyOnClose,
   initialValues,
   editingData,
 }: SxwlFormModalProps): JSX.Element {
@@ -87,7 +87,7 @@ function SxwlFormModal({
       onCancel={onCancel}
       width={width}
       confirmLoading={confirmLoading}
-      destroyOnHidden={destroyOnHidden}
+      destroyOnClose={destroyOnClose}
     >
       <SxwlForm
         form={form}

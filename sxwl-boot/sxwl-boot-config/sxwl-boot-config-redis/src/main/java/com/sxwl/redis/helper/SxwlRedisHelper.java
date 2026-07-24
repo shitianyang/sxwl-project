@@ -2,6 +2,7 @@ package com.sxwl.redis.helper;
 
 import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 
 import java.time.Duration;
 import java.util.*;
@@ -221,6 +222,19 @@ public class SxwlRedisHelper {
     }
 
     // ==================== 通用 ====================
+
+    /**
+     * 执行 Lua 脚本
+     *
+     * @param script Lua 脚本内容
+     * @param keys   Redis Key 列表
+     * @param args   脚本参数
+     * @return 脚本执行结果（Boolean）
+     */
+    public Boolean executeScript(String script, List<String> keys, String... args) {
+        DefaultRedisScript<Boolean> redisScript = new DefaultRedisScript<>(script, Boolean.class);
+        return stringRedisTemplate.execute(redisScript, keys, args);
+    }
 
     /**
      * 非阻塞删除（UNLINK，Redis ≥ 4.0）

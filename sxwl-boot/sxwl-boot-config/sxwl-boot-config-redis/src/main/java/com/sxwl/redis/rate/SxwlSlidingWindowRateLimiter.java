@@ -4,7 +4,7 @@ import com.sxwl.redis.helper.SxwlRedisHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -53,26 +53,39 @@ public class SxwlSlidingWindowRateLimiter {
     public boolean tryAcquire(String key, long maxCount, long windowSeconds) {
         long now = System.currentTimeMillis();
         long windowStart = now - windowSeconds * 1000;
+        String member = now + ":" + ThreadLocalRandom.current().nextLong();
 
-        // 1. 删除窗口外的过期记录
-        redisHelper.zremrangeByScore(key, 0, windowStart);
+        // Lua 脚本原子执行：清理过期记录 + 计数判断 + 添加记录
+        // KEYS[1] = redis key
+        // ARGV[1] = windowStart (毫秒)
+        // ARGV[2] = maxCount
+        // ARGV[3] = member (当前请求唯一标识)
+        // ARGV[4] = now (当前时间戳毫秒)
+        // ARGV[5] = ttlSeconds (Key 过期时间)
+        String script = """
+                redis.call('ZREMRANGEBYSCORE', KEYS[1], 0, tonumber(ARGV[1]))
+                local count = redis.call('ZCARD', KEYS[1])
+                if tonumber(count) < tonumber(ARGV[2]) then
+                    redis.call('ZADD', KEYS[1], tonumber(ARGV[4]), ARGV[3])
+                    redis.call('EXPIRE', KEYS[1], tonumber(ARGV[5]))
+                    return 1
+                end
+                return 0
+                """;
 
-        // 2. 统计窗口内请求数
-        Long count = redisHelper.zcard(key);
+        Boolean result = redisHelper.executeScript(script, List.of(key),
+                String.valueOf(windowStart),
+                String.valueOf(maxCount),
+                member,
+                String.valueOf(now),
+                String.valueOf(windowSeconds + 10));
 
-        if (count != null && count < maxCount) {
-            // 3. 添加当前请求记录（member = now + 随机后缀防覆盖）
-            String member = now + ":" + ThreadLocalRandom.current().nextLong();
-            redisHelper.zadd(key, member, now);
-
-            // 4. 设置 Key 过期时间（窗口 + 缓冲 10 秒）
-            redisHelper.expire(key, Duration.ofSeconds(windowSeconds + 10));
-
-            log.debug("限流放行: key={}, count={}/{}, window={}s", key, count + 1, maxCount, windowSeconds);
-            return true;
+        boolean allowed = Boolean.TRUE.equals(result);
+        if (allowed) {
+            log.debug("限流放行: key={}, window={}s", key, windowSeconds);
+        } else {
+            log.warn("限流拒绝: key={}, window={}s", key, windowSeconds);
         }
-
-        log.warn("限流拒绝: key={}, count={}/{}, window={}s", key, count, maxCount, windowSeconds);
-        return false;
+        return allowed;
     }
 }

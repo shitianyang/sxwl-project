@@ -177,15 +177,16 @@ public class SxwlExcelUtils {
                 list.add(new FieldInfo(field, annotation));
             }
         }
-        // 处理父类字段
-        Class<?> superClass = clazz.getSuperclass();
-        if (superClass != null && superClass != Object.class) {
-            for (Field field : superClass.getDeclaredFields()) {
+        // 递归处理父类字段
+        Class<?> current = clazz.getSuperclass();
+        while (current != null && current != Object.class) {
+            for (Field field : current.getDeclaredFields()) {
                 SxwlExcel annotation = field.getAnnotation(SxwlExcel.class);
                 if (annotation != null) {
                     list.add(new FieldInfo(field, annotation));
                 }
             }
+            current = current.getSuperclass();
         }
         list.sort((a, b) -> {
             int cmp = Integer.compare(a.annotation.order(), b.annotation.order());

@@ -77,7 +77,7 @@ function PreviewModal({ tableId, tableName, open, onCancel }: PreviewModalProps)
       footer={null}
       width="90%"
       style={{ maxWidth: 1200 }}
-      destroyOnHidden
+      destroyOnClose
     >
       {previewList.length > 0 ? (
         <div style={{ display: 'flex', gap: 16 }}>

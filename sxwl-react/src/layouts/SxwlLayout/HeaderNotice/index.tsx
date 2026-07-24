@@ -272,7 +272,7 @@ export default function HeaderNotice() {
         onCancel={handleClosePreview}
         footer={null}
         width={720}
-        destroyOnHidden
+        destroyOnClose
       >
         {previewLoading ? (
           <div style={{ textAlign: 'center', padding: 40 }}>

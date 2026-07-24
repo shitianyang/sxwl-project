@@ -11,12 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HexFormat;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +43,7 @@ public class SxwlSM2KeyManager {
 
     private static final Logger log = LoggerFactory.getLogger(SxwlSM2KeyManager.class);
 
-    private static final Random RANDOM = new Random();
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final HexFormat HEX = HexFormat.of();
 
     /** Redis 操作封装（持久化 SM2 密钥对，确保重启不丢失） */
@@ -218,7 +218,7 @@ public class SxwlSM2KeyManager {
 
     private static byte[] randomBytes(int len) {
         byte[] buf = new byte[len];
-        RANDOM.nextBytes(buf);
+        SECURE_RANDOM.nextBytes(buf);
         return buf;
     }
 

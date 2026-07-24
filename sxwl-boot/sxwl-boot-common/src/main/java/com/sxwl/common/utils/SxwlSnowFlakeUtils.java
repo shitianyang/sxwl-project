@@ -26,9 +26,9 @@ import java.util.concurrent.locks.LockSupport;
 public final class SxwlSnowFlakeUtils {
 
     /**
-     * 自定义起始时间戳（2024-01-01T00:00:00Z）
+     * 自定义起始时间戳（2025-03-24T00:00:00Z）
      */
-    public static final long DEFAULT_EPOCH = 1704067200000L;
+    public static final long DEFAULT_EPOCH = 1742774400000L;
 
     /**
      * 数据中心位数

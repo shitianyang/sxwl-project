@@ -3,6 +3,8 @@ package com.sxwl.system.controller;
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.annotation.SxwlLog;
 import com.sxwl.system.model.dto.SysRoleDTO;
+import com.sxwl.system.model.dto.SysRoleDataScopeDTO;
+import com.sxwl.system.model.dto.SysRoleMenuGrantDTO;
 import com.sxwl.system.model.params.SysRolePageParams;
 import com.sxwl.system.service.SysRoleService;
 import jakarta.validation.Valid;
@@ -10,7 +12,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 系统角色 Controller
@@ -102,12 +103,10 @@ public class SysRoleController {
      */
     @PostMapping("/{roleId}/menus")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:role:grant')")
-    @SxwlLog(title = "角色管理", description = "分配菜单[roleId=#{#body.roleId}]")
-    public void saveRoleMenus(@RequestBody Map<String, Object> body) {
-        Long roleId = Long.valueOf(body.get("roleId").toString());
-        @SuppressWarnings("unchecked")
-        List<Long> menuIds = (List<Long>) body.get("menuIds");
-        sysRoleService.saveRoleMenus(roleId, menuIds);
+    @SxwlLog(title = "角色管理", description = "分配菜单[roleId=#{#roleId}]")
+    public void saveRoleMenus(@PathVariable("roleId") Long roleId,
+                              @Valid @RequestBody SysRoleMenuGrantDTO grantDTO) {
+        sysRoleService.saveRoleMenus(roleId, grantDTO.getMenuIds());
     }
 
     /**
@@ -132,12 +131,10 @@ public class SysRoleController {
      */
     @PostMapping("/{roleId}/data-scope")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:role:grant')")
-    @SxwlLog(title = "角色管理", description = "配置数据权限[roleId=#{#body.roleId}]")
-    public void saveRoleDataScope(@RequestBody Map<String, Object> body) {
-        Long roleId = Long.valueOf(body.get("roleId").toString());
-        @SuppressWarnings("unchecked")
-        List<Long> orgIds = (List<Long>) body.get("orgIds");
-        sysRoleService.saveRoleDataScope(roleId, orgIds);
+    @SxwlLog(title = "角色管理", description = "配置数据权限[roleId=#{#roleId}]")
+    public void saveRoleDataScope(@PathVariable("roleId") Long roleId,
+                                  @Valid @RequestBody SysRoleDataScopeDTO dataScopeDTO) {
+        sysRoleService.saveRoleDataScope(roleId, dataScopeDTO.getOrgIds());
     }
 
     /**

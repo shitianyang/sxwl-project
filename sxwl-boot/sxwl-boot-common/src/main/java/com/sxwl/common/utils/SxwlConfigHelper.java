@@ -30,7 +30,7 @@ public final class SxwlConfigHelper {
     }
 
     /** 默认空实现：未注册 Provider 时返回 null */
-    private static ConfigProvider provider = configKey -> null;
+    private static volatile ConfigProvider provider = configKey -> null;
 
     /**
      * 注册配置提供者（由上层模块在启动时调用）
