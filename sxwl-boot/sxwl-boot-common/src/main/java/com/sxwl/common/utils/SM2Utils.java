@@ -337,7 +337,7 @@ public final class SM2Utils {
         public String toString() {
             return "SM2KeyPair{" +
                     "publicKeyHex='" + publicKeyHex + '\'' +
-                    ", privateKeyHex='" + privateKeyHex + '\'' +
+                    ", privateKeyHex='****'" +
                     '}';
         }
     }

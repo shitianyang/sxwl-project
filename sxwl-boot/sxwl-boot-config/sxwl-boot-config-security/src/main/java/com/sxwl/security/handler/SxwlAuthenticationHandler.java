@@ -143,12 +143,19 @@ public class SxwlAuthenticationHandler {
         String userSetKey = SxwlRedisKeyUtils.tokenUserSetKey(clientType, userId);
         Set<String> jtis = redisHelper.smembers(userSetKey);
 
-        if (jtis != null && !jtis.isEmpty()) {
-            // 批量删除白名单 Key（需要遍历设备维度，此处删除所有可能的 Key）
-            // 由于白名单 Key 含 deviceId，而辅助 Set 不区分设备，
-            // 这里通过 tokenUserSetKey 拿到 jti 后，无法直接拼出完整 Key，
-            // 因此采用删除用户信息缓存 + 辅助索引的方式使 Token 失效
-            log.debug("吊销 Token: userId={}, jtiCount={}", userId, jtis.size());
+        // 在线设备索引
+        String devicesSetKey = SxwlRedisKeyUtils.onlineDevicesSetKey(userId);
+        Set<String> deviceIds = redisHelper.smembers(devicesSetKey);
+
+        // 批量删除白名单 Key（遍历 jti × deviceId）
+        if (jtis != null && !jtis.isEmpty() && deviceIds != null && !deviceIds.isEmpty()) {
+            for (String jti : jtis) {
+                for (String deviceId : deviceIds) {
+                    String whitelistKey = SxwlRedisKeyUtils.tokenJwtKey(clientType, userId, deviceId, jti);
+                    redisHelper.delete(whitelistKey);
+                }
+            }
+            log.debug("吊销 Token: userId={}, jtiCount={}, deviceCount={}", userId, jtis.size(), deviceIds.size());
         }
 
         // 删除用户信息缓存（Filter 读不到用户信息 → 视为未认证）
@@ -159,8 +166,15 @@ public class SxwlAuthenticationHandler {
         redisHelper.delete(userSetKey);
 
         // 删除在线设备索引
-        String devicesSetKey = SxwlRedisKeyUtils.onlineDevicesSetKey(userId);
         redisHelper.delete(devicesSetKey);
+
+        // 删除在线用户详情
+        if (deviceIds != null) {
+            for (String deviceId : deviceIds) {
+                String onlineUserKey = SxwlRedisKeyUtils.onlineUserDeviceKey(userId, deviceId);
+                redisHelper.delete(onlineUserKey);
+            }
+        }
 
         log.info("用户登出: userId={}, clientType={}", userId, clientType);
     }

@@ -1,5 +1,8 @@
 package com.sxwl.system.model.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 /**
  * 系统字典明细 DTO（统一请求/响应）
  *
@@ -13,12 +16,15 @@ public class SysDictDetailDTO {
     private Long id;
 
     /** 所属字典 ID */
+    @NotNull(message = "所属字典不能为空")
     private Long dictId;
 
     /** 字典项值 */
+    @NotBlank(message = "字典项值不能为空")
     private String detailValue;
 
     /** 字典项标签 */
+    @NotBlank(message = "字典项标签不能为空")
     private String detailLabel;
 
     /** 描述说明 */
@@ -28,6 +34,7 @@ public class SysDictDetailDTO {
     private Integer sort;
 
     /** 状态：0=禁用 1=启用 */
+    @NotNull(message = "字典明细状态不能为空")
     private Integer status;
 
     /** 是否默认选中：0=否 1=是 */

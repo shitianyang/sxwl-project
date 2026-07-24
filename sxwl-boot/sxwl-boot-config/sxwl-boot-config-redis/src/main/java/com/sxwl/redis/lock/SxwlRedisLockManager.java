@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -109,12 +110,9 @@ public class SxwlRedisLockManager {
         @Override
         public void close() {
             // 使用 Lua 脚本原子解锁：仅当 lockValue 匹配时才 DEL
-            // 简化实现：直接 delete（当前场景足够，后续可替换为 Lua）
-            String currentValue = redisHelper.get(key).orElse(null);
-            if (lockValue.equals(currentValue)) {
-                redisHelper.delete(key);
-                log.debug("释放分布式锁: key={}", key);
-            }
+            String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+            redisHelper.executeScript(script, List.of(key), lockValue);
+            log.debug("释放分布式锁: key={}", key);
         }
     }
 }

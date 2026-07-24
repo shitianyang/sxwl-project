@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -130,16 +131,19 @@ public class SysMonitorSseService {
 
     private SysRedisInfoDTO collectRedisInfo() {
         SysRedisInfoDTO dto = new SysRedisInfoDTO();
-        Properties info = stringRedisTemplate.getRequiredConnectionFactory()
-                .getConnection().serverCommands().info();
-        if (info != null) {
-            dto.setConnectedClients(getLong(info, "connected_clients"));
-            dto.setUsedMemory(getLong(info, "used_memory"));
-            dto.setTotalKeys(getLong(info, "db0", "keys"));
-            long hits = getLong(info, "keyspace_hits");
-            long misses = getLong(info, "keyspace_misses");
-            long total = hits + misses;
-            dto.setHitRate(total > 0 ? (double) hits / total * 100 : 100.0);
+        try (RedisConnection connection = stringRedisTemplate.getRequiredConnectionFactory().getConnection()) {
+            Properties info = connection.serverCommands().info();
+            if (info != null) {
+                dto.setConnectedClients(getLong(info, "connected_clients"));
+                dto.setUsedMemory(getLong(info, "used_memory"));
+                dto.setTotalKeys(getLong(info, "db0", "keys"));
+                long hits = getLong(info, "keyspace_hits");
+                long misses = getLong(info, "keyspace_misses");
+                long total = hits + misses;
+                dto.setHitRate(total > 0 ? (double) hits / total * 100 : 100.0);
+            }
+        } catch (Exception e) {
+            log.warn("采集 Redis 信息失败: {}", e.getMessage());
         }
         return dto;
     }
