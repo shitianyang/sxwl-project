@@ -350,7 +350,7 @@ export default function RolePage() {
         onOk={handleSaveMenuAssign}
         onCancel={() => setMenuAssignOpen(false)}
         width={500}
-        destroyOnClose
+        destroyOnHidden
       >
         <SxwlTree
           treeData={menuTree}
@@ -368,7 +368,7 @@ export default function RolePage() {
         onOk={handleSaveDataScope}
         onCancel={() => setDataScopeOpen(false)}
         width={500}
-        destroyOnClose
+        destroyOnHidden
       >
         <SxwlTree
           treeData={orgTree}

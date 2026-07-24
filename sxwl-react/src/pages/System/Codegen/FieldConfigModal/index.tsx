@@ -168,7 +168,7 @@ function FieldConfigModal({ tableId, tableName, open, onCancel }: FieldConfigMod
       width="95%"
       style={{ maxWidth: 1400 }}
       confirmLoading={saving}
-      destroyOnClose
+      destroyOnHidden
     >
       <SxwlTable
         rowKey="columnName"

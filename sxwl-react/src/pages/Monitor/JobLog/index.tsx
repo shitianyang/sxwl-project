@@ -152,7 +152,7 @@ export default function JobLogPage() {
         onCancel={() => setDetailOpen(false)}
         footer={null}
         width={640}
-        destroyOnClose
+        destroyOnHidden
       >
         {detailRecord && (
           <div style={{ lineHeight: 2 }}>

@@ -343,7 +343,7 @@ export default function DictPage() {
         onCancel={() => { setDetailModalOpen(false); setDetailFormOpen(false); }}
         footer={null}
         width={800}
-        destroyOnClose
+        destroyOnHidden
       >
         <SxwlSpace style={{ marginBottom: 16 }}>
           <SxwlButton type="primary" icon={<SxwlIcon name="PlusOutlined" />} onClick={handleAddDetail}>
