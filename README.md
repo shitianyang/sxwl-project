@@ -54,6 +54,7 @@
 | React Router DOM | 7.17.0 | 路由 |
 | Zustand | 5.0.14 | 状态管理 |
 | Axios | 1.17.0 | HTTP 客户端 |
+| TipTap | 3.28.0 | 富文本编辑器（StarterKit + Underline/TextAlign/Link/Image/Table/Highlight/Color/CodeBlockLowlight） |
 | Sass | 1.101.0 | CSS 预处理器 |
 
 ---

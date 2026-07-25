@@ -256,6 +256,7 @@ public class SysFileServiceImpl implements SysFileService {
         try (InputStream inputStream = file.getInputStream()) {
             rustfsTemplate.upload(bucket, objectKey, inputStream, file.getSize(), contentType);
         } catch (Exception e) {
+            log.error("S3 简单上传失败: bucket={}, objectKey={}, originalName={}", bucket, objectKey, originalName, e);
             throw new SxwlBusinessException(10001, "简单上传到 S3 失败: " + originalName, e);
         }
 
@@ -268,6 +269,14 @@ public class SysFileServiceImpl implements SysFileService {
         fileInfo.setFileSuffix(suffix.isEmpty() ? null : suffix.substring(1));
         fileInfo.setBucketName(bucket);
         fileInfo.setStatus(FILE_STATUS_NORMAL);
+        // 生成文件访问 URL
+        try {
+            String fileUrl = rustfsTemplate.generatePresignedUrl(bucket, objectKey,
+                    Duration.ofSeconds(properties.getPresignedUrlExpire()));
+            fileInfo.setFileUrl(fileUrl);
+        } catch (Exception e) {
+            log.warn("生成 fileUrl 失败: bucket={}, objectKey={}", bucket, objectKey, e);
+        }
         sysFileInfoMapper.insertFile(fileInfo);
 
         return buildSysFileDTO(fileInfo);
@@ -350,6 +359,14 @@ public class SysFileServiceImpl implements SysFileService {
         dto.setCreateTime(entity.getCreateTime() != null
                 ? entity.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
                 : null);
+        // 生成文件访问 URL
+        try {
+            String bucket = entity.getBucketName() != null ? entity.getBucketName() : properties.getDefaultBucket();
+            dto.setPresignedUrl(rustfsTemplate.generatePresignedUrl(bucket, entity.getObjectKey(),
+                    Duration.ofSeconds(properties.getPresignedUrlExpire())));
+        } catch (Exception e) {
+            log.warn("生成 presignedUrl 失败: id={}, objectKey={}", entity.getId(), entity.getObjectKey(), e);
+        }
         return dto;
     }
 }

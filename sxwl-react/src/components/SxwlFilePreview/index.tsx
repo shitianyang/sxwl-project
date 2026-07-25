@@ -62,8 +62,9 @@ const SxwlFilePreview: React.FC<SxwlFilePreviewProps> = ({ open, onClose, file }
 
   useEffect(() => {
     if (open && file) {
-      if (file.presignedUrl) {
-        setPreviewUrl(file.presignedUrl);
+      const directUrl = file.presignedUrl || file.fileUrl;
+      if (directUrl) {
+        setPreviewUrl(directUrl);
       } else {
         loadPreviewUrl();
       }

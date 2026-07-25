@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Badge, Popover, List, Tag, Empty, Spin, Typography, Space } from 'antd';
-import { SxwlIcon, SxwlMarkdown, SxwlButton, SxwlTooltip, SxwlModal } from '@/components';
+import { SxwlIcon, SxwlRichTextViewer, SxwlButton, SxwlTooltip, SxwlModal } from '@/components';
 import { useAuthStore } from '@/stores/authStore';
 import { useSSE } from '@/hooks/useSSE';
 import {
@@ -286,7 +286,7 @@ export default function HeaderNotice() {
               </Tag>
               <Text type="secondary">{previewNotice.createTime}</Text>
             </Space>
-            <SxwlMarkdown content={previewNotice.content} />
+            <SxwlRichTextViewer content={previewNotice.content} />
           </div>
         ) : (
           <Empty description="加载失败" image={Empty.PRESENTED_IMAGE_SIMPLE} />

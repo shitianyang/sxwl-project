@@ -4,11 +4,19 @@ import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.rustfs.config.SxwlRustfsProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,10 +36,20 @@ public class SxwlRustfsTemplate {
 
     private final S3Client s3Client;
     private final SxwlRustfsProperties properties;
+    private final S3Presigner s3Presigner;
 
     public SxwlRustfsTemplate(S3Client s3Client, SxwlRustfsProperties properties) {
         this.s3Client = s3Client;
         this.properties = properties;
+        this.s3Presigner = S3Presigner.builder()
+                .region(Region.of(properties.getRegion()))
+                .endpointOverride(URI.create(properties.getEndpoint()))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(properties.getAccessKey(), properties.getSecretKey())))
+                .serviceConfiguration(S3Configuration.builder()
+                        .pathStyleAccessEnabled(true)
+                        .build())
+                .build();
     }
 
     /**
@@ -120,12 +138,15 @@ public class SxwlRustfsTemplate {
      * @return 预签名 URL
      */
     public String generatePresignedUrl(String bucket, String key, Duration duration) {
-        return s3Client.utilities().getUrl(
-                GetUrlRequest.builder()
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(duration)
+                .getObjectRequest(GetObjectRequest.builder()
                         .bucket(bucket)
                         .key(key)
-                        .build()
-        ).toExternalForm();
+                        .build())
+                .build();
+        PresignedGetObjectRequest presigned = s3Presigner.presignGetObject(presignRequest);
+        return presigned.url().toExternalForm();
     }
 
     /**
@@ -239,6 +260,27 @@ public class SxwlRustfsTemplate {
             return true;
         } catch (NoSuchKeyException e) {
             return false;
+        }
+    }
+
+    /**
+     * 创建 Bucket（如果不存在）
+     *
+     * @param bucket 桶名
+     */
+    public void createBucketIfNotExists(String bucket) {
+        try {
+            HeadBucketRequest headRequest = HeadBucketRequest.builder()
+                    .bucket(bucket)
+                    .build();
+            s3Client.headBucket(headRequest);
+            log.info("Bucket 已存在: {}", bucket);
+        } catch (NoSuchBucketException e) {
+            CreateBucketRequest createRequest = CreateBucketRequest.builder()
+                    .bucket(bucket)
+                    .build();
+            s3Client.createBucket(createRequest);
+            log.info("Bucket 创建成功: {}", bucket);
         }
     }
 }
