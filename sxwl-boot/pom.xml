@@ -210,6 +210,15 @@
         </dependencies>
     </dependencyManagement>
 
+    <dependencies>
+        <!-- 所有子模块统一继承 spring-boot-starter-test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
