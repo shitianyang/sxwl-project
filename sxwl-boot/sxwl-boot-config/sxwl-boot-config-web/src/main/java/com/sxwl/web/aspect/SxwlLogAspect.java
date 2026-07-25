@@ -328,12 +328,11 @@ public class SxwlLogAspect {
      * 对 JSON 字符串中敏感字段值进行脱敏
      */
     String maskSensitiveFields(String json) {
+        if (json == null || json.isEmpty()) {
+            return json;
+        }
         return SENSITIVE_PATTERN.matcher(json).replaceAll(
-                match -> {
-                    // 保留 key，value 替换为 ***
-                    String keyPart = match.group().replaceAll("\"\\s*:\\s*\"[^\"]*\"", "");
-                    return keyPart + ": " + MASK_VALUE;
-                }
+                match -> "\"" + match.group(1) + "\": " + MASK_VALUE
         );
     }
 
