@@ -1,8 +1,9 @@
-import { type JSX, useEffect } from 'react';
+import { type JSX, useLayoutEffect } from 'react';
 import type { FormInstance } from 'antd/es/form';
-import { Row, Col } from 'antd';
+import { Row, Col, Form } from 'antd';
 import {
   SxwlInput, SxwlSelect, SxwlModal, SxwlForm, SxwlMarkdownEditor,
+  SxwlRichTextEditor,
 } from '@/components';
 import type { FormFieldConfig } from '@/components/FormFieldConfig';
 import './index.scss';
@@ -41,6 +42,41 @@ export interface SxwlFormModalProps {
   editingData?: Record<string, any>;
 }
 
+// ==================== RichtextField — 显式受控，绕过 Form.Item 对自定义组件 cloneElement 的兼容性风险
+
+function RichtextField({
+  field,
+  form,
+  colSpan,
+  buildRules,
+}: {
+  field: FormFieldConfig;
+  form: FormInstance;
+  colSpan: number;
+  buildRules: (f: FormFieldConfig) => any[];
+}) {
+  // 用 useWatch 直接订阅字段值，确保 setFieldsValue 后一定会 re-render
+  const watchedValue = Form.useWatch(field.name, form);
+
+  return (
+    <Col span={colSpan}>
+      <Form.Item
+        name={field.name}
+        label={field.label}
+        rules={buildRules(field)}
+        initialValue={field.initialValue}
+      >
+        <SxwlRichTextEditor
+          value={watchedValue ?? ''}
+          onChange={(html: string) => form.setFieldValue(field.name, html)}
+          placeholder={field.placeholder ?? '请输入内容...'}
+          minHeight={300}
+        />
+      </Form.Item>
+    </Col>
+  );
+}
+
 // ==================== Component
 
 function SxwlFormModal({
@@ -67,8 +103,9 @@ function SxwlFormModal({
     return rules;
   };
 
-  // 弹窗打开时自动初始化表单，此时 Form 已在 DOM 中（formHooked=true），无警告
-  useEffect(() => {
+  // 弹窗打开或编辑数据变更时自动初始化表单
+  // 用 useLayoutEffect 确保在浏览器绘制前同步设置，富文本编辑器首次渲染即可拿到正确值
+  useLayoutEffect(() => {
     if (open) {
       form.resetFields();
       if (editingData) {
@@ -77,7 +114,7 @@ function SxwlFormModal({
         form.setFieldsValue(initialValues);
       }
     }
-  }, [open]);
+  }, [open, editingData, initialValues, form]);
 
   return (
     <SxwlModal
@@ -98,6 +135,15 @@ function SxwlFormModal({
       >
         <Row gutter={16}>
           {fields.map((field) => (
+            field.type === 'richtext' ? (
+              <RichtextField
+                key={field.name}
+                field={field}
+                form={form}
+                colSpan={colSpan}
+                buildRules={buildRules}
+              />
+            ) : (
             <Col key={field.name} span={colSpan}>
               <SxwlForm.Item
                 name={field.name}
@@ -126,6 +172,7 @@ function SxwlFormModal({
                 )}
               </SxwlForm.Item>
             </Col>
+            )
           ))}
         </Row>
       </SxwlForm>

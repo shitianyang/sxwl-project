@@ -1,6 +1,7 @@
 package com.sxwl.rustfs.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.sxwl.common.entity.SxwlResult;
 import com.sxwl.rustfs.model.dto.*;
 import com.sxwl.rustfs.model.params.SysFilePageParams;
 import com.sxwl.rustfs.service.SysFileService;
@@ -127,8 +128,8 @@ public class SysFileController {
      */
     @GetMapping("/presigned-url/{id}")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:download')")
-    public String getPresignedUrl(@PathVariable("id") Long id) {
-        return sysFileService.getPresignedUrl(id);
+    public SxwlResult<String> getPresignedUrl(@PathVariable("id") Long id) {
+        return SxwlResult.success(sysFileService.getPresignedUrl(id));
     }
 
     /**

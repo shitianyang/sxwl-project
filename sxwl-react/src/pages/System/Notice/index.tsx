@@ -10,7 +10,7 @@ import {
 import type { SysNoticeItem } from '@/api/system/noticeApi';
 import {
   getNoticePageByParams, createNotice, updateNotice, deleteNoticeById,
-  publishNotice, revokeNotice,
+  publishNotice, revokeNotice, getNoticeById,
 } from '@/api/system/noticeApi';
 
 export default function NoticePage() {
@@ -62,8 +62,15 @@ export default function NoticePage() {
     setModalOpen(true);
   };
 
-  const handleEdit = (record: SysNoticeItem) => {
-    setEditingRecord(record);
+  const handleEdit = async (record: SysNoticeItem) => {
+    try {
+      // 列表接口不返回 content，需调详情接口拿完整数据
+      const res = await getNoticeById(record.id);
+      setEditingRecord(res.data.data);
+    } catch {
+      // 兜底：用列表数据（无 content）
+      setEditingRecord(record);
+    }
     setModalOpen(true);
   };
 
@@ -221,7 +228,7 @@ export default function NoticePage() {
       ],
       placeholder: '请选择级别',
     },
-    { name: 'content', label: '内容', type: 'markdown', required: true, placeholder: '请输入公告内容（支持 Markdown 格式）' },
+    { name: 'content', label: '内容', type: 'richtext', required: true, placeholder: '请输入公告内容...' },
     {
       name: 'status', label: '状态', type: 'select', required: true, initialValue: 0,
       options: [{ value: 0, label: '草稿' }, { value: 1, label: '已发布' }],
@@ -269,6 +276,7 @@ export default function NoticePage() {
         confirmLoading={confirmLoading}
         initialValues={{ status: 1, noticeType: 'ANNOUNCEMENT', level: 'NORMAL' }}
         editingData={editingRecord}
+        destroyOnHidden
       />
     </>
   );

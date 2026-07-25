@@ -66,7 +66,7 @@ public class SxwlGlobalExceptionHandler {
      */
     @ExceptionHandler(SxwlBusinessException.class)
     public SxwlResult<Void> handleBusinessException(SxwlBusinessException e) {
-        log.warn("Business exception: code={}, msg={}", e.getCode(), e.getMessage());
+        log.error("Business exception: code={}, msg={}", e.getCode(), e.getMessage(), e);
         return SxwlResult.error(e.getCode(), e.getMessage());
     }
 
