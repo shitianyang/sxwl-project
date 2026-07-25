@@ -144,3 +144,4 @@ Copyright © 2026 河北数行未来科技有限公司
 
 - Issue：[GitHub Issues](https://github.com/shitianyang/sxwl-project/issues)
 - 讨论区：[GitHub Discussions](https://github.com/shitianyang/sxwl-project/discussions)
+- QQ 群：**726069355**

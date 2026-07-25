@@ -1007,9 +1007,9 @@ INSERT INTO "sys_organization_info" ("id", "org_code", "org_name", "parent_id", 
 INSERT INTO "sys_role_info" ("id", "role_code", "role_name", "data_scope", "sort", "status", "description", "create_by", "create_org", "create_time", "delete_flag") VALUES
 (1, 'super_admin', '超级管理员', 1, 1, 1, '超级管理员（所有权限）', 0, 0, NOW(), 0);
 
--- 3. 引导管理员用户（用于首次登录后创建正式账号，密码由 admin 首次登录时重置）
+-- 3. 超级管理员用户（默认密码 12345678，首次登录后请立即修改）
 INSERT INTO "sys_user_info" ("id", "username", "password", "real_name", "nickname", "phone", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
-(1, 'admin', '', '系统管理员', 'Admin', '13800000000', 1, 0, 0, NOW(), 0);
+(1, 'admin', '{sm3}NfW46rR40UQfWpXASSDXSw==$c2483af8bde8d2d8f5e195a5bb27654d4a819d4178dd4c43a5a56a62f1e2e520', '系统管理员', 'Admin', '13800000000', 1, 0, 0, NOW(), 0);
 
 -- 4. 用户-角色关联
 INSERT INTO "sys_user_role_info" ("id", "user_id", "role_id", "create_by", "create_org", "create_time", "delete_flag") VALUES
@@ -1159,6 +1159,28 @@ CREATE INDEX "idx_sys_notice_type" ON "sys_notice_info" ("notice_type");
 CREATE INDEX "idx_sys_notice_level" ON "sys_notice_info" ("level");
 CREATE INDEX "idx_sys_notice_status" ON "sys_notice_info" ("status");
 CREATE INDEX "idx_sys_notice_create_time" ON "sys_notice_info" ("create_time");
+
+
+-- =====================================================================
+-- 通知公告已读状态表（记录每个用户对每条公告的已读状态）
+-- =====================================================================
+
+CREATE TABLE "sys_notice_read" (
+  "id"             int8          NOT NULL,
+  "notice_id"      int8          NOT NULL,
+  "user_id"        int8          NOT NULL,
+  "read_time"      timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY ("id")
+);
+
+COMMENT ON TABLE  "sys_notice_read" IS '通知公告已读状态表';
+COMMENT ON COLUMN "sys_notice_read"."id" IS '唯一标识';
+COMMENT ON COLUMN "sys_notice_read"."notice_id" IS '公告ID，关联 sys_notice_info.id';
+COMMENT ON COLUMN "sys_notice_read"."user_id" IS '用户ID，关联 sys_user_info.id';
+COMMENT ON COLUMN "sys_notice_read"."read_time" IS '阅读时间';
+
+CREATE UNIQUE INDEX "uk_sys_notice_read_uid_nid" ON "sys_notice_read" ("user_id", "notice_id");
+CREATE INDEX "idx_sys_notice_read_user_id" ON "sys_notice_read" ("user_id");
 
 
 -- =====================================================================
