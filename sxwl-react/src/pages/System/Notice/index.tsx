@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { ColumnsType } from 'antd/es/table';
 import {
-  SxwlButton, SxwlIcon, SxwlTag,
+  SxwlIcon, SxwlTag,
   SxwlSpace, SxwlPopconfirm, SxwlForm, SxwlMessage,
   SxwlPage, SxwlFormModal, SxwlPermissionButton,
   type SearchFieldConfig, type ToolbarButtonConfig,
@@ -274,7 +274,7 @@ export default function NoticePage() {
         columns={1}
         width={820}
         confirmLoading={confirmLoading}
-        initialValues={{ status: 1, noticeType: 'ANNOUNCEMENT', level: 'NORMAL' }}
+        initialValues={{ status: 0, noticeType: 'ANNOUNCEMENT', level: 'NORMAL' }}
         editingData={editingRecord}
         destroyOnHidden
       />

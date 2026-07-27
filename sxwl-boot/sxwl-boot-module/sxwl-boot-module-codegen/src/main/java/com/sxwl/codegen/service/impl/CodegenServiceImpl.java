@@ -75,7 +75,7 @@ public class CodegenServiceImpl implements CodegenService {
 
                 CodegenPreviewDTO dto = new CodegenPreviewDTO();
                 dto.setFilePath(resolveFilePath(templateName, table));
-                dto.setContent(content.substring(0, Math.min(content.length(), 500)));
+                dto.setContent(content);
                 previews.add(dto);
             } catch (Exception e) {
                 log.warn("预览模板失败：{}", templateName, e);

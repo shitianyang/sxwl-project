@@ -47,6 +47,7 @@ const SxwlUpload: React.FC<SxwlUploadProps> = ({
   ...rest
 }) => {
   const [internalFileList, setInternalFileList] = useState<UploadFile[]>([]);
+  const fileListRef = useRef<UploadFile[]>([]);
   const fileList = controlledFileList ?? internalFileList;
   const { start, progress, status } = useChunkedUpload();
   const progressFileRef = useRef<UploadFile | null>(null);
@@ -75,7 +76,10 @@ const SxwlUpload: React.FC<SxwlUploadProps> = ({
     };
 
     progressFileRef.current = uploadFile;
-    setInternalFileList((prev) => [...prev, uploadFile]);
+    setInternalFileList((prev) => {
+      fileListRef.current = [...prev, uploadFile];
+      return fileListRef.current;
+    });
 
     await start(file, {
       // 分片上传内部的进度回调
@@ -111,13 +115,15 @@ const SxwlUpload: React.FC<SxwlUploadProps> = ({
         } as any;
         pf.url = result.presignedUrl;
         progressFileRef.current = null;
-        setInternalFileList((prev) =>
-          prev.map((f) => (f.uid === pf.uid ? { ...pf } : f))
-        );
-        onChange?.({
-          file: pf,
-          fileList: [],
-        } as any);
+        setInternalFileList((prev) => {
+          const updated = prev.map((f) => (f.uid === pf.uid ? { ...pf } : f));
+          fileListRef.current = updated;
+          onChange?.({
+            file: pf,
+            fileList: updated,
+          } as any);
+          return updated;
+        });
       },
       onError: (err) => {
         const pf = progressFileRef.current;

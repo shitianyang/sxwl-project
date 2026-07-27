@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { ColumnsType } from 'antd/es/table';
 import type { DataNode } from 'antd/es/tree';
 import {
-  SxwlButton, SxwlIcon, SxwlTag,
+  SxwlIcon, SxwlTag,
   SxwlSpace, SxwlPopconfirm, SxwlForm, SxwlMessage, SxwlModal,
   SxwlPage, SxwlFormModal, SxwlTree, SxwlPermissionButton,
   type SearchFieldConfig, type ToolbarButtonConfig,

@@ -3,7 +3,7 @@ import type { FormInstance } from 'antd/es/form';
 import { SxwlInput, SxwlSelect, SxwlModal, SxwlForm, SxwlMarkdownEditor,
   SxwlRichTextEditor, SxwlRow, SxwlCol,
 } from '@/components';
-import type { FormFieldConfig } from '@/components/FormFieldConfig';
+import type { FormFieldConfig } from '@/types/FormFieldConfig';
 import './index.scss';
 
 // ==================== Types
@@ -37,7 +37,7 @@ export interface SxwlFormModalProps {
   /** 新增时默认值（弹窗打开时自动 resetFields + setFieldsValue） */
   initialValues?: Record<string, any>;
   /** 编辑时初始数据（弹窗打开时自动 resetFields + setFieldsValue，优先级高于 initialValues） */
-  editingData?: Record<string, any>;
+  editingData?: Record<string, any> | null;
 }
 
 // ==================== RichtextField — 显式受控，绕过 Form.Item 对自定义组件 cloneElement 的兼容性风险

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ColumnsType } from 'antd/es/table';
 import {
-  SxwlButton, SxwlIcon,
+  SxwlIcon,
   SxwlSpace, SxwlPopconfirm, SxwlMessage,
   SxwlPage, SxwlPermissionButton,
   type ToolbarButtonConfig,
