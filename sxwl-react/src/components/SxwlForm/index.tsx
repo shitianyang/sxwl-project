@@ -24,5 +24,6 @@ function SxwlForm<Values = any>(props: FormProps<Values>): JSX.Element {
 
 SxwlForm.Item = Form.Item;
 SxwlForm.useForm = Form.useForm;
+SxwlForm.useWatch = Form.useWatch;
 
 export default SxwlForm;

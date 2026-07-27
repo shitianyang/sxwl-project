@@ -4,7 +4,7 @@ import type { DataNode } from 'antd/es/tree';
 import {
   SxwlButton, SxwlIcon, SxwlTag,
   SxwlSpace, SxwlPopconfirm, SxwlForm, SxwlMessage, SxwlModal,
-  SxwlPage, SxwlFormModal, SxwlTree,
+  SxwlPage, SxwlFormModal, SxwlTree, SxwlPermissionButton,
   type SearchFieldConfig, type ToolbarButtonConfig,
   type FormFieldConfig,
 } from '@/components';
@@ -239,19 +239,19 @@ export default function RolePage() {
       title: '操作', key: 'action', width: 300,
       render: (_, record) => (
         <SxwlSpace>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="SafetyCertificateOutlined" />} onClick={() => handleAssignMenu(record)}>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="SafetyCertificateOutlined" />} permission="system:role:grant" onClick={() => handleAssignMenu(record)}>
             菜单
-          </SxwlButton>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="TeamOutlined" />} onClick={() => handleConfigDataScope(record)}>
+          </SxwlPermissionButton>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="TeamOutlined" />} permission="system:role:grant" onClick={() => handleConfigDataScope(record)}>
             数据权限
-          </SxwlButton>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} onClick={() => handleEdit(record)}>
+          </SxwlPermissionButton>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="system:role:edit" onClick={() => handleEdit(record)}>
             编辑
-          </SxwlButton>
+          </SxwlPermissionButton>
           <SxwlPopconfirm title="确定删除该角色吗？" onConfirm={() => handleDelete(record)}>
-            <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:role:delete">
               删除
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
         </SxwlSpace>
       ),
@@ -273,7 +273,7 @@ export default function RolePage() {
   ];
 
   const toolbarButtons: ToolbarButtonConfig[] = [
-    { label: '新增角色', type: 'primary', icon: 'PlusOutlined', onClick: handleAdd },
+    { label: '新增角色', type: 'primary', icon: 'PlusOutlined', permission: 'system:role:add', onClick: handleAdd },
   ];
 
   const formFields: FormFieldConfig[] = useMemo(() => [

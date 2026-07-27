@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import {
-  Layout, Menu, Dropdown, Avatar, Space, Button, Typography, Spin,
-} from 'antd';
 import type { MenuProps } from 'antd';
-import { SxwlIcon } from '@/components';
+import { SxwlIcon, SxwlSpace, SxwlButton, SxwlText, SxwlSpin, SxwlLayout, SxwlMenu, SxwlDropdown, SxwlAvatar } from '@/components';
 import { useAuthStore } from '@/stores/authStore';
 import { useMenuStore } from '@/stores/menuStore';
 import { logout } from '@/api/authApi';
@@ -14,8 +11,6 @@ import HeaderNotice from './HeaderNotice';
 import SxwlClock from '@/components/SxwlClock';
 import './index.scss';
 
-const { Header, Sider, Content } = Layout;
-const { Text } = Typography;
 
 /** DB 图标名 → SxwlIcon PascalCase 映射 */
 const MENU_ICON_MAP: Record<string, string> = {
@@ -112,7 +107,7 @@ function computeParentDirs(items: MenuProps['items'], currentPath: string): stri
   return result;
 }
 
-export default function SxwlLayout() {
+export default function LayoutPage() {
   const [collapsed, setCollapsed] = useState(false);
   const menuTree = useMenuStore((s) => s.menuTree);
   const loading = useMenuStore((s) => s.loading);
@@ -162,8 +157,8 @@ export default function SxwlLayout() {
   ];
 
   return (
-    <Layout className="sxwl-layout">
-      <Sider
+    <SxwlLayout className="sxwl-layout">
+      <SxwlLayout.Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
@@ -176,10 +171,10 @@ export default function SxwlLayout() {
         </div>
         {loading ? (
           <div style={{ textAlign: 'center', padding: 40 }}>
-            <Spin />
+            <SxwlSpin />
           </div>
         ) : (
-          <Menu
+          <SxwlMenu
             theme="dark"
             mode="inline"
             selectedKeys={selectedKeys}
@@ -197,11 +192,11 @@ export default function SxwlLayout() {
             }}
           />
         )}
-      </Sider>
-      <Layout>
-        <Header className="sxwl-header">
+      </SxwlLayout.Sider>
+      <SxwlLayout>
+        <SxwlLayout.Header className="sxwl-header">
           <div className="sxwl-header-left">
-            <Button
+            <SxwlButton
               type="text"
               icon={collapsed ? <SxwlIcon name="MenuUnfoldOutlined" /> : <SxwlIcon name="MenuFoldOutlined" />}
               onClick={() => setCollapsed(!collapsed)}
@@ -212,18 +207,18 @@ export default function SxwlLayout() {
           </div>
           <div className="sxwl-header-right">
             <HeaderNotice />
-            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-              <Space className="sxwl-user-dropdown">
-                <Avatar size="small" icon={<SxwlIcon name="UserOutlined" />} />
-                <Text>{username || '未知用户'}</Text>
-              </Space>
-            </Dropdown>
+            <SxwlDropdown menu={{ items: userMenuItems }} placement="bottomRight">
+              <SxwlSpace className="sxwl-user-dropdown">
+                <SxwlAvatar size="small" icon={<SxwlIcon name="UserOutlined" />} />
+                <SxwlText>{username || '未知用户'}</SxwlText>
+              </SxwlSpace>
+            </SxwlDropdown>
           </div>
-        </Header>
-        <Content className="sxwl-content">
+        </SxwlLayout.Header>
+        <SxwlLayout.Content className="sxwl-content">
           <Outlet />
-        </Content>
-      </Layout>
-    </Layout>
+        </SxwlLayout.Content>
+      </SxwlLayout>
+    </SxwlLayout>
   );
 }

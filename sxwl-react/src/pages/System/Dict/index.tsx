@@ -3,7 +3,7 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlButton, SxwlIcon, SxwlTag,
   SxwlSpace, SxwlPopconfirm, SxwlForm, SxwlMessage, SxwlModal,
-  SxwlPage, SxwlFormModal, SxwlTable,
+  SxwlPage, SxwlFormModal, SxwlTable, SxwlPermissionButton,
   type SearchFieldConfig, type ToolbarButtonConfig,
   type FormFieldConfig,
 } from '@/components';
@@ -199,13 +199,13 @@ export default function DictPage() {
           <SxwlButton type="link" size="small" icon={<SxwlIcon name="OrderedListOutlined" />} onClick={() => handleShowDetails(record)}>
             明细
           </SxwlButton>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} onClick={() => handleEdit(record)}>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="system:dict:edit" onClick={() => handleEdit(record)}>
             编辑
-          </SxwlButton>
+          </SxwlPermissionButton>
           <SxwlPopconfirm title="确定删除该字典吗？" onConfirm={() => handleDelete(record)}>
-            <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:dict:delete">
               删除
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
         </SxwlSpace>
       ),
@@ -233,13 +233,13 @@ export default function DictPage() {
       title: '操作', key: 'action', width: 160,
       render: (_, record) => (
         <SxwlSpace>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} onClick={() => handleEditDetail(record)}>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="system:dict:edit" onClick={() => handleEditDetail(record)}>
             编辑
-          </SxwlButton>
+          </SxwlPermissionButton>
           <SxwlPopconfirm title="确定删除该明细吗？" onConfirm={() => handleDeleteDetail(record)}>
-            <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:dict:delete">
               删除
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
         </SxwlSpace>
       ),
@@ -261,7 +261,7 @@ export default function DictPage() {
   ];
 
   const toolbarButtons: ToolbarButtonConfig[] = [
-    { label: '新增字典', type: 'primary', icon: 'PlusOutlined', onClick: handleAdd },
+    { label: '新增字典', type: 'primary', icon: 'PlusOutlined', permission: 'system:dict:add', onClick: handleAdd },
   ];
 
   const formFields: FormFieldConfig[] = useMemo(() => [
@@ -346,9 +346,9 @@ export default function DictPage() {
         destroyOnHidden
       >
         <SxwlSpace style={{ marginBottom: 16 }}>
-          <SxwlButton type="primary" icon={<SxwlIcon name="PlusOutlined" />} onClick={handleAddDetail}>
+          <SxwlPermissionButton type="primary" icon={<SxwlIcon name="PlusOutlined" />} permission="system:dict:add" onClick={handleAddDetail}>
             新增明细
-          </SxwlButton>
+          </SxwlPermissionButton>
         </SxwlSpace>
         <SxwlTable
           rowKey="id"

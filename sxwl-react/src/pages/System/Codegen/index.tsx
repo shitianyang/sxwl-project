@@ -3,7 +3,7 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlButton, SxwlIcon, SxwlTag,
   SxwlSpace, SxwlPopconfirm, SxwlForm, SxwlMessage,
-  SxwlPage,
+  SxwlPage, SxwlPermissionButton,
   type SearchFieldConfig, type ToolbarButtonConfig,
 } from '@/components';
 import type { CodegenTableItem } from '@/api/codegen/codegenApi';
@@ -170,22 +170,22 @@ export default function CodegenPage() {
       title: '操作', key: 'action', width: 360,
       render: (_, record) => (
         <SxwlSpace>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} onClick={() => handleEdit(record)}>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="codegen:table:edit" onClick={() => handleEdit(record)}>
             编辑
-          </SxwlButton>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="SettingOutlined" />} onClick={() => handleFieldConfig(record)}>
+          </SxwlPermissionButton>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="SettingOutlined" />} permission="codegen:table:edit" onClick={() => handleFieldConfig(record)}>
             字段
-          </SxwlButton>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="EyeOutlined" />} onClick={() => handlePreview(record)}>
+          </SxwlPermissionButton>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EyeOutlined" />} permission="codegen:codegen:preview" onClick={() => handlePreview(record)}>
             预览
-          </SxwlButton>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="DownloadOutlined" />} onClick={() => handleGenerate(record)}>
+          </SxwlPermissionButton>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="DownloadOutlined" />} permission="codegen:codegen:generate" onClick={() => handleGenerate(record)}>
             生成
-          </SxwlButton>
+          </SxwlPermissionButton>
           <SxwlPopconfirm title="确定删除该配置吗？" onConfirm={() => handleDelete(record)}>
-            <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="codegen:table:delete">
               删除
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
         </SxwlSpace>
       ),
@@ -207,7 +207,7 @@ export default function CodegenPage() {
   ];
 
   const toolbarButtons: ToolbarButtonConfig[] = [
-    { label: '新增配置', type: 'primary', icon: 'PlusOutlined', onClick: handleAdd },
+    { label: '新增配置', type: 'primary', icon: 'PlusOutlined', permission: 'codegen:table:add', onClick: handleAdd },
   ];
 
   // -------- 渲染 --------

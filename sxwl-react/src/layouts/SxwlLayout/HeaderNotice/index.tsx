@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Badge, Popover, List, Tag, Empty, Spin, Typography, Space } from 'antd';
-import { SxwlIcon, SxwlRichTextViewer, SxwlButton, SxwlTooltip, SxwlModal } from '@/components';
+import { SxwlIcon, SxwlRichTextViewer, SxwlButton, SxwlTooltip, SxwlModal, SxwlTag, SxwlSpace, SxwlText, SxwlBadge, SxwlPopover, SxwlEmpty, SxwlSpin } from '@/components';
 import { useAuthStore } from '@/stores/authStore';
 import { useSSE } from '@/hooks/useSSE';
 import {
@@ -10,7 +9,7 @@ import {
 import type { SysNoticeUnreadItem, SysNoticeItem } from '@/api/system/noticeApi';
 import './index.scss';
 
-const { Text } = Typography;
+
 
 type SseState = 'connecting' | 'connected' | 'disconnected';
 
@@ -182,12 +181,12 @@ export default function HeaderNotice() {
   const popoverContent = (
     <div className="sxwl-header-notice-popover">
       <div className="sxwl-header-notice-header">
-        <Space size={8}>
-          <Text strong>消息通知</Text>
+        <SxwlSpace size={8}>
+          <SxwlText strong>消息通知</SxwlText>
           <SxwlTooltip title={sseState === 'connected' ? '实时连接中' : sseState === 'connecting' ? '连接中...' : '连接断开，轮询中'}>
             <span className={`sxwl-header-notice-sse-dot ${sseState}`} />
           </SxwlTooltip>
-        </Space>
+        </SxwlSpace>
         {unreadCount > 0 && (
           <SxwlButton type="link" size="small" loading={readAllLoading} onClick={handleMarkAllRead}>
             全部已读
@@ -196,46 +195,39 @@ export default function HeaderNotice() {
       </div>
       {loading ? (
         <div className="sxwl-header-notice-loading">
-          <Spin size="small" />
+          <SxwlSpin size="small" />
         </div>
       ) : noticeList.length === 0 ? (
-        <Empty description="暂无通知" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        <SxwlEmpty description="暂无通知" image={SxwlEmpty.PRESENTED_IMAGE_SIMPLE} />
       ) : (
-        <List
-          className="sxwl-header-notice-list"
-          dataSource={noticeList}
-          renderItem={(item) => (
-            <List.Item
+        <div className="sxwl-header-notice-list">
+          {noticeList.map((item) => (
+            <div
+              key={item.id}
               className={`sxwl-header-notice-item ${item.readFlag === 0 ? 'unread' : ''}`}
               onClick={() => handlePreview(item)}
             >
-              <List.Item.Meta
-                title={
-                  <Space size={4}>
-                    {item.readFlag === 0 && <span className="sxwl-header-notice-dot" />}
-                    <Text
-                      strong={item.readFlag === 0}
-                      ellipsis={{ tooltip: item.title }}
-                      style={{ maxWidth: 220 }}
-                    >
-                      {item.title}
-                    </Text>
-                  </Space>
-                }
-                description={
-                  <Space size={8}>
-                    <Tag color={LEVEL_COLOR[item.level] || 'blue'} style={{ fontSize: 11, lineHeight: '18px' }}>
-                      {LEVEL_LABEL[item.level] || item.level}
-                    </Tag>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      {item.createTime}
-                    </Text>
-                  </Space>
-                }
-              />
-            </List.Item>
-          )}
-        />
+              <div className="sxwl-header-notice-item-title">
+                {item.readFlag === 0 && <span className="sxwl-header-notice-dot" />}
+                <SxwlText
+                  strong={item.readFlag === 0}
+                  ellipsis={{ tooltip: item.title }}
+                  style={{ maxWidth: 220 }}
+                >
+                  {item.title}
+                </SxwlText>
+              </div>
+              <div className="sxwl-header-notice-item-desc">
+                <SxwlTag color={LEVEL_COLOR[item.level] || 'blue'} style={{ fontSize: 11, lineHeight: '18px' }}>
+                  {LEVEL_LABEL[item.level] || item.level}
+                </SxwlTag>
+                <SxwlText type="secondary" style={{ fontSize: 12 }}>
+                  {item.createTime}
+                </SxwlText>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -248,7 +240,7 @@ export default function HeaderNotice() {
           <span className={`sxwl-header-notice-sse-dot ${sseState}`} />
         </SxwlTooltip>
       </span>
-      <Popover
+      <SxwlPopover
         content={popoverContent}
         trigger="click"
         placement="bottomRight"
@@ -257,13 +249,13 @@ export default function HeaderNotice() {
         classNames={{ root: 'sxwl-header-notice-overlay' }}
       >
         <div className="sxwl-header-notice-trigger">
-          <Badge count={unreadCount} showZero={false} size="small" offset={[-2, 2]} className="sxwl-header-notice-badge">
+          <SxwlBadge count={unreadCount} showZero={false} size="small" offset={[-2, 2]} className="sxwl-header-notice-badge">
             <SxwlTooltip title="消息通知">
               <SxwlButton type="text" className="sxwl-header-notice-btn" icon={<SxwlIcon name="BellOutlined" />} />
             </SxwlTooltip>
-          </Badge>
+          </SxwlBadge>
         </div>
-      </Popover>
+      </SxwlPopover>
 
       {/* 公告预览弹窗 */}
       <SxwlModal
@@ -276,20 +268,20 @@ export default function HeaderNotice() {
       >
         {previewLoading ? (
           <div style={{ textAlign: 'center', padding: 40 }}>
-            <Spin />
+            <SxwlSpin />
           </div>
         ) : previewNotice ? (
           <div>
-            <Space size={8} style={{ marginBottom: 16 }}>
-              <Tag color={LEVEL_COLOR[previewNotice.level] || 'blue'}>
+            <SxwlSpace size={8} style={{ marginBottom: 16 }}>
+              <SxwlTag color={LEVEL_COLOR[previewNotice.level] || 'blue'}>
                 {LEVEL_LABEL[previewNotice.level] || previewNotice.level}
-              </Tag>
-              <Text type="secondary">{previewNotice.createTime}</Text>
-            </Space>
+              </SxwlTag>
+              <SxwlText type="secondary">{previewNotice.createTime}</SxwlText>
+            </SxwlSpace>
             <SxwlRichTextViewer content={previewNotice.content} />
           </div>
         ) : (
-          <Empty description="加载失败" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          <SxwlEmpty description="加载失败" image={SxwlEmpty.PRESENTED_IMAGE_SIMPLE} />
         )}
       </SxwlModal>
     </>

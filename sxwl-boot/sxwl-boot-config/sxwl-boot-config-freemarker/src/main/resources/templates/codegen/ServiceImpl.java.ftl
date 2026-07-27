@@ -10,7 +10,6 @@ import com.sxwl.common.exception.SxwlBusinessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -44,11 +43,11 @@ public class ${bizName}ServiceImpl implements ${bizName}Service {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void create${bizName}(${bizName}DTO dto) {
-        // 校验必填
-        // TODO: 根据字段配置校验必填项
         // 保存
         ${bizName} entity = new ${bizName}();
-        // TODO: DTO → Entity 转换
+<#list fields as field>
+        entity.set${field.javaFieldName?cap_first}(dto.get${field.javaFieldName?cap_first}());
+</#list>
         ${bizNameLower}Mapper.insert${bizName}(entity);
     }
 
@@ -56,7 +55,9 @@ public class ${bizName}ServiceImpl implements ${bizName}Service {
     @Transactional(rollbackFor = Exception.class)
     public void update${bizName}(${bizName}DTO dto) {
         ${bizName} entity = new ${bizName}();
-        // TODO: DTO → Entity 转换
+<#list fields as field>
+        entity.set${field.javaFieldName?cap_first}(dto.get${field.javaFieldName?cap_first}());
+</#list>
         ${bizNameLower}Mapper.update${bizName}(entity);
     }
 

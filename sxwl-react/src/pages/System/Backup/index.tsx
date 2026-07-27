@@ -3,7 +3,7 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlButton, SxwlIcon, SxwlTag,
   SxwlSpace, SxwlPopconfirm, SxwlMessage,
-  SxwlPage,
+  SxwlPage, SxwlPermissionButton,
   type ToolbarButtonConfig,
 } from '@/components';
 import type { SysBackupItem } from '@/api/system/backupApi';
@@ -95,14 +95,14 @@ export default function BackupPage() {
             title="确定从该备份恢复数据库吗？此操作不可逆！"
             onConfirm={() => handleRestore(record)}
           >
-            <SxwlButton type="link" size="small" icon={<SxwlIcon name="RedoOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="RedoOutlined" />} permission="system:backup:restore">
               恢复
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
           <SxwlPopconfirm title="确定删除该备份记录吗？" onConfirm={() => handleDelete(record)}>
-            <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:backup:delete">
               删除
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
         </SxwlSpace>
       ),
@@ -110,7 +110,7 @@ export default function BackupPage() {
   ];
 
   const toolbarButtons: ToolbarButtonConfig[] = [
-    { label: '执行备份', type: 'primary', icon: 'CloudUploadOutlined', onClick: handleBackup },
+    { label: '执行备份', type: 'primary', icon: 'CloudUploadOutlined', permission: 'system:backup:backup', onClick: handleBackup },
   ];
 
   return (

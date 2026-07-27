@@ -66,7 +66,7 @@
 }
 
 .sxwl-header-notice-item {
-  padding: 10px 16px !important;
+  padding: 10px 16px;
   cursor: pointer;
   transition: background 0.2s;
 
@@ -77,10 +77,21 @@
   &:hover {
     background: #fafafa;
   }
+}
 
-  .ant-list-item-meta-title {
-    margin-bottom: 2px !important;
-  }
+.sxwl-header-notice-item-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+  line-height: 22px;
+}
+
+.sxwl-header-notice-item-desc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
 }
 
 .sxwl-header-notice-dot {

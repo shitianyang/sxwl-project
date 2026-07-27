@@ -3,7 +3,7 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlButton, SxwlIcon, SxwlTag,
   SxwlSpace, SxwlPopconfirm, SxwlForm, SxwlMessage,
-  SxwlPage, SxwlFormModal,
+  SxwlPage, SxwlFormModal, SxwlPermissionButton,
   type SearchFieldConfig, type ToolbarButtonConfig,
   type FormFieldConfig,
 } from '@/components';
@@ -162,22 +162,22 @@ export default function NoticePage() {
       render: (_, record) => (
         <SxwlSpace>
           {record.status === 0 && (
-            <SxwlButton type="link" size="small" icon={<SxwlIcon name="CheckCircleOutlined" />} onClick={() => handlePublish(record.id)}>
+            <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="CheckCircleOutlined" />} permission="system:notice:publish" onClick={() => handlePublish(record.id)}>
               发布
-            </SxwlButton>
+            </SxwlPermissionButton>
           )}
           {record.status === 1 && (
-            <SxwlButton type="link" size="small" icon={<SxwlIcon name="MinusCircleOutlined" />} onClick={() => handleRevoke(record.id)}>
+            <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="MinusCircleOutlined" />} permission="system:notice:revoke" onClick={() => handleRevoke(record.id)}>
               撤回
-            </SxwlButton>
+            </SxwlPermissionButton>
           )}
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} onClick={() => handleEdit(record)}>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="system:notice:edit" onClick={() => handleEdit(record)}>
             编辑
-          </SxwlButton>
+          </SxwlPermissionButton>
           <SxwlPopconfirm title="确定删除该公告吗？" onConfirm={() => handleDelete(record)}>
-            <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:notice:delete">
               删除
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
         </SxwlSpace>
       ),
@@ -205,7 +205,7 @@ export default function NoticePage() {
   ];
 
   const toolbarButtons: ToolbarButtonConfig[] = [
-    { label: '新增公告', type: 'primary', icon: 'PlusOutlined', onClick: handleAdd },
+    { label: '新增公告', type: 'primary', icon: 'PlusOutlined', permission: 'system:notice:add', onClick: handleAdd },
   ];
 
   const formFields: FormFieldConfig[] = useMemo(() => [

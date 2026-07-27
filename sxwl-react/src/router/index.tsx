@@ -1,6 +1,6 @@
 import { lazy, Suspense, useMemo } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { Spin } from 'antd';
+import { SxwlSpin } from '@/components';
 import AuthGuard from './AuthGuard';
 import { useAuthStore } from '@/stores/authStore';
 import { useMenuStore } from '@/stores/menuStore';
@@ -72,7 +72,7 @@ export default function AppRouter() {
               key={route.path}
               path={'/' + route.path}
               element={
-                <Suspense fallback={<Spin style={{ display: 'block', margin: '100px auto' }} />}>
+                <Suspense fallback={<SxwlSpin style={{ display: 'block', margin: '100px auto' }} />}>
                   <Component />
                 </Suspense>
               }

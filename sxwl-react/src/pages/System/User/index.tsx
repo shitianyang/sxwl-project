@@ -3,7 +3,7 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlButton, SxwlIcon, SxwlTag,
   SxwlSpace, SxwlPopconfirm, SxwlForm,
-  SxwlMessage, SxwlPage, SxwlFormModal,
+  SxwlMessage, SxwlPage, SxwlFormModal, SxwlPermissionButton,
   type SearchFieldConfig, type ToolbarButtonConfig,
   type FormFieldConfig,
 } from '@/components';
@@ -168,14 +168,14 @@ export default function UserPage() {
       key: 'action',
       width: 160,
       render: (_, record) => (
-        <SxwlSpace>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} onClick={() => handleEdit(record)}>
+          <SxwlSpace>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="system:user:edit" onClick={() => handleEdit(record)}>
             编辑
-          </SxwlButton>
+          </SxwlPermissionButton>
           <SxwlPopconfirm title="确定删除该用户吗？" onConfirm={() => handleDelete(record)}>
-            <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:user:delete">
               删除
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
         </SxwlSpace>
       ),
@@ -196,12 +196,13 @@ export default function UserPage() {
   ];
 
   const toolbarButtons: ToolbarButtonConfig[] = [
-    { label: '新增用户', type: 'primary', icon: 'PlusOutlined', onClick: handleAdd },
+    { label: '新增用户', type: 'primary', icon: 'PlusOutlined', permission: 'system:user:add', onClick: handleAdd },
     {
       label: '批量删除',
       type: 'default',
       danger: true,
       icon: 'DeleteOutlined',
+      permission: 'system:user:delete',
       onClick: handleBatchDelete,
     },
   ];
