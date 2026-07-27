@@ -1,5 +1,5 @@
 import { lazy, Suspense, useMemo } from 'react';
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router';
 import { SxwlSpin } from '@/components';
 import AuthGuard from './AuthGuard';
 import { useAuthStore } from '@/stores/authStore';

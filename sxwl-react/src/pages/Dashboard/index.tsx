@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuthStore } from '@/stores/authStore';
 import { SxwlIcon, SxwlCard, SxwlRow, SxwlCol, SxwlTitle, SxwlText } from '@/components';
 import { getDashboardStatistics, type DashboardStatistics } from '@/api/system/dashboardApi';

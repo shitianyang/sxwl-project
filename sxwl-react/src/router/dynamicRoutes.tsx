@@ -5,7 +5,7 @@
 
 import { type ReactNode, Suspense } from 'react';
 import { SxwlSpin } from '@/components';
-import { Route } from 'react-router-dom';
+import { Route } from 'react-router';
 import type { MenuTreeItem } from '@/api/system/menuApi';
 import { resolveComponent } from './pageResolver';
 

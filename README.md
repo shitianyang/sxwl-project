@@ -47,11 +47,11 @@
 
 | 技术 | 版本 | 用途 |
 |------|------|------|
-| React | 19.2.6 | UI 框架 |
+| React | 19.2.8 | UI 框架 |
 | TypeScript | 6.0.2 | 类型系统 |
 | Vite | 8.1.0 | 构建工具 |
 | Ant Design | 6.5.1 | UI 组件库 |
-| React Router DOM | 7.18.1 | 路由 |
+| React Router | 8.3.0 | 路由 |
 | Zustand | 5.0.14 | 状态管理 |
 | Axios | 1.18.1 | HTTP 客户端 |
 | TipTap | 3.29.0 | 富文本编辑器（StarterKit + Underline/TextAlign/Link/Image/Table/Highlight/Color/CodeBlockLowlight） |
