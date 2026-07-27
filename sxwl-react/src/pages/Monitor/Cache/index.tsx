@@ -3,7 +3,7 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlButton, SxwlIcon, SxwlTag, SxwlTabs,
   SxwlSpace, SxwlPopconfirm, SxwlMessage, SxwlModal,
-  SxwlPage,
+  SxwlPage, SxwlPermissionButton,
   type ToolbarButtonConfig,
 } from '@/components';
 import type { SysCacheCategoryItem, SysCacheKeyDetailItem } from '@/api/monitor/cacheApi';
@@ -99,9 +99,9 @@ export default function CachePage() {
             详情
           </SxwlButton>
           <SxwlPopconfirm title="确定删除该缓存 Key 吗？" onConfirm={() => handleClearKey(record.key)}>
-            <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="monitor:cache:delete">
               删除
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
         </SxwlSpace>
       ),
@@ -118,7 +118,7 @@ export default function CachePage() {
   };
 
   const toolbarButtons: ToolbarButtonConfig[] = [
-    { label: '清空此分类', icon: 'DeleteOutlined', danger: true, onClick: handleClearCategoryClick },
+    { label: '清空此分类', icon: 'DeleteOutlined', danger: true, permission: 'monitor:cache:clear', onClick: handleClearCategoryClick },
   ];
 
   const tabItems = categories.map(cat => ({

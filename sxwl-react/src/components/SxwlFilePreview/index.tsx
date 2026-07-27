@@ -8,13 +8,11 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
-import { Button, Skeleton, Typography } from 'antd';
-import { SxwlModal } from '@/components';
+
+import { SxwlModal, SxwlButton, SxwlText, SxwlTitle, SxwlSkeleton } from '@/components';
 import type { SysFileDTO } from '@/api/system/fileApi';
 import { getPresignedUrl, downloadFile } from '@/api/system/fileApi';
 import SxwlIcon from '../SxwlIcon';
-
-const { Text, Title } = Typography;
 
 /** 判断是否为图片类型 */
 function isImage(suffix: string): boolean {
@@ -94,19 +92,19 @@ const SxwlFilePreview: React.FC<SxwlFilePreviewProps> = ({ open, onClose, file }
   const renderMeta = () => (
     <div style={{ textAlign: 'center', padding: '40px 0' }}>
       <SxwlIcon name="FileOutlined" size={64} style={{ color: '#999' }} />
-      <Title level={5} style={{ marginTop: 16 }}>{fileName}</Title>
-      <Text type="secondary">
+      <SxwlTitle level={5} style={{ marginTop: 16 }}>{fileName}</SxwlTitle>
+      <SxwlText type="secondary">
         {suffix.toUpperCase()} 文件 · {formatFileSize(fileSize)}
-      </Text>
+      </SxwlText>
       <br />
-      <Button
+      <SxwlButton
         type="primary"
         icon={<SxwlIcon name="DownloadOutlined" />}
         style={{ marginTop: 16 }}
         onClick={() => file && downloadFile(file.id)}
       >
         下载文件
-      </Button>
+      </SxwlButton>
     </div>
   );
 
@@ -176,15 +174,15 @@ const SxwlFilePreview: React.FC<SxwlFilePreviewProps> = ({ open, onClose, file }
       onCancel={onClose}
       footer={
         file ? (
-          <Button icon={<SxwlIcon name="DownloadOutlined" />} onClick={() => downloadFile(file.id)}>
+          <SxwlButton icon={<SxwlIcon name="DownloadOutlined" />} onClick={() => downloadFile(file.id)}>
             下载文件
-          </Button>
+          </SxwlButton>
         ) : null
       }
       width={800}
       destroyOnHidden
     >
-      {loading ? <Skeleton active /> : renderPreview()}
+      {loading ? <SxwlSkeleton active /> : renderPreview()}
     </SxwlModal>
   );
 };

@@ -1,9 +1,7 @@
 import { type JSX, useLayoutEffect } from 'react';
 import type { FormInstance } from 'antd/es/form';
-import { Row, Col, Form } from 'antd';
-import {
-  SxwlInput, SxwlSelect, SxwlModal, SxwlForm, SxwlMarkdownEditor,
-  SxwlRichTextEditor,
+import { SxwlInput, SxwlSelect, SxwlModal, SxwlForm, SxwlMarkdownEditor,
+  SxwlRichTextEditor, SxwlRow, SxwlCol,
 } from '@/components';
 import type { FormFieldConfig } from '@/components/FormFieldConfig';
 import './index.scss';
@@ -56,11 +54,11 @@ function RichtextField({
   buildRules: (f: FormFieldConfig) => any[];
 }) {
   // 用 useWatch 直接订阅字段值，确保 setFieldsValue 后一定会 re-render
-  const watchedValue = Form.useWatch(field.name, form);
+  const watchedValue = SxwlForm.useWatch(field.name, form);
 
   return (
-    <Col span={colSpan}>
-      <Form.Item
+    <SxwlCol span={colSpan}>
+      <SxwlForm.Item
         name={field.name}
         label={field.label}
         rules={buildRules(field)}
@@ -72,8 +70,8 @@ function RichtextField({
           placeholder={field.placeholder ?? '请输入内容...'}
           minHeight={300}
         />
-      </Form.Item>
-    </Col>
+      </SxwlForm.Item>
+    </SxwlCol>
   );
 }
 
@@ -133,7 +131,7 @@ function SxwlFormModal({
         labelCol={layout === 'horizontal' ? { style: { minWidth: 100 } } : undefined}
         preserve={false}
       >
-        <Row gutter={16}>
+        <SxwlRow gutter={16}>
           {fields.map((field) => (
             field.type === 'richtext' ? (
               <RichtextField
@@ -144,7 +142,7 @@ function SxwlFormModal({
                 buildRules={buildRules}
               />
             ) : (
-            <Col key={field.name} span={colSpan}>
+            <SxwlCol key={field.name} span={colSpan}>
               <SxwlForm.Item
                 name={field.name}
                 label={field.label}
@@ -171,10 +169,10 @@ function SxwlFormModal({
                   />
                 )}
               </SxwlForm.Item>
-            </Col>
+            </SxwlCol>
             )
           ))}
-        </Row>
+        </SxwlRow>
       </SxwlForm>
     </SxwlModal>
   );

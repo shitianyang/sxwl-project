@@ -4,7 +4,7 @@ import type { DataNode } from 'antd/es/tree';
 import {
   SxwlButton, SxwlIcon, SxwlTag,
   SxwlSpace, SxwlPopconfirm,
-  SxwlForm, SxwlMessage, SxwlPage, SxwlFormModal,
+  SxwlForm, SxwlMessage, SxwlPage, SxwlFormModal, SxwlPermissionButton,
   type ToolbarButtonConfig,
   type FormFieldConfig,
 } from '@/components';
@@ -154,16 +154,16 @@ export default function OrganizationPage() {
       title: '操作', key: 'action', width: 220,
       render: (_, record) => (
         <SxwlSpace>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="PlusOutlined" />} onClick={() => handleAddChild(record)}>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="PlusOutlined" />} permission="system:organization:add" onClick={() => handleAddChild(record)}>
             新增
-          </SxwlButton>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} onClick={() => handleEdit(record)}>
+          </SxwlPermissionButton>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="system:organization:edit" onClick={() => handleEdit(record)}>
             编辑
-          </SxwlButton>
+          </SxwlPermissionButton>
           <SxwlPopconfirm title="确定删除该组织吗？" onConfirm={() => handleDelete(record)}>
-            <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:organization:delete">
               删除
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
         </SxwlSpace>
       ),
@@ -173,7 +173,7 @@ export default function OrganizationPage() {
   // -------- 配置 --------
 
   const toolbarButtons: ToolbarButtonConfig[] = [
-    { label: '新增组织', type: 'primary', icon: 'PlusOutlined', onClick: handleAdd },
+    { label: '新增组织', type: 'primary', icon: 'PlusOutlined', permission: 'system:organization:add', onClick: handleAdd },
   ];
 
   const formFields: FormFieldConfig[] = useMemo(() => [

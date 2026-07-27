@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Spin } from 'antd';
+import { SxwlSpin } from '@/components';
 import { useMenuStore } from '@/stores/menuStore';
 
 /** 路由守卫：未登录时菜单加载完成前阻止子路由匹配 */
@@ -18,7 +18,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   if (!menuLoaded) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spin size="large" />
+        <SxwlSpin size="large" />
       </div>
     );
   }

@@ -3,7 +3,7 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlButton, SxwlIcon, SxwlTag,
   SxwlSpace, SxwlPopconfirm, SxwlForm, SxwlMessage,
-  SxwlPage, SxwlFormModal,
+  SxwlPage, SxwlFormModal, SxwlPermissionButton,
   type SearchFieldConfig, type ToolbarButtonConfig,
   type FormFieldConfig,
 } from '@/components';
@@ -123,13 +123,13 @@ export default function ConfigPage() {
       title: '操作', key: 'action', width: 160,
       render: (_, record) => (
         <SxwlSpace>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} onClick={() => handleEdit(record)}>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="system:config:edit" onClick={() => handleEdit(record)}>
             编辑
-          </SxwlButton>
+          </SxwlPermissionButton>
           <SxwlPopconfirm title="确定删除该配置吗？" onConfirm={() => handleDelete(record)}>
-            <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:config:delete">
               删除
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
         </SxwlSpace>
       ),
@@ -150,7 +150,7 @@ export default function ConfigPage() {
   ];
 
   const toolbarButtons: ToolbarButtonConfig[] = [
-    { label: '新增配置', type: 'primary', icon: 'PlusOutlined', onClick: handleAdd },
+    { label: '新增配置', type: 'primary', icon: 'PlusOutlined', permission: 'system:config:add', onClick: handleAdd },
   ];
 
   const formFields: FormFieldConfig[] = useMemo(() => [

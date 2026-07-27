@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { SxwlPage, SxwlSearchForm, SxwlFormModal, SxwlButton, SxwlInput, SxwlSelect } from '@/components';
+import { SxwlPage, SxwlSearchForm, SxwlFormModal, SxwlButton, SxwlPermissionButton, SxwlForm, SxwlMessage, SxwlInput, SxwlSelect } from '@/components';
 import type { ColumnsType } from '@/types/sxwl';
 import {
     get${bizNamePlural}Page,
@@ -10,7 +10,7 @@ import {
     ${bizName}DTO,
     ${bizName}PageParams,
 } from '@/api/${modulePrefix}/${bizNameLower}Api';
-import { message, Switch } from 'antd';
+import { Switch } from 'antd';
 
 const ${bizName}Page: React.FC = () => {
     const [dataSource, setDataSource] = useState<${bizName}DTO[]>([]);
@@ -22,6 +22,7 @@ const ${bizName}Page: React.FC = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [editingId, setEditingId] = useState<number | undefined>();
     const [confirmLoading, setConfirmLoading] = useState(false);
+    const [form] = SxwlForm.useForm();
 
     const fetchData = useCallback(async (params: ${bizName}PageParams) => {
         setLoading(true);
@@ -57,14 +58,14 @@ const ${bizName}Page: React.FC = () => {
 
     const handleEdit = async (id: number) => {
         const res = await get${bizName}ById(id);
+        form.setFieldsValue(res.data);
         setEditingId(id);
-        // TODO: set form fields from res.data
         setModalVisible(true);
     };
 
     const handleDelete = async (id: number) => {
         await delete${bizName}(id);
-        message.success('删除成功');
+        SxwlMessage.success('删除成功');
         fetchData(searchParams);
     };
 
@@ -73,10 +74,10 @@ const ${bizName}Page: React.FC = () => {
         try {
             if (editingId) {
                 await update${bizName}(editingId, values);
-                message.success('修改成功');
+                SxwlMessage.success('修改成功');
             } else {
                 await create${bizName}(values);
-                message.success('新增成功');
+                SxwlMessage.success('新增成功');
             }
             setModalVisible(false);
             fetchData(searchParams);
@@ -116,8 +117,8 @@ const ${bizName}Page: React.FC = () => {
             width: 200,
             render: (_: unknown, record: ${bizName}DTO) => (
                 <>
-                    <SxwlButton type="link" onClick={() => handleEdit(record.id!)}>编辑</SxwlButton>
-                    <SxwlButton type="link" danger onClick={() => handleDelete(record.id!)}>删除</SxwlButton>
+                    <SxwlPermissionButton type="link" permission="${modulePrefix}:${bizNameLower}:edit" onClick={() => handleEdit(record.id!)}>编辑</SxwlPermissionButton>
+                    <SxwlPermissionButton type="link" danger permission="${modulePrefix}:${bizNameLower}:delete" onClick={() => handleDelete(record.id!)}>删除</SxwlPermissionButton>
                 </>
             ),
         },
@@ -154,7 +155,7 @@ const ${bizName}Page: React.FC = () => {
     return (
         <SxwlPage>
             <SxwlSearchForm fields={searchFields} onSearch={handleSearch} />
-            <SxwlButton type="primary" onClick={handleAdd}>新增${bizNameCn}</SxwlButton>
+            <SxwlPermissionButton type="primary" permission="${modulePrefix}:${bizNameLower}:add" onClick={handleAdd}>新增${bizNameCn}</SxwlPermissionButton>
             <SxwlPage.Table
                 columns={columns}
                 dataSource={dataSource}
@@ -165,6 +166,7 @@ const ${bizName}Page: React.FC = () => {
             <SxwlFormModal
                 title={editingId ? '编辑${bizNameCn}' : '新增${bizNameCn}'}
                 visible={modalVisible}
+                form={form}
                 confirmLoading={confirmLoading}
                 fields={formFields}
                 onSubmit={handleSubmit}

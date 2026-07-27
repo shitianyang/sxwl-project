@@ -3,7 +3,7 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlButton, SxwlIcon, SxwlTag, SxwlPopconfirm,
   SxwlSpace, SxwlMessage,
-  SxwlPage, SxwlModal,
+  SxwlPage, SxwlModal, SxwlPermissionButton,
   type SearchFieldConfig,
 } from '@/components';
 import type { SysJobLogItem } from '@/api/system/jobLogApi';
@@ -105,9 +105,9 @@ export default function JobLogPage() {
             详情
           </SxwlButton>
           <SxwlPopconfirm title="确定删除该日志吗？" onConfirm={() => handleDelete(record)}>
-            <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="monitor:job:delete">
               删除
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
         </SxwlSpace>
       ),
@@ -142,7 +142,7 @@ export default function JobLogPage() {
         onReset={handleReset}
         onPageChange={handlePageChange}
         toolbarButtons={[
-          { label: '清理日志', type: 'default', icon: 'DeleteOutlined', onClick: handleClean },
+          { label: '清理日志', type: 'default', icon: 'DeleteOutlined', permission: 'monitor:job:clean', onClick: handleClean },
         ]}
       />
 

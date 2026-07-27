@@ -3,7 +3,7 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlButton, SxwlIcon, SxwlTag,
   SxwlSpace, SxwlPopconfirm, SxwlForm, SxwlMessage,
-  SxwlPage, SxwlFormModal,
+  SxwlPage, SxwlFormModal, SxwlPermissionButton,
   type SearchFieldConfig, type ToolbarButtonConfig,
   type FormFieldConfig,
 } from '@/components';
@@ -151,24 +151,24 @@ export default function JobPage() {
       render: (_, record) => (
         <SxwlSpace>
           {record.status === 1 ? (
-            <SxwlButton type="link" size="small" icon={<SxwlIcon name="PauseCircleOutlined" />} onClick={() => handlePause(record.id)}>
+            <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="PauseCircleOutlined" />} permission="monitor:job:pause" onClick={() => handlePause(record.id)}>
               暂停
-            </SxwlButton>
+            </SxwlPermissionButton>
           ) : (
-            <SxwlButton type="link" size="small" icon={<SxwlIcon name="PlayCircleOutlined" />} onClick={() => handleResume(record.id)}>
+            <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="PlayCircleOutlined" />} permission="monitor:job:resume" onClick={() => handleResume(record.id)}>
               恢复
-            </SxwlButton>
+            </SxwlPermissionButton>
           )}
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="CaretRightOutlined" />} onClick={() => handleRunOnce(record.id)}>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="CaretRightOutlined" />} permission="monitor:job:run" onClick={() => handleRunOnce(record.id)}>
             执行
-          </SxwlButton>
-          <SxwlButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} onClick={() => handleEdit(record)}>
+          </SxwlPermissionButton>
+          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="monitor:job:edit" onClick={() => handleEdit(record)}>
             编辑
-          </SxwlButton>
+          </SxwlPermissionButton>
           <SxwlPopconfirm title="确定删除该任务吗？" onConfirm={() => handleDelete(record)}>
-            <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="monitor:job:delete">
               删除
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
         </SxwlSpace>
       ),
@@ -185,7 +185,7 @@ export default function JobPage() {
   ];
 
   const toolbarButtons: ToolbarButtonConfig[] = [
-    { label: '新增任务', type: 'primary', icon: 'PlusOutlined', onClick: handleAdd },
+    { label: '新增任务', type: 'primary', icon: 'PlusOutlined', permission: 'monitor:job:add', onClick: handleAdd },
   ];
 
   const formFields: FormFieldConfig[] = useMemo(() => [

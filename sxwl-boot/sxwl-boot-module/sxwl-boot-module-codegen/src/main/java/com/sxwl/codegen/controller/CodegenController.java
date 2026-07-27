@@ -3,6 +3,8 @@ package com.sxwl.codegen.controller;
 import com.sxwl.codegen.model.dto.CodegenPreviewDTO;
 import com.sxwl.codegen.service.CodegenService;
 import com.sxwl.common.entity.SxwlResult;
+import com.sxwl.common.annotation.SxwlLog;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,8 @@ public class CodegenController {
      * 生成代码 → 返回 ZIP 下载
      */
     @PostMapping("/generate/{tableId}")
+    @SxwlLog(title = "代码生成", description = "生成代码")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('codegen:codegen:generate')")
     public ResponseEntity<byte[]> generate(@PathVariable Long tableId) {
         byte[] zipBytes = codegenService.generateCode(tableId);
 
@@ -48,6 +52,7 @@ public class CodegenController {
      * 预览将生成的文件列表
      */
     @GetMapping("/preview/{tableId}")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('codegen:codegen:preview')")
     public SxwlResult<List<CodegenPreviewDTO>> preview(@PathVariable Long tableId) {
         return SxwlResult.success(codegenService.preview(tableId));
     }

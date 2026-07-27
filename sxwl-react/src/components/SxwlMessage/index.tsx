@@ -5,7 +5,7 @@ import type { MessageInstance } from 'antd/es/message/interface';
  * SxwlMessage — 基于 antd message 的二次封装
  *
  * 通过 {@link initMessageInstance} 注入 App.useApp() 的上下文感知实例，
- * 避免 antd v5 静态 message 无法感知动态主题的警告。
+ * 避免 antd 静态 message 无法感知动态主题。
  *
  * 用法：
  * ```tsx

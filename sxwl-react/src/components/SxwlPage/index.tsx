@@ -1,6 +1,6 @@
 import { type JSX } from 'react';
 import {
-  SxwlButton, SxwlIcon,
+  SxwlButton, SxwlIcon, SxwlPermissionButton,
   SxwlCard, SxwlTable, SxwlSpace, SxwlSearchForm,
 } from '@/components';
 import './index.scss';
@@ -39,6 +39,10 @@ export interface ToolbarButtonConfig {
   icon?: string;
   /** 危险按钮 */
   danger?: boolean;
+  /** 权限标识，如 'system:user:add'；有值时自动使用 SxwlPermissionButton */
+  permission?: string | string[];
+  /** 权限逻辑：and=同时拥有 all，or=任一即可。默认 or */
+  permissionMode?: 'and' | 'or';
   /** 点击事件 */
   onClick: () => void;
 }
@@ -136,17 +140,27 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
     return (
       <div className="sxwl-page-toolbar">
         <SxwlSpace>
-          {toolbarButtons.map((btn, index) => (
-            <SxwlButton
-              key={index}
-              type={btn.type}
-              danger={btn.danger}
-              icon={btn.icon ? <SxwlIcon name={btn.icon} /> : undefined}
-              onClick={btn.onClick}
-            >
-              {btn.label}
-            </SxwlButton>
-          ))}
+          {toolbarButtons.map((btn, index) => {
+            const btnEl = (
+              <SxwlButton
+                key={index}
+                type={btn.type}
+                danger={btn.danger}
+                icon={btn.icon ? <SxwlIcon name={btn.icon} /> : undefined}
+                onClick={btn.onClick}
+              >
+                {btn.label}
+              </SxwlButton>
+            );
+            if (btn.permission) {
+              return (
+                <SxwlPermissionButton key={index} permission={btn.permission} mode={btn.permissionMode}>
+                  {btn.label}
+                </SxwlPermissionButton>
+              );
+            }
+            return btnEl;
+          })}
         </SxwlSpace>
       </div>
     );

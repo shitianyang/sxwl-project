@@ -3,7 +3,7 @@ import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlButton, SxwlIcon,
   SxwlSpace, SxwlPopconfirm, SxwlMessage,
-  SxwlPage,
+  SxwlPage, SxwlPermissionButton,
   type ToolbarButtonConfig,
 } from '@/components';
 import type { SysOnlineUserItem } from '@/api/monitor/onlineUserApi';
@@ -74,9 +74,9 @@ export default function OnlineUserPage() {
             title="确定强制该用户下线吗？"
             onConfirm={() => handleForceLogout(record)}
           >
-            <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="LogoutOutlined" />}>
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="LogoutOutlined" />} permission="monitor:onlineuser:forceLogout">
               踢下线
-            </SxwlButton>
+            </SxwlPermissionButton>
           </SxwlPopconfirm>
         </SxwlSpace>
       ),

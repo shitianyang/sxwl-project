@@ -21,6 +21,7 @@ import {
   SxwlPopconfirm,
   SxwlRangePicker,
   SxwlFilePreview,
+  SxwlPermissionButton,
 } from '@/components';
 import type { SysFileDTO } from '@/api/system/fileApi';
 import { getFilePageByParams, downloadFile, deleteFile } from '@/api/system/fileApi';
@@ -172,9 +173,9 @@ export default function FilePage() {
           okText="确定"
           cancelText="取消"
         >
-          <SxwlButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />}>
+          <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:file:delete">
             删除
-          </SxwlButton>
+          </SxwlPermissionButton>
         </SxwlPopconfirm>
       </SxwlSpace>
     ),

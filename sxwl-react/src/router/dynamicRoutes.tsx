@@ -4,7 +4,7 @@
 // ============================================
 
 import { type ReactNode, Suspense } from 'react';
-import { Spin } from 'antd';
+import { SxwlSpin } from '@/components';
 import { Route } from 'react-router-dom';
 import type { MenuTreeItem } from '@/api/system/menuApi';
 import { resolveComponent } from './pageResolver';
@@ -32,7 +32,7 @@ export function buildRouteElements(menus: MenuTreeItem[]): ReactNode[] {
             key={menu.path}
             path={menu.path}
             element={
-              <Suspense fallback={<Spin style={{ display: 'block', margin: '100px auto' }} />}>
+              <Suspense fallback={<SxwlSpin style={{ display: 'block', margin: '100px auto' }} />}>
                 <Component />
               </Suspense>
             }
