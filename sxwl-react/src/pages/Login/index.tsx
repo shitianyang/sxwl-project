@@ -6,7 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 import type { FormInstance } from 'antd';
 import { loginByPassword } from '@/api/authApi';
 import { useAuthStore } from '@/stores/authStore';

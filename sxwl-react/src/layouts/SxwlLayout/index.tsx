@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router';
 import type { MenuProps } from 'antd';
 import { SxwlIcon, SxwlSpace, SxwlButton, SxwlText, SxwlSpin, SxwlLayout, SxwlMenu, SxwlDropdown, SxwlAvatar } from '@/components';
 import { useAuthStore } from '@/stores/authStore';
