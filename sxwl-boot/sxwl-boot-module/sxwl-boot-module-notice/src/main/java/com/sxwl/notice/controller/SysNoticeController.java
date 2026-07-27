@@ -107,6 +107,7 @@ public class SysNoticeController {
 
     @PostMapping("/read/{noticeId}")
     @SxwlRepeatSubmit
+    @SxwlLog(title = "通知公告", description = "标记已读[id=#{#noticeId}]")
     public void markAsRead(@PathVariable("noticeId") Long noticeId) {
         Long userId = SxwlSecurityUtils.getCurrentUserId();
         if (userId != null) {
@@ -116,6 +117,7 @@ public class SysNoticeController {
 
     @PostMapping("/read/all")
     @SxwlRepeatSubmit
+    @SxwlLog(title = "通知公告", description = "全部标记已读")
     public void markAllAsRead() {
         Long userId = SxwlSecurityUtils.getCurrentUserId();
         if (userId != null) {

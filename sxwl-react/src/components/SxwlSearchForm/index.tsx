@@ -4,7 +4,7 @@ import {
   SxwlInput, SxwlButton, SxwlSelect, SxwlIcon,
   SxwlCard, SxwlSpace, SxwlForm, SxwlRangePicker,
 } from '@/components';
-import type { FormFieldConfig } from '@/components/FormFieldConfig';
+import type { FormFieldConfig } from '@/types/FormFieldConfig';
 import './index.scss';
 
 // ==================== Types

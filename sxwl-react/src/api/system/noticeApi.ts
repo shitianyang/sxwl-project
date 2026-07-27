@@ -21,6 +21,8 @@ export interface SysNoticeItem {
   noticeType: string;
   level: string;
   status: number;
+  publishTime?: string;
+  expireTime?: string;
   createTime: string;
 }
 
@@ -41,6 +43,8 @@ export interface SysNoticeForm {
   noticeType: string;
   level: string;
   status?: number;
+  publishTime?: string;
+  expireTime?: string;
 }
 
 /** 查询公告详情 */

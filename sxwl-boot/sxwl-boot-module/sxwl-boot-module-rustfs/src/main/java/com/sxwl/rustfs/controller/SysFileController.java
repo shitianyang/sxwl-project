@@ -2,6 +2,7 @@ package com.sxwl.rustfs.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.entity.SxwlResult;
+import com.sxwl.common.annotation.SxwlLog;
 import com.sxwl.rustfs.model.dto.*;
 import com.sxwl.rustfs.model.params.SysFilePageParams;
 import com.sxwl.rustfs.service.SysFileService;
@@ -37,6 +38,7 @@ public class SysFileController {
      * @return 文件信息
      */
     @PostMapping("/simple")
+    @SxwlLog(title = "文件管理", description = "简单上传文件")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:upload')")
     public SysFileDTO simpleUpload(@RequestParam("file") MultipartFile file) {
         return sysFileService.simpleUpload(file);
@@ -49,6 +51,7 @@ public class SysFileController {
      * @return 上传会话 ID
      */
     @PostMapping("/upload/init")
+    @SxwlLog(title = "文件管理", description = "初始化分片上传")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:upload')")
     public Long initUpload(@RequestBody @Valid UploadInitDTO dto) {
         return sysFileService.initUpload(dto);
@@ -64,6 +67,7 @@ public class SysFileController {
      * @return 上传结果
      */
     @PostMapping("/upload/chunk")
+    @SxwlLog(title = "文件管理", description = "上传文件分片")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:upload')")
     public UploadChunkDTO uploadChunk(@RequestParam("uploadId") Long uploadId,
                                       @RequestParam("chunkIndex") Integer chunkIndex,
@@ -91,6 +95,7 @@ public class SysFileController {
      * @return 文件信息
      */
     @PostMapping("/upload/complete")
+    @SxwlLog(title = "文件管理", description = "完成分片上传")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:upload')")
     public SysFileDTO completeUpload(@RequestBody @Valid UploadCompleteDTO dto) {
         return sysFileService.completeUpload(dto);
@@ -150,6 +155,7 @@ public class SysFileController {
      * @param id 文件 ID
      */
     @DeleteMapping("/{id}")
+    @SxwlLog(title = "文件管理", description = "删除文件[id=#{#id}]")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:delete')")
     public void deleteFile(@PathVariable("id") Long id) {
         sysFileService.deleteFile(id);

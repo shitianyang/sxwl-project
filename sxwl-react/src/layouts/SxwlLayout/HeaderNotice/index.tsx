@@ -11,8 +11,6 @@ import './index.scss';
 
 
 
-type SseState = 'connecting' | 'connected' | 'disconnected';
-
 const LEVEL_COLOR: Record<string, string> = {
   info: 'blue',
   important: 'orange',

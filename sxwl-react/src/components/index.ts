@@ -72,7 +72,7 @@ export { default as SxwlAreaChart } from './SxwlChart/SxwlAreaChart';
 export type { SxwlAreaChartProps } from './SxwlChart/SxwlAreaChart';
 export { default as SxwlPieChart } from './SxwlChart/SxwlPieChart';
 export type { SxwlPieChartProps } from './SxwlChart/SxwlPieChart';
-export type { FormFieldConfig } from './FormFieldConfig';
+export type { FormFieldConfig } from '@/types/FormFieldConfig';
 export { default as SxwlPermissionButton } from './SxwlPermissionButton';
 export type { SxwlPermissionButtonProps } from './SxwlPermissionButton';
 export { default as SxwlDictSelect } from './SxwlDictSelect';
