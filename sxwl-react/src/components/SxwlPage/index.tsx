@@ -154,7 +154,15 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
             );
             if (btn.permission) {
               return (
-                <SxwlPermissionButton key={index} permission={btn.permission} mode={btn.permissionMode}>
+                <SxwlPermissionButton
+                  key={index}
+                  type={btn.type}
+                  danger={btn.danger}
+                  icon={btn.icon ? <SxwlIcon name={btn.icon} /> : undefined}
+                  permission={btn.permission}
+                  mode={btn.permissionMode}
+                  onClick={btn.onClick}
+                >
                   {btn.label}
                 </SxwlPermissionButton>
               );

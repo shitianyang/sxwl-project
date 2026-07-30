@@ -50,6 +50,20 @@ export function refreshToken(data: RefreshRequest) {
   return http.post<TokenPair>('/auth/refresh', data);
 }
 
+/** 当前用户的权限和角色信息 */
+export interface UserPermissionInfo {
+  permissions: string[];
+  roles: string[];
+}
+
+/**
+ * 获取当前用户的权限 + 角色列表
+ * 登录后调用，结果注入 permissionStore
+ */
+export function getUserPermissions() {
+  return http.get<UserPermissionInfo>('/auth/permissions');
+}
+
 /** 登出 */
 export function logout() {
   return http.post<null>('/auth/logout');

@@ -89,4 +89,21 @@ public interface SysUserMapper {
      * @return 影响行数
      */
     int batchDeleteByIds(@Param("ids") List<Long> ids);
+
+    /**
+     * 批量插入用户-角色关联
+     *
+     * @param userId   用户 ID
+     * @param roleIds  角色 ID 列表
+     * @param createBy 创建人
+     * @param createOrg 创建人所属组织
+     * @param createTime 创建时间
+     * @return 影响行数
+     */
+    int batchInsertUserRole(@Param("ids") List<Long> ids,
+                            @Param("userId") Long userId,
+                            @Param("roleIds") List<Long> roleIds,
+                            @Param("createBy") Long createBy,
+                            @Param("createOrg") Long createOrg,
+                            @Param("createTime") java.time.LocalDateTime createTime);
 }

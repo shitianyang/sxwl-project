@@ -38,4 +38,14 @@ public @interface SxwlDataScope {
      * @return 列别名，为空时直接用 create_org
      */
     String columnAlias() default "";
+
+    /**
+     * 用户维度列别名
+     *
+     * <p>当 {@code data_scope=4（仅本人数据）} 时生效，用于指定 {@code create_by} 列的前缀。
+     * 例如 {@code @SxwlDataScope(userAlias = "u")} 会生成 {@code u.create_by = <userId>}。</p>
+     *
+     * @return 列别名，为空时直接用 create_by
+     */
+    String userAlias() default "";
 }

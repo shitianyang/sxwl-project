@@ -139,13 +139,15 @@ public class SxwlPasswordAuthStrategy implements SxwlAuthenticationStrategy {
                 allData = true;
                 break;
             }
-            if (dataScope == 2 || dataScope == 4) {
+            if (dataScope == 2) {
                 addIfNotNull(scopedOrgIds, loginUser.getCreateOrg());
             } else if (dataScope == 3) {
                 addIfNotNull(scopedOrgIds, loginUser.getCreateOrg());
                 if (loginUser.getCreateOrg() != null) {
                     scopedOrgIds.addAll(sysUserMapper.selectSelfAndChildOrgIds(loginUser.getCreateOrg()));
                 }
+            } else if (dataScope == 4) {
+                loginUser.setDataScopeSelf(true);
             } else if (dataScope == 5 && roleId != null) {
                 scopedOrgIds.addAll(sysUserMapper.selectCustomDataScopeOrgIds(roleId));
             }

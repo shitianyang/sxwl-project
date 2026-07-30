@@ -4,6 +4,7 @@ import com.sxwl.auth.strategy.SxwlPasswordAuthStrategy;
 import com.sxwl.auth.strategy.SxwlSmsAuthStrategy;
 import com.sxwl.common.entity.SxwlPublicKeyVO;
 import com.sxwl.common.entity.SxwlResult;
+import com.sxwl.common.entity.SxwlUserPermissionVO;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.common.utils.SxwlIpLocationService;
 import com.sxwl.common.utils.SxwlJwtUtils;
@@ -81,6 +82,21 @@ public class AuthController {
         this.smsAuthStrategy = smsAuthStrategy;
         this.keyManager = keyManager;
         this.ipLocationService = ipLocationService;
+    }
+
+    /**
+     * 获取当前用户的权限 + 角色列表
+     *
+     * <p>登录后调用，根据当前登录用户的角色计算权限标识集合，
+     * 前端用于按钮级权限校验（SxwlPermissionButton）。</p>
+     *
+     * @return 权限标识和角色编码集合
+     */
+    @GetMapping("/permissions")
+    public SxwlUserPermissionVO getUserPermissions() {
+        SxwlLoginUser loginUser = SxwlSecurityUtils.getCurrentUser()
+                .orElseThrow(() -> new SxwlBusinessException(401, "未登录"));
+        return new SxwlUserPermissionVO(loginUser.getPerms(), loginUser.getRoles());
     }
 
     /**

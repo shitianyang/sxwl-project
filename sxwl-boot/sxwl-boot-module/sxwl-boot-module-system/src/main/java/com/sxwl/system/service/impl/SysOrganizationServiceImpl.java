@@ -137,6 +137,9 @@ public class SysOrganizationServiceImpl implements SysOrganizationService {
                 entity.setAncestors("0");
                 entity.setParentId(0L);
             }
+        } else if (old != null) {
+            // parentId 没变，保留旧 ancestors（前端不传该字段）
+            entity.setAncestors(old.getAncestors());
         }
 
         // 计算字段级变更差异

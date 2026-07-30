@@ -1,5 +1,7 @@
 package com.sxwl.system.model.dto;
 
+import java.util.List;
+
 /**
  * 系统用户 DTO（统一请求/响应）
  *
@@ -34,6 +36,9 @@ public class SysUserDTO {
 
     /** 创建时间（仅列表返回时填充） */
     private String createTime;
+
+    /** 角色 ID 列表（仅新增时使用） */
+    private List<Long> roleIds;
 
     public Long getId() {
         return id;
@@ -97,5 +102,13 @@ public class SysUserDTO {
 
     public void setCreateTime(String createTime) {
         this.createTime = createTime;
+    }
+
+    public List<Long> getRoleIds() {
+        return roleIds;
+    }
+
+    public void setRoleIds(List<Long> roleIds) {
+        this.roleIds = roleIds;
     }
 }

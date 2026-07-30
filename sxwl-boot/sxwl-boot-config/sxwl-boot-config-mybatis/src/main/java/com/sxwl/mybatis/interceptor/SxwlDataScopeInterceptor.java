@@ -84,8 +84,9 @@ public class SxwlDataScopeInterceptor implements Interceptor {
 
         // 从 SecurityContext 读数据权限（登录时由 auth 计算好放入）
         Set<Long> visibleOrgIds = principal.getDataScopeOrgIds();
+        boolean dataScopeSelf = principal.getDataScopeSelf();
 
-        if (visibleOrgIds == null) {
+        if (visibleOrgIds == null && !dataScopeSelf) {
             // data_scope=1：全部数据，不追加条件
             return invocation.proceed();
         }
@@ -93,11 +94,13 @@ public class SxwlDataScopeInterceptor implements Interceptor {
         // 拼接数据权限 SQL
         BoundSql boundSql = handler.getBoundSql();
         String originalSql = boundSql.getSql();
-        String scopeSql = buildScopeSql(originalSql, visibleOrgIds, dataScope.columnAlias());
+        String scopeSql = buildScopeSql(originalSql, visibleOrgIds, dataScopeSelf,
+                dataScope.columnAlias(), dataScope.userAlias(), principal.getUserId());
 
         meta.setValue("delegate.boundSql.sql", scopeSql);
-        log.debug("DataScope applied: userId={}, orgIds={}, columnAlias={}",
-                principal.getUserId(), visibleOrgIds, dataScope.columnAlias());
+        log.debug("DataScope applied: userId={}, orgIds={}, dataScopeSelf={}, columnAlias={}, userAlias={}",
+                principal.getUserId(), visibleOrgIds, dataScopeSelf,
+                dataScope.columnAlias(), dataScope.userAlias());
 
         return invocation.proceed();
     }
@@ -132,25 +135,53 @@ public class SxwlDataScopeInterceptor implements Interceptor {
     /**
      * 拼接数据权限条件
      *
-     * <p>通过正则识别 WHERE 子句位置和 ORDER BY / LIMIT 等后缀子句，
-     * 在正确位置插入 {@code AND/WHERE <column> IN (...)}，
-     * 避免破坏 SQL 语法结构。</p>
+     * <p>同时支持组织和用户两个维度：</p>
+     * <ul>
+     *   <li>组织维度：{@code <columnAlias>.create_org IN (...)} — 数据范围 2/3/5</li>
+     *   <li>用户维度：{@code <userAlias>.create_by = <userId>} — 数据范围 4（仅本人数据）</li>
+     * </ul>
      *
-     * @param columnAlias 列别名，为空时直接用 {@code create_org}
+     * <p>通过正则识别 WHERE 子句位置和 ORDER BY / LIMIT 等后缀子句，
+     * 在正确位置插入 {@code AND/WHERE <condition>}，避免破坏 SQL 语法结构。</p>
+     *
+     * @param columnAlias   组织维度列别名，为空时直接用 {@code create_org}
+     * @param userAlias     用户维度列别名，为空时直接用 {@code create_by}
      */
-    private String buildScopeSql(String originalSql, Set<Long> visibleOrgIds, String columnAlias) {
-        // 构建条件表达式
-        String columnName = columnAlias.isEmpty() ? "create_org" : columnAlias + ".create_org";
-        String scopeCondition;
-        if (visibleOrgIds.isEmpty()) {
-            scopeCondition = "1=0";
-        } else {
-            StringJoiner sj = new StringJoiner(", ");
-            for (Long orgId : visibleOrgIds) {
-                sj.add(String.valueOf(orgId));
+    private String buildScopeSql(String originalSql, Set<Long> visibleOrgIds,
+                                  boolean dataScopeSelf, String columnAlias,
+                                  String userAlias, Long userId) {
+        StringJoiner conditions = new StringJoiner(" AND ");
+
+        // 1. 组织维度：create_org IN (...)
+        if (visibleOrgIds != null) {
+            String columnName = columnAlias.isEmpty() ? "create_org" : columnAlias + ".create_org";
+            if (visibleOrgIds.isEmpty()) {
+                // 没有可见组织且非仅本人数据 → 1=0 兜底
+                if (!dataScopeSelf) {
+                    conditions.add("1=0");
+                }
+                // 仅本人数据时跳过空组织条件，只看 create_by
+            } else {
+                StringJoiner sj = new StringJoiner(", ");
+                for (Long orgId : visibleOrgIds) {
+                    sj.add(String.valueOf(orgId));
+                }
+                conditions.add(columnName + " IN (" + sj + ")");
             }
-            scopeCondition = columnName + " IN (" + sj + ")";
         }
+
+        // 2. 用户维度：create_by = <userId>（仅本人数据）
+        if (dataScopeSelf) {
+            String userColumn = userAlias.isEmpty() ? "create_by" : userAlias + ".create_by";
+            conditions.add(userColumn + " = " + userId);
+        }
+
+        // 无条件 → 不修改 SQL
+        if (conditions.length() == 0) {
+            return originalSql;
+        }
+
+        String scopeCondition = conditions.toString();
 
         // 确定插入位置和前缀
         // 先找 ORDER BY / LIMIT 等后缀子句的开始位置

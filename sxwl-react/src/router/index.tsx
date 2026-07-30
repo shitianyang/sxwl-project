@@ -8,6 +8,7 @@ import { buildRouteElements } from './dynamicRoutes';
 import { resolveComponent } from './pageResolver';
 
 const SxwlLayout = lazy(() => import('@/layouts/SxwlLayout'));
+const DashboardPage = lazy(() => import('@/pages/Dashboard/index'));
 
 /** 未登录重定向：携带当前路径，登录后可回到原页面 */
 function LoginRedirect() {
@@ -105,6 +106,15 @@ export default function AppRouter() {
           }
         >
           <Route index element={<Navigate to="/dashboard" replace />} />
+          {/* 仪表盘硬编码路由：不受菜单树影响，确保始终可访问 */}
+          <Route
+            path="dashboard"
+            element={
+              <Suspense fallback={<SxwlSpin style={{ display: 'block', margin: '100px auto' }} />}>
+                <DashboardPage />
+              </Suspense>
+            }
+          />
           {dynamicRoutes}
           {/* 菜单未加载时不跳转，加载后仍未匹配才跳 404 */}
           <Route path="*" element={<ProtectedCatchAll />} />

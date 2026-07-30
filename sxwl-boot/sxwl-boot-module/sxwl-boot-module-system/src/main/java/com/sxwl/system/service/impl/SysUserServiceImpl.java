@@ -3,6 +3,7 @@ package com.sxwl.system.service.impl;
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.common.utils.SxwlDiffUtils;
+import com.sxwl.common.utils.SxwlSnowFlakeUtils;
 import com.sxwl.security.key.SxwlSM2KeyManager;
 import com.sxwl.system.mapper.SysUserMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -100,6 +101,22 @@ public class SysUserServiceImpl implements SysUserService {
         if (result != 1) {
             log.error("新增用户失败: username={}, result={}", dto.getUsername(), result);
             throw new SxwlBusinessException(10001, "新增用户失败");
+        }
+
+        // 3. 批量插入用户-角色关联
+        if (dto.getRoleIds() != null && !dto.getRoleIds().isEmpty()) {
+            List<Long> snowflakeIds = dto.getRoleIds().stream()
+                    .map(roleId -> SxwlSnowFlakeUtils.nextId())
+                    .collect(java.util.stream.Collectors.toList());
+            sysUserMapper.batchInsertUserRole(
+                snowflakeIds,
+                entity.getId(),
+                dto.getRoleIds(),
+                entity.getCreateBy(),
+                entity.getCreateOrg(),
+                entity.getCreateTime()
+            );
+            log.info("用户-角色关联已保存: userId={}, roleIds={}", entity.getId(), dto.getRoleIds());
         }
         log.info("新增用户成功: username={}", dto.getUsername());
         return result;

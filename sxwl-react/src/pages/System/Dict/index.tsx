@@ -161,6 +161,8 @@ export default function DictPage() {
     try {
       const values = await detailForm.validateFields();
       setDetailConfirmLoading(true);
+      // dictId 由 currentDictId 传入（没有 Form.Item，validateFields 取不到）
+      values.dictId = currentDictId;
       if (editingDetail) {
         await updateDetail({ ...values, id: editingDetail.id });
         SxwlMessage.success('更新成功');
