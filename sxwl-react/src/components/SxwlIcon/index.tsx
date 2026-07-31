@@ -51,6 +51,7 @@ const iconModules = import.meta.glob(
     '@/assets/icons/ant-design--italic-outlined.svg',
     '@/assets/icons/ant-design--link-outlined.svg',
     '@/assets/icons/ant-design--login-outlined.svg',
+    '@/assets/icons/ant-design--lock-outlined.svg',
     '@/assets/icons/ant-design--logout-outlined.svg',
     '@/assets/icons/ant-design--menu-fold-outlined.svg',
     '@/assets/icons/ant-design--menu-unfold-outlined.svg',
@@ -109,13 +110,21 @@ const SxwlIcon = ({ name, className, style, size, ...rest }: SxwlIconProps) => {
     return null;
   }
 
-  return createElement(IconComponent, {
+  const svg = createElement(IconComponent, {
     ...rest,
-    className,
     style: { width: size || '1em', height: size || '1em', ...style },
     width: size,
     height: size,
   });
+
+  return (
+    <span
+      className={`anticon anticon-${name.toLowerCase()}${className ? ` ${className}` : ''}`}
+      role="img"
+    >
+      {svg}
+    </span>
+  );
 };
 
 export default SxwlIcon;

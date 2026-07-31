@@ -1,11 +1,14 @@
 import { useEffect } from 'react';
 import { SxwlSpin } from '@/components';
 import { useMenuStore } from '@/stores/menuStore';
+import { usePermissionStore } from '@/stores/permissionStore';
 
 /** 路由守卫：未登录时菜单加载完成前阻止子路由匹配 */
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const menuLoaded = useMenuStore((s) => s.loaded);
   const fetchMenuTree = useMenuStore((s) => s.fetchMenuTree);
+  const permLoaded = usePermissionStore((s) => s.loaded);
+  const fetchPermissions = usePermissionStore((s) => s.fetchPermissions);
 
   // 菜单未加载 → 触发菜单加载（处理首次登录 + 页面刷新）
   useEffect(() => {
@@ -13,6 +16,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       fetchMenuTree();
     }
   }, [menuLoaded, fetchMenuTree]);
+
+  // 权限未加载 → 触发权限加载
+  useEffect(() => {
+    if (menuLoaded && !permLoaded) {
+      fetchPermissions();
+    }
+  }, [menuLoaded, permLoaded, fetchPermissions]);
 
   // 菜单未加载完成时，阻止子路由匹配，防止重定向到不存在的路由
   if (!menuLoaded) {

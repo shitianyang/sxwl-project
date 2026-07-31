@@ -598,7 +598,7 @@ CREATE INDEX "idx_sys_role_data_scope_org" ON "sys_role_data_scope_info" ("org_i
 
 CREATE TABLE "pla_user_info" (
   "id" int8 NOT NULL,
-  "phone" varchar(20) NOT NULL,
+  "phone" varchar(20),
   "password" varchar(256),
   "nickname" varchar(64) NOT NULL,
   "avatar" text,
@@ -626,7 +626,7 @@ CREATE TABLE "pla_user_info" (
 );
 
 COMMENT ON COLUMN "pla_user_info"."id" IS '唯一标识';
-COMMENT ON COLUMN "pla_user_info"."phone" IS '手机号（主登录方式，全局唯一，见 uk_pla_user_phone）';
+COMMENT ON COLUMN "pla_user_info"."phone" IS '手机号（微信登录注册可空，后续可补绑；全局唯一，见 uk_pla_user_phone）';
 COMMENT ON COLUMN "pla_user_info"."password" IS '密码哈希（SM3 + 随机盐值 + 多轮迭代，禁止明文/可逆加密；微信登录可空）';
 COMMENT ON COLUMN "pla_user_info"."nickname" IS '昵称（C端用户核心展示名）';
 COMMENT ON COLUMN "pla_user_info"."avatar" IS '头像URL（RustFS访问地址）';
@@ -652,7 +652,7 @@ COMMENT ON COLUMN "pla_user_info"."update_time" IS '更新时间';
 COMMENT ON COLUMN "pla_user_info"."delete_flag" IS '删除标志：0=正常 1=已删除';
 COMMENT ON TABLE "pla_user_info" IS '平台用户信息表（C端用户）';
 
-CREATE UNIQUE INDEX "uk_pla_user_phone" ON "pla_user_info" ("phone") WHERE "delete_flag" = 0;
+CREATE UNIQUE INDEX "uk_pla_user_phone" ON "pla_user_info" ("phone") WHERE "delete_flag" = 0 AND "phone" IS NOT NULL;
 CREATE UNIQUE INDEX "uk_pla_user_wx_open_id" ON "pla_user_info" ("wx_open_id") WHERE "delete_flag" = 0 AND "wx_open_id" IS NOT NULL;
 CREATE INDEX "idx_pla_user_status" ON "pla_user_info" ("status");
 CREATE INDEX "idx_pla_user_register_source" ON "pla_user_info" ("register_source");
@@ -1074,7 +1074,7 @@ INSERT INTO "sys_menu_info" ("id", "menu_name", "parent_id", "ancestors", "menu_
 (300, '日志管理', 0, '0', 1, 'log', 3, 1, 1, 0, 0, NOW(), 0);
 -- 菜单：操作日志
 INSERT INTO "sys_menu_info" ("id", "menu_name", "parent_id", "ancestors", "menu_type", "path", "component", "perms", "icon", "sort", "visible", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
-(301, '操作日志', 300, '0,300', 2, 'log', 'Log/OperationLog', 'system:log:list', 'log', 1, 1, 1, 0, 0, NOW(), 0);
+(301, '操作日志', 300, '0,300', 2, 'log/operation', 'Log/OperationLog', 'system:operationlog:list', 'log', 1, 1, 1, 0, 0, NOW(), 0);
 -- 菜单：登录日志
 INSERT INTO "sys_menu_info" ("id", "menu_name", "parent_id", "ancestors", "menu_type", "path", "component", "perms", "icon", "sort", "visible", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
 (302, '登录日志', 300, '0,300', 2, 'log/login', 'Log/LoginLog', 'system:loginlog:list', 'login-log', 2, 1, 1, 0, 0, NOW(), 0);
@@ -1088,7 +1088,91 @@ INSERT INTO "sys_menu_info" ("id", "menu_name", "parent_id", "ancestors", "menu_
 INSERT INTO "sys_menu_info" ("id", "menu_name", "parent_id", "ancestors", "menu_type", "path", "component", "perms", "icon", "sort", "visible", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
 (402, '文件管理', 400, '0,400', 2, 'file', 'File', 'system:file:list', 'file', 2, 1, 1, 0, 0, NOW(), 0);
 
--- 6. 角色-菜单关联（super_admin 拥有全部菜单权限）
+-- ==================== 7. 按钮权限（type=3）====================
+-- 注意：按钮条目无 path/component/icon，parent_id 指向对应父菜单
+-- ID 范围 500-650
+--
+-- 系统管理目录(100)下的按钮
+INSERT INTO "sys_menu_info" ("id", "menu_name", "parent_id", "ancestors", "menu_type", "perms", "sort", "visible", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(501, '用户查询', 102, '0,100,102', 3, 'system:user:query', 1, 1, 1, 0, 0, NOW(), 0),
+(502, '新增用户', 102, '0,100,102', 3, 'system:user:add', 2, 1, 1, 0, 0, NOW(), 0),
+(503, '编辑用户', 102, '0,100,102', 3, 'system:user:edit', 3, 1, 1, 0, 0, NOW(), 0),
+(504, '删除用户', 102, '0,100,102', 3, 'system:user:delete', 4, 1, 1, 0, 0, NOW(), 0),
+(505, '角色查询', 103, '0,100,103', 3, 'system:role:query', 1, 1, 1, 0, 0, NOW(), 0),
+(506, '新增角色', 103, '0,100,103', 3, 'system:role:add', 2, 1, 1, 0, 0, NOW(), 0),
+(507, '编辑角色', 103, '0,100,103', 3, 'system:role:edit', 3, 1, 1, 0, 0, NOW(), 0),
+(508, '删除角色', 103, '0,100,103', 3, 'system:role:delete', 4, 1, 1, 0, 0, NOW(), 0),
+(509, '分配权限', 103, '0,100,103', 3, 'system:role:grant', 5, 1, 1, 0, 0, NOW(), 0),
+(510, '菜单查询', 104, '0,100,104', 3, 'system:menu:query', 1, 1, 1, 0, 0, NOW(), 0),
+(511, '新增菜单', 104, '0,100,104', 3, 'system:menu:add', 2, 1, 1, 0, 0, NOW(), 0),
+(512, '编辑菜单', 104, '0,100,104', 3, 'system:menu:edit', 3, 1, 1, 0, 0, NOW(), 0),
+(513, '删除菜单', 104, '0,100,104', 3, 'system:menu:delete', 4, 1, 1, 0, 0, NOW(), 0),
+(514, '组织查询', 105, '0,100,105', 3, 'system:organization:query', 1, 1, 1, 0, 0, NOW(), 0),
+(515, '新增组织', 105, '0,100,105', 3, 'system:organization:add', 2, 1, 1, 0, 0, NOW(), 0),
+(516, '编辑组织', 105, '0,100,105', 3, 'system:organization:edit', 3, 1, 1, 0, 0, NOW(), 0),
+(517, '删除组织', 105, '0,100,105', 3, 'system:organization:delete', 4, 1, 1, 0, 0, NOW(), 0),
+(518, '岗位查询', 106, '0,100,106', 3, 'system:position:query', 1, 1, 1, 0, 0, NOW(), 0),
+(519, '新增岗位', 106, '0,100,106', 3, 'system:position:add', 2, 1, 1, 0, 0, NOW(), 0),
+(520, '编辑岗位', 106, '0,100,106', 3, 'system:position:edit', 3, 1, 1, 0, 0, NOW(), 0),
+(521, '删除岗位', 106, '0,100,106', 3, 'system:position:delete', 4, 1, 1, 0, 0, NOW(), 0),
+(522, '字典查询', 107, '0,100,107', 3, 'system:dict:query', 1, 1, 1, 0, 0, NOW(), 0),
+(523, '新增字典', 107, '0,100,107', 3, 'system:dict:add', 2, 1, 1, 0, 0, NOW(), 0),
+(524, '编辑字典', 107, '0,100,107', 3, 'system:dict:edit', 3, 1, 1, 0, 0, NOW(), 0),
+(525, '删除字典', 107, '0,100,107', 3, 'system:dict:delete', 4, 1, 1, 0, 0, NOW(), 0),
+(526, '参数查询', 108, '0,100,108', 3, 'system:config:query', 1, 1, 1, 0, 0, NOW(), 0),
+(527, '新增参数', 108, '0,100,108', 3, 'system:config:add', 2, 1, 1, 0, 0, NOW(), 0),
+(528, '编辑参数', 108, '0,100,108', 3, 'system:config:edit', 3, 1, 1, 0, 0, NOW(), 0),
+(529, '删除参数', 108, '0,100,108', 3, 'system:config:delete', 4, 1, 1, 0, 0, NOW(), 0),
+(530, '通知查询', 109, '0,100,109', 3, 'system:notice:query', 1, 1, 1, 0, 0, NOW(), 0),
+(531, '新增公告', 109, '0,100,109', 3, 'system:notice:add', 2, 1, 1, 0, 0, NOW(), 0),
+(532, '编辑公告', 109, '0,100,109', 3, 'system:notice:edit', 3, 1, 1, 0, 0, NOW(), 0),
+(533, '删除公告', 109, '0,100,109', 3, 'system:notice:delete', 4, 1, 1, 0, 0, NOW(), 0),
+(534, '发布公告', 109, '0,100,109', 3, 'system:notice:publish', 5, 1, 1, 0, 0, NOW(), 0),
+(535, '撤回公告', 109, '0,100,109', 3, 'system:notice:revoke', 6, 1, 1, 0, 0, NOW(), 0);
+
+-- 监控运维目录(200)下的按钮
+INSERT INTO "sys_menu_info" ("id", "menu_name", "parent_id", "ancestors", "menu_type", "perms", "sort", "visible", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(536, '服务器监控', 201, '0,200,201', 3, 'monitor:server:view', 1, 1, 1, 0, 0, NOW(), 0),
+(537, '在线用户列表', 202, '0,200,202', 3, 'monitor:onlineuser:view', 1, 1, 1, 0, 0, NOW(), 0),
+(538, '强制下线', 202, '0,200,202', 3, 'monitor:onlineuser:forceLogout', 2, 1, 1, 0, 0, NOW(), 0),
+(539, '缓存列表', 203, '0,200,203', 3, 'monitor:cache:view', 1, 1, 1, 0, 0, NOW(), 0),
+(540, '清理缓存', 203, '0,200,203', 3, 'monitor:cache:clear', 2, 1, 1, 0, 0, NOW(), 0),
+(541, '任务查询', 204, '0,200,204', 3, 'monitor:job:query', 1, 1, 1, 0, 0, NOW(), 0),
+(542, '新增任务', 204, '0,200,204', 3, 'monitor:job:add', 2, 1, 1, 0, 0, NOW(), 0),
+(543, '编辑任务', 204, '0,200,204', 3, 'monitor:job:edit', 3, 1, 1, 0, 0, NOW(), 0),
+(544, '删除任务', 204, '0,200,204', 3, 'monitor:job:delete', 4, 1, 1, 0, 0, NOW(), 0),
+(545, '暂停任务', 204, '0,200,204', 3, 'monitor:job:pause', 5, 1, 1, 0, 0, NOW(), 0),
+(546, '恢复任务', 204, '0,200,204', 3, 'monitor:job:resume', 6, 1, 1, 0, 0, NOW(), 0),
+(547, '执行一次', 204, '0,200,204', 3, 'monitor:job:run', 7, 1, 1, 0, 0, NOW(), 0);
+INSERT INTO "sys_menu_info" ("id", "menu_name", "parent_id", "ancestors", "menu_type", "perms", "sort", "visible", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(548, '任务日志查询', 205, '0,200,205', 3, 'monitor:joblog:query', 1, 1, 1, 0, 0, NOW(), 0),
+(549, '任务日志列表', 205, '0,200,205', 3, 'monitor:joblog:list', 2, 1, 1, 0, 0, NOW(), 0),
+(550, '删除日志', 205, '0,200,205', 3, 'monitor:joblog:delete', 3, 1, 1, 0, 0, NOW(), 0),
+(551, '清理日志', 205, '0,200,205', 3, 'monitor:joblog:clean', 4, 1, 1, 0, 0, NOW(), 0);
+INSERT INTO "sys_menu_info" ("id", "menu_name", "parent_id", "ancestors", "menu_type", "perms", "sort", "visible", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(552, '执行备份', 206, '0,200,206', 3, 'monitor:backup:backup', 1, 1, 1, 0, 0, NOW(), 0),
+(553, '备份列表', 206, '0,200,206', 3, 'monitor:backup:view', 2, 1, 1, 0, 0, NOW(), 0),
+(554, '恢复备份', 206, '0,200,206', 3, 'monitor:backup:restore', 3, 1, 1, 0, 0, NOW(), 0),
+(555, '删除备份', 206, '0,200,206', 3, 'monitor:backup:delete', 4, 1, 1, 0, 0, NOW(), 0);
+
+-- 日志管理目录(300)下的按钮
+INSERT INTO "sys_menu_info" ("id", "menu_name", "parent_id", "ancestors", "menu_type", "perms", "sort", "visible", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(556, '操作日志列表', 301, '0,300,301', 3, 'system:log:view', 1, 1, 1, 0, 0, NOW(), 0),
+(557, '登录日志列表', 302, '0,300,302', 3, 'system:loginlog:view', 1, 1, 1, 0, 0, NOW(), 0);
+
+-- 系统工具目录(400)下的按钮
+INSERT INTO "sys_menu_info" ("id", "menu_name", "parent_id", "ancestors", "menu_type", "perms", "sort", "visible", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(558, '代码生成列表', 401, '0,400,401', 3, 'codegen:table:list', 1, 1, 1, 0, 0, NOW(), 0),
+(559, '代码生成查询', 401, '0,400,401', 3, 'codegen:table:query', 2, 1, 1, 0, 0, NOW(), 0),
+(560, '新增生成配置', 401, '0,400,401', 3, 'codegen:table:add', 3, 1, 1, 0, 0, NOW(), 0),
+(561, '编辑生成配置', 401, '0,400,401', 3, 'codegen:table:edit', 4, 1, 1, 0, 0, NOW(), 0),
+(562, '删除生成配置', 401, '0,400,401', 3, 'codegen:table:delete', 5, 1, 1, 0, 0, NOW(), 0),
+(563, '代码预览', 401, '0,400,401', 3, 'codegen:codegen:preview', 6, 1, 1, 0, 0, NOW(), 0),
+(564, '生成代码', 401, '0,400,401', 3, 'codegen:codegen:generate', 7, 1, 1, 0, 0, NOW(), 0),
+(565, '文件列表', 402, '0,400,402', 3, 'system:file:view', 1, 1, 1, 0, 0, NOW(), 0),
+(566, '上传文件', 402, '0,400,402', 3, 'system:file:upload', 2, 1, 1, 0, 0, NOW(), 0),
+(567, '下载文件', 402, '0,400,402', 3, 'system:file:download', 3, 1, 1, 0, 0, NOW(), 0),
+(568, '删除文件', 402, '0,400,402', 3, 'system:file:delete', 4, 1, 1, 0, 0, NOW(), 0);
 INSERT INTO "sys_role_menu_info" ("id", "role_id", "menu_id", "create_by", "create_org", "create_time", "delete_flag") VALUES
 (1, 1, 100, 0, 0, NOW(), 0),
 (2, 1, 101, 0, 0, NOW(), 0),
@@ -1112,7 +1196,93 @@ INSERT INTO "sys_role_menu_info" ("id", "role_id", "menu_id", "create_by", "crea
 (20, 1, 302, 0, 0, NOW(), 0),
 (21, 1, 400, 0, 0, NOW(), 0),
 (22, 1, 401, 0, 0, NOW(), 0),
-(23, 1, 402, 0, 0, NOW(), 0);
+(23, 1, 402, 0, 0, NOW(), 0),
+-- 系统管理：用户管理(102)按钮
+(24, 1, 501, 0, 0, NOW(), 0),
+(25, 1, 502, 0, 0, NOW(), 0),
+(26, 1, 503, 0, 0, NOW(), 0),
+(27, 1, 504, 0, 0, NOW(), 0),
+-- 系统管理：角色管理(103)按钮
+(28, 1, 505, 0, 0, NOW(), 0),
+(29, 1, 506, 0, 0, NOW(), 0),
+(30, 1, 507, 0, 0, NOW(), 0),
+(31, 1, 508, 0, 0, NOW(), 0),
+(32, 1, 509, 0, 0, NOW(), 0),
+-- 系统管理：菜单管理(104)按钮
+(33, 1, 510, 0, 0, NOW(), 0),
+(34, 1, 511, 0, 0, NOW(), 0),
+(35, 1, 512, 0, 0, NOW(), 0),
+(36, 1, 513, 0, 0, NOW(), 0),
+-- 系统管理：组织管理(105)按钮
+(37, 1, 514, 0, 0, NOW(), 0),
+(38, 1, 515, 0, 0, NOW(), 0),
+(39, 1, 516, 0, 0, NOW(), 0),
+(40, 1, 517, 0, 0, NOW(), 0),
+-- 系统管理：岗位管理(106)按钮
+(41, 1, 518, 0, 0, NOW(), 0),
+(42, 1, 519, 0, 0, NOW(), 0),
+(43, 1, 520, 0, 0, NOW(), 0),
+(44, 1, 521, 0, 0, NOW(), 0),
+-- 系统管理：字典管理(107)按钮
+(45, 1, 522, 0, 0, NOW(), 0),
+(46, 1, 523, 0, 0, NOW(), 0),
+(47, 1, 524, 0, 0, NOW(), 0),
+(48, 1, 525, 0, 0, NOW(), 0),
+-- 系统管理：参数管理(108)按钮
+(49, 1, 526, 0, 0, NOW(), 0),
+(50, 1, 527, 0, 0, NOW(), 0),
+(51, 1, 528, 0, 0, NOW(), 0),
+(52, 1, 529, 0, 0, NOW(), 0),
+-- 系统管理：通知公告(109)按钮
+(53, 1, 530, 0, 0, NOW(), 0),
+(54, 1, 531, 0, 0, NOW(), 0),
+(55, 1, 532, 0, 0, NOW(), 0),
+(56, 1, 533, 0, 0, NOW(), 0),
+(57, 1, 534, 0, 0, NOW(), 0),
+(58, 1, 535, 0, 0, NOW(), 0),
+-- 监控运维：系统监控(201)按钮
+(59, 1, 536, 0, 0, NOW(), 0),
+-- 监控运维：在线用户(202)按钮
+(60, 1, 537, 0, 0, NOW(), 0),
+(61, 1, 538, 0, 0, NOW(), 0),
+-- 监控运维：缓存管理(203)按钮
+(62, 1, 539, 0, 0, NOW(), 0),
+(63, 1, 540, 0, 0, NOW(), 0),
+-- 监控运维：定时任务(204)按钮
+(64, 1, 541, 0, 0, NOW(), 0),
+(65, 1, 542, 0, 0, NOW(), 0),
+(66, 1, 543, 0, 0, NOW(), 0),
+(67, 1, 544, 0, 0, NOW(), 0),
+(68, 1, 545, 0, 0, NOW(), 0),
+(69, 1, 546, 0, 0, NOW(), 0),
+(70, 1, 547, 0, 0, NOW(), 0),
+-- 监控运维：任务日志(205)按钮
+(71, 1, 548, 0, 0, NOW(), 0),
+(72, 1, 549, 0, 0, NOW(), 0),
+(73, 1, 550, 0, 0, NOW(), 0),
+(74, 1, 551, 0, 0, NOW(), 0),
+-- 监控运维：数据备份(206)按钮
+(75, 1, 552, 0, 0, NOW(), 0),
+(76, 1, 553, 0, 0, NOW(), 0),
+(77, 1, 554, 0, 0, NOW(), 0),
+(78, 1, 555, 0, 0, NOW(), 0),
+-- 日志管理：操作日志(301)按钮
+(79, 1, 556, 0, 0, NOW(), 0),
+-- 日志管理：登录日志(302)按钮
+(80, 1, 557, 0, 0, NOW(), 0),
+-- 系统工具：代码生成(401)按钮
+(81, 1, 558, 0, 0, NOW(), 0),
+(82, 1, 559, 0, 0, NOW(), 0),
+(83, 1, 560, 0, 0, NOW(), 0),
+(84, 1, 561, 0, 0, NOW(), 0),
+(85, 1, 562, 0, 0, NOW(), 0),
+(86, 1, 563, 0, 0, NOW(), 0),
+(87, 1, 564, 0, 0, NOW(), 0),
+-- 系统工具：文件管理(402)按钮
+(88, 1, 565, 0, 0, NOW(), 0),
+(89, 1, 566, 0, 0, NOW(), 0),
+(90, 1, 567, 0, 0, NOW(), 0),
+(91, 1, 568, 0, 0, NOW(), 0);
 
 -- =====================================================================
 
@@ -1645,3 +1815,65 @@ COMMENT ON COLUMN "sys_monitor_db_log"."create_time" IS '记录时间';
 COMMENT ON TABLE "sys_monitor_db_log" IS '系统监控-数据库指标日志';
 
 CREATE INDEX "idx_smdbl_create_time" ON "sys_monitor_db_log" ("create_time");
+
+
+-- =====================================================================
+-- 种子数据：字典（sys_dict_info + sys_dict_detail_info）
+-- ID 范围 2000-2100，不与现有种子数据冲突
+-- 注意：dict_code 为 2 位数字，detail_value 为 dict_code + 2 位序号
+-- =====================================================================
+
+-- 01=用户性别
+INSERT INTO "sys_dict_info" ("id", "dict_code", "dict_name", "description", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2001, '01', '用户性别', '用户性别字典，用于 sys_user_info.gender 等字段', 1, 0, 0, NOW(), 0);
+INSERT INTO "sys_dict_detail_info" ("id", "dict_id", "detail_value", "detail_label", "description", "sort", "status", "is_default", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2101, 2001, '0101', '男', '男性', 1, 1, 0, 0, 0, NOW(), 0),
+(2102, 2001, '0102', '女', '女性', 2, 1, 0, 0, 0, NOW(), 0),
+(2103, 2001, '0199', '未知', '未知性别', 9, 1, 1, 0, 0, NOW(), 0);
+
+-- 02=启用状态
+INSERT INTO "sys_dict_info" ("id", "dict_code", "dict_name", "description", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2002, '02', '启用状态', '通用启用/禁用状态，用于所有业务表的 status 字段', 1, 0, 0, NOW(), 0);
+INSERT INTO "sys_dict_detail_info" ("id", "dict_id", "detail_value", "detail_label", "description", "sort", "status", "is_default", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2104, 2002, '0201', '启用', '正常启用状态', 1, 1, 1, 0, 0, NOW(), 0),
+(2105, 2002, '0202', '禁用', '已禁用状态', 2, 1, 0, 0, 0, NOW(), 0);
+
+-- 03=组织层级
+INSERT INTO "sys_dict_info" ("id", "dict_code", "dict_name", "description", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2003, '03', '组织层级', '组织架构层级，用于 sys_organization_info.org_level 字段', 1, 0, 0, NOW(), 0);
+INSERT INTO "sys_dict_detail_info" ("id", "dict_id", "detail_value", "detail_label", "description", "sort", "status", "is_default", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2106, 2003, '0301', '公司', '公司级组织', 1, 1, 0, 0, 0, NOW(), 0),
+(2107, 2003, '0302', '部门', '部门级组织', 2, 1, 1, 0, 0, NOW(), 0),
+(2108, 2003, '0303', '小组', '小组级组织', 3, 1, 0, 0, 0, NOW(), 0);
+
+-- 04=通知类型
+INSERT INTO "sys_dict_info" ("id", "dict_code", "dict_name", "description", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2004, '04', '通知类型', '通知公告类型，用于 sys_notice_info.notice_type 字段', 1, 0, 0, NOW(), 0);
+INSERT INTO "sys_dict_detail_info" ("id", "dict_id", "detail_value", "detail_label", "description", "sort", "status", "is_default", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2109, 2004, '0401', '通知', '普通通知', 1, 1, 1, 0, 0, NOW(), 0),
+(2110, 2004, '0402', '公告', '正式公告', 2, 1, 0, 0, 0, NOW(), 0);
+
+-- 05=通知级别
+INSERT INTO "sys_dict_info" ("id", "dict_code", "dict_name", "description", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2005, '05', '通知级别', '通知公告紧急程度，用于 sys_notice_info.level 字段', 1, 0, 0, NOW(), 0);
+INSERT INTO "sys_dict_detail_info" ("id", "dict_id", "detail_value", "detail_label", "description", "sort", "status", "is_default", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2111, 2005, '0501', '普通', '普通级别', 1, 1, 1, 0, 0, NOW(), 0),
+(2112, 2005, '0502', '重要', '重要级别', 2, 1, 0, 0, 0, NOW(), 0),
+(2113, 2005, '0503', '紧急', '紧急级别', 3, 1, 0, 0, 0, NOW(), 0);
+
+-- 06=日志类型
+INSERT INTO "sys_dict_info" ("id", "dict_code", "dict_name", "description", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2006, '06', '日志类型', '操作日志类型，用于 sys_log_info.log_type 字段', 1, 0, 0, NOW(), 0);
+INSERT INTO "sys_dict_detail_info" ("id", "dict_id", "detail_value", "detail_label", "description", "sort", "status", "is_default", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2114, 2006, '0601', '登录', '登录日志', 1, 1, 0, 0, 0, NOW(), 0),
+(2115, 2006, '0602', '操作', '操作日志', 2, 1, 1, 0, 0, NOW(), 0),
+(2116, 2006, '0603', '异常', '异常日志', 3, 1, 0, 0, 0, NOW(), 0),
+(2117, 2006, '0604', '安全', '安全日志', 4, 1, 0, 0, 0, NOW(), 0);
+
+-- 07=菜单类型
+INSERT INTO "sys_dict_info" ("id", "dict_code", "dict_name", "description", "status", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2007, '07', '菜单类型', '菜单类型，用于 sys_menu_info.menu_type 字段', 1, 0, 0, NOW(), 0);
+INSERT INTO "sys_dict_detail_info" ("id", "dict_id", "detail_value", "detail_label", "description", "sort", "status", "is_default", "create_by", "create_org", "create_time", "delete_flag") VALUES
+(2118, 2007, '0701', '目录', '目录节点，用于路由分组', 1, 1, 0, 0, 0, NOW(), 0),
+(2119, 2007, '0702', '菜单', '菜单项，对应前端页面', 2, 1, 1, 0, 0, NOW(), 0),
+(2120, 2007, '0703', '按钮', '按钮权限，控制操作可见性', 3, 1, 0, 0, 0, NOW(), 0);

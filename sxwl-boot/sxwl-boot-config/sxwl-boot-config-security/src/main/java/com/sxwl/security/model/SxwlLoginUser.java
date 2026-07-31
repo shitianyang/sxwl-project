@@ -49,6 +49,9 @@ public class SxwlLoginUser implements SxwlPrincipal, Serializable {
     /** 数据范围可见组织 ID 集合 */
     private Set<Long> dataScopeOrgIds;
 
+    /** 是否仅限本人数据（scope=4） */
+    private boolean dataScopeSelf;
+
     public SxwlLoginUser() {
     }
 
@@ -128,5 +131,14 @@ public class SxwlLoginUser implements SxwlPrincipal, Serializable {
 
     public void setDataScopeOrgIds(Set<Long> dataScopeOrgIds) {
         this.dataScopeOrgIds = dataScopeOrgIds;
+    }
+
+    @Override
+    public boolean getDataScopeSelf() {
+        return dataScopeSelf;
+    }
+
+    public void setDataScopeSelf(boolean dataScopeSelf) {
+        this.dataScopeSelf = dataScopeSelf;
     }
 }

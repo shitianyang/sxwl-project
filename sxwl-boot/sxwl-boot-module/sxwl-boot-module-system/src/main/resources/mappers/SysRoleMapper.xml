@@ -98,8 +98,8 @@
     <insert id="batchInsertRoleMenus">
         INSERT INTO sys_role_menu_info (id, role_id, menu_id, create_by, create_org, create_time)
         VALUES
-        <foreach collection="menuIds" item="menuId" index="idx" separator=",">
-            (#{ids[idx]}, #{roleId}, #{menuId}, #{createBy}, #{createOrg}, #{createTime})
+        <foreach collection="ids" item="id" index="idx" separator=",">
+            (#{id}, #{roleId}, #{menuIds[${idx}]}, #{createBy}, #{createOrg}, #{createTime})
         </foreach>
     </insert>
 
@@ -124,8 +124,8 @@
     <insert id="batchInsertRoleDataScope">
         INSERT INTO sys_role_data_scope_info (id, role_id, org_id, create_by, create_org, create_time)
         VALUES
-        <foreach collection="orgIds" item="orgId" index="idx" separator=",">
-            (#{ids[idx]}, #{roleId}, #{orgId}, #{createBy}, #{createOrg}, #{createTime})
+        <foreach collection="ids" item="id" index="idx" separator=",">
+            (#{id}, #{roleId}, #{orgIds[${idx}]}, #{createBy}, #{createOrg}, #{createTime})
         </foreach>
     </insert>
 

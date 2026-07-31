@@ -12,6 +12,10 @@ spring:
       max-file-size: 100MB             # 单个文件最大大小
       max-request-size: 200MB          # 单次请求最大大小
 
+logging:
+  file:
+    path: ./logs                             # 日志输出目录（相对于工作目录）
+
 server:
   port: 30101                          # 应用端口号
   servlet:

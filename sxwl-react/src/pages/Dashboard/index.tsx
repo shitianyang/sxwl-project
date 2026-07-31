@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAuthStore } from '@/stores/authStore';
 import { SxwlIcon, SxwlCard, SxwlRow, SxwlCol, SxwlTitle, SxwlText } from '@/components';
 import { getDashboardStatistics, type DashboardStatistics } from '@/api/system/dashboardApi';
-import './index.scss';
+import useDashboardStyles from './index.style';
 
 interface StatCardConfig {
   title: string;
@@ -32,6 +32,7 @@ const QUICK_LINKS = [
 ];
 
 export default function DashboardPage() {
+  const { styles, cx } = useDashboardStyles();
   const navigate = useNavigate();
   const username = useAuthStore((s) => s.username);
   const [statistics, setStatistics] = useState<DashboardStatistics | null>(null);
@@ -56,15 +57,15 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="dashboard-page">
+    <div className={styles.page}>
       {/* 欢迎横幅 */}
-      <div className="dashboard-banner">
-        <div className="banner-content">
+      <div className={styles.banner}>
+        <div className={styles.bannerContent}>
           <div className="banner-text">
-            <SxwlTitle level={4} className="banner-title">欢迎回来{username ? `，${username}` : ''}</SxwlTitle>
-            <SxwlText className="banner-desc">数行未来·御权 — 统一权限管控平台</SxwlText>
+            <SxwlTitle level={4} className={styles.bannerTitle}>欢迎回来{username ? `，${username}` : ''}</SxwlTitle>
+            <SxwlText className={styles.bannerDesc}>数行未来·御权 — 统一权限管控平台</SxwlText>
           </div>
-          <div className={`banner-tip ${systemStatus === 'error' ? 'banner-tip--error' : ''}`}>
+          <div className={cx(styles.bannerTip, systemStatus === 'error' && 'banner-tip--error')}>
             <SxwlIcon name={systemStatus === 'error' ? 'CloseCircleOutlined' : 'SafetyOutlined'} />
             <span>
               {systemStatus === 'loading' ? '系统检查中...' :
@@ -76,20 +77,20 @@ export default function DashboardPage() {
       </div>
 
       {/* 统计卡片 */}
-      <SxwlRow gutter={[16, 16]} className="dashboard-stats">
+      <SxwlRow gutter={[16, 16]} className={styles.stats}>
         {STAT_CARDS.map((card) => (
           <SxwlCol xs={24} sm={12} lg={6} key={card.title}>
-            <SxwlCard className="stat-card">
-              <div className="stat-card-body">
+            <SxwlCard className={styles.statCard}>
+              <div className={styles.statCardBody}>
                 <div
-                  className="stat-card-icon"
+                  className={styles.statCardIcon}
                   style={{ background: card.bgColor, color: card.color }}
                 >
                   {card.icon}
                 </div>
-                <div className="stat-card-content">
-                  <div className="stat-card-value">{displayValue(card.field)}</div>
-                  <div className="stat-card-label">{card.title}</div>
+                <div className={styles.statCardContent}>
+                  <div className={styles.statCardValue}>{displayValue(card.field)}</div>
+                  <div className={styles.statCardLabel}>{card.title}</div>
                 </div>
               </div>
             </SxwlCard>
@@ -99,20 +100,20 @@ export default function DashboardPage() {
 
       {/* 快捷入口 */}
       <SxwlCard
-        title={<span className="section-title">快捷入口</span>}
-        className="dashboard-quick-links"
+        title={<span className={styles.sectionTitle}>快捷入口</span>}
+        className={styles.quickLinks}
       >
         <SxwlRow gutter={[16, 16]}>
           {QUICK_LINKS.map((link) => (
             <SxwlCol xs={12} sm={8} md={6} lg={3} key={link.label}>
               <div
-                className="quick-link-item"
+                className={styles.quickLinkItem}
                 onClick={() => navigate(link.path)}
               >
-                <span className="quick-link-icon" style={{ color: link.color, background: `${link.color}14` }}>
+                <span className={styles.quickLinkIcon} style={{ color: link.color, background: `${link.color}14` }}>
                   {link.icon}
                 </span>
-                <span className="quick-link-label">{link.label}</span>
+                <span className={styles.quickLinkLabel}>{link.label}</span>
               </div>
             </SxwlCol>
           ))}

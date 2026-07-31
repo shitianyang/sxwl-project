@@ -6,8 +6,8 @@
     <!-- ==================== 属性定义 ==================== -->
     <!-- 应用名称，与 application.yaml 中 spring.application.name 一致 -->
     <property name="APP_NAME" value="sxwl-boot"/>
-    <!-- 日志输出路径 -->
-    <property name="LOG_PATH" value="./logs"/>
+    <!-- 日志输出路径（由 application.yaml 的 logging.file.path 控制，默认 ./logs） -->
+    <springProperty scope="context" name="LOG_PATH" source="logging.file.path" defaultValue="./logs"/>
     <!-- 日志格式 -->
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"/>
     <!-- 控制台彩色日志格式 -->

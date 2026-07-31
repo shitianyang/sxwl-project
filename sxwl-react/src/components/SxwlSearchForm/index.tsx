@@ -2,10 +2,10 @@ import { type JSX } from 'react';
 import type { Dayjs } from 'dayjs';
 import {
   SxwlInput, SxwlButton, SxwlSelect, SxwlIcon,
-  SxwlCard, SxwlSpace, SxwlForm, SxwlRangePicker,
+  SxwlSpace, SxwlForm, SxwlRangePicker,
 } from '@/components';
 import type { FormFieldConfig } from '@/types/FormFieldConfig';
-import './index.scss';
+import useSearchFormStyles from './index.style';
 
 // ==================== Types
 
@@ -21,6 +21,7 @@ export interface SxwlSearchFormProps {
 // ==================== Inner Component
 
 function SxwlSearchFormInner({ fields, onSearch, onReset }: SxwlSearchFormProps): JSX.Element {
+  const { styles } = useSearchFormStyles();
   const [form] = SxwlForm.useForm();
 
   const handleSearch = () => {
@@ -49,8 +50,8 @@ function SxwlSearchFormInner({ fields, onSearch, onReset }: SxwlSearchFormProps)
   };
 
   return (
-    <SxwlCard className="sxwl-search-form">
-      <SxwlForm form={form} layout="inline" className="sxwl-search-form__inner">
+    <div className={styles.wrapper}>
+      <SxwlForm form={form} layout="inline" className={styles.inner}>
         {fields.map((field) => (
           <SxwlForm.Item key={field.name} name={field.name} label={field.label}>
             {field.type === 'select' ? (
@@ -82,7 +83,7 @@ function SxwlSearchFormInner({ fields, onSearch, onReset }: SxwlSearchFormProps)
           </SxwlSpace>
         </SxwlForm.Item>
       </SxwlForm>
-    </SxwlCard>
+    </div>
   );
 }
 

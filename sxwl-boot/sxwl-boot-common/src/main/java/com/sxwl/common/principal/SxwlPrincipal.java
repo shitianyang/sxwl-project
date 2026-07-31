@@ -43,4 +43,15 @@ public interface SxwlPrincipal {
     default Set<Long> getDataScopeOrgIds() {
         return null;
     }
+
+    /**
+     * 是否仅限本人数据（scope=4）
+     * <p>当此值为 true 时，拦截器会在 WHERE 中追加 {@code create_by = <userId>} 条件，
+     * 代替或补充 {@code create_org IN (...)} 组织维度过滤。</p>
+     *
+     * @return true=仅查看本人创建的数据
+     */
+    default boolean getDataScopeSelf() {
+        return false;
+    }
 }

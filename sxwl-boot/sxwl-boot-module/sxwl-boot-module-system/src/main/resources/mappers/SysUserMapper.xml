@@ -76,6 +76,16 @@
             #{createBy}, #{createOrg}, #{createTime}, #{createBy}, #{createTime}
         )
     </insert>
+    
+        <!-- 批量插入用户-角色关联 -->
+        <insert id="batchInsertUserRole">
+            INSERT INTO sys_user_role_info (
+                id, user_id, role_id, create_by, create_org, create_time, delete_flag
+            ) VALUES
+            <foreach collection="ids" item="id" index="idx" separator=",">
+                (#{id}, #{userId}, #{roleIds[${idx}]}, #{createBy}, #{createOrg}, #{createTime}, 0)
+            </foreach>
+        </insert>
 
     <!-- 修改用户（密码可选） -->
     <update id="updateUser" parameterType="com.sxwl.system.model.entity.SysUser">
