@@ -3,7 +3,7 @@ import {
   SxwlButton, SxwlIcon, SxwlPermissionButton,
   SxwlCard, SxwlTable, SxwlSpace, SxwlSearchForm,
 } from '@/components';
-import './index.scss';
+import usePageStyles from './index.style';
 
 // ==================== Types
 
@@ -87,6 +87,7 @@ export interface SxwlPageProps {
 // ==================== Component
 
 function SxwlPage(props: SxwlPageProps): JSX.Element {
+  const { styles, cx } = usePageStyles();
   const {
     mode = 'table',
     paginated = true,
@@ -112,13 +113,13 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
   const renderBreadcrumb = () => {
     if (!breadcrumb?.length) return null;
     return (
-      <div className="sxwl-page-breadcrumb">
+      <div className={styles.breadcrumb}>
         {breadcrumb.map((item, i) => (
           <span
             key={item}
-            className={`sxwl-page-breadcrumb-item${i === breadcrumb.length - 1 ? ' is-current' : ''}`}
+            className={cx(styles.breadcrumbItem, i === breadcrumb.length - 1 && 'is-current')}
           >
-            {i > 0 && <span className="sxwl-page-breadcrumb-sep">/</span>}
+            {i > 0 && <span className={styles.breadcrumbSep}>/</span>}
             {item}
           </span>
         ))}
@@ -138,7 +139,7 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
   const renderToolbar = () => {
     if (!toolbarButtons?.length) return null;
     return (
-      <div className="sxwl-page-toolbar">
+      <div className={styles.toolbar}>
         <SxwlSpace>
           {toolbarButtons.map((btn, index) => {
             const btnEl = (
@@ -219,10 +220,10 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
   };
 
   return (
-    <div className="sxwl-page">
+    <div className={styles.wrapper}>
       {renderBreadcrumb()}
       {renderSearch()}
-      <SxwlCard className="sxwl-page-table-card">
+      <SxwlCard className={styles.tableCard}>
         {renderToolbar()}
         {renderContent()}
       </SxwlCard>

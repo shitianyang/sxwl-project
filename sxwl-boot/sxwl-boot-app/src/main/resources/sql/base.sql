@@ -598,7 +598,7 @@ CREATE INDEX "idx_sys_role_data_scope_org" ON "sys_role_data_scope_info" ("org_i
 
 CREATE TABLE "pla_user_info" (
   "id" int8 NOT NULL,
-  "phone" varchar(20) NOT NULL,
+  "phone" varchar(20),
   "password" varchar(256),
   "nickname" varchar(64) NOT NULL,
   "avatar" text,
@@ -626,7 +626,7 @@ CREATE TABLE "pla_user_info" (
 );
 
 COMMENT ON COLUMN "pla_user_info"."id" IS '唯一标识';
-COMMENT ON COLUMN "pla_user_info"."phone" IS '手机号（主登录方式，全局唯一，见 uk_pla_user_phone）';
+COMMENT ON COLUMN "pla_user_info"."phone" IS '手机号（微信登录注册可空，后续可补绑；全局唯一，见 uk_pla_user_phone）';
 COMMENT ON COLUMN "pla_user_info"."password" IS '密码哈希（SM3 + 随机盐值 + 多轮迭代，禁止明文/可逆加密；微信登录可空）';
 COMMENT ON COLUMN "pla_user_info"."nickname" IS '昵称（C端用户核心展示名）';
 COMMENT ON COLUMN "pla_user_info"."avatar" IS '头像URL（RustFS访问地址）';
@@ -652,7 +652,7 @@ COMMENT ON COLUMN "pla_user_info"."update_time" IS '更新时间';
 COMMENT ON COLUMN "pla_user_info"."delete_flag" IS '删除标志：0=正常 1=已删除';
 COMMENT ON TABLE "pla_user_info" IS '平台用户信息表（C端用户）';
 
-CREATE UNIQUE INDEX "uk_pla_user_phone" ON "pla_user_info" ("phone") WHERE "delete_flag" = 0;
+CREATE UNIQUE INDEX "uk_pla_user_phone" ON "pla_user_info" ("phone") WHERE "delete_flag" = 0 AND "phone" IS NOT NULL;
 CREATE UNIQUE INDEX "uk_pla_user_wx_open_id" ON "pla_user_info" ("wx_open_id") WHERE "delete_flag" = 0 AND "wx_open_id" IS NOT NULL;
 CREATE INDEX "idx_pla_user_status" ON "pla_user_info" ("status");
 CREATE INDEX "idx_pla_user_register_source" ON "pla_user_info" ("register_source");
