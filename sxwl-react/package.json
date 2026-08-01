@@ -29,7 +29,7 @@
     "@tiptap/react": "3.29.0",
     "@tiptap/starter-kit": "3.29.0",
     "antd": "6.5.1",
-    "antd-style": "^4.1.0",
+    "antd-style": "4.1.0",
     "axios": "1.18.1",
     "highlight.js": "11.11.1",
     "lowlight": "3.3.0",

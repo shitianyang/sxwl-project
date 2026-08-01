@@ -44,6 +44,9 @@ sxwl:
     sm2-key-rotation-interval-minutes: 1440  # SM2 密钥轮换间隔（分钟），默认 24 小时
     sm2-key-grace-period-minutes: 120        # SM2 历史密钥保留宽限期（分钟），默认 2 小时
     sm2-key-max-history: 1                   # SM2 历史密钥最大保留数（不含当前）
+  wechat:
+    appid: ""                                # 微信小程序 AppID（本地联调填测试号）
+    secret: ""                               # 微信小程序 AppSecret（本地联调填测试号）
   rustfs:
     endpoint: http://localhost:9000      # S3 兼容服务地址（开发环境 Rustfs）
     region: us-east-1

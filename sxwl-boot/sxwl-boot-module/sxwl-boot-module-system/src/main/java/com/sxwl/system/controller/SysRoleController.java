@@ -118,7 +118,7 @@ public class SysRoleController {
     @GetMapping("/{roleId}/menus")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:role:query')")
     @SxwlLog(title = "角色管理", description = "查询角色菜单[roleId=#{#roleId}]")
-    public List<Long> getMenuIdListByRoleId(@RequestParam("roleId") Long roleId) {
+    public List<Long> getMenuIdListByRoleId(@PathVariable("roleId") Long roleId) {
         return sysRoleService.getMenuIdListByRoleId(roleId);
     }
 
