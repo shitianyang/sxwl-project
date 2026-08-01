@@ -13,9 +13,13 @@ import SxwlIcon from '../SxwlIcon';
 export interface SxwlCaptchaProps {
   /** 父表单实例（用于设置 captchaUuid 字段） */
   form: FormInstance;
+  /** 变化时强制重新加载验证码（如登录失败后） */
+  refreshKey?: number;
+  /** 验证码图片高度（默认 48，与登录页输入框等高） */
+  height?: number;
 }
 
-const SxwlCaptcha: React.FC<SxwlCaptchaProps> = ({ form }) => {
+const SxwlCaptcha: React.FC<SxwlCaptchaProps> = ({ form, refreshKey, height = 48 }) => {
   const [base64Image, setBase64Image] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +39,7 @@ const SxwlCaptcha: React.FC<SxwlCaptchaProps> = ({ form }) => {
 
   useEffect(() => {
     loadCaptcha();
-  }, [loadCaptcha]);
+  }, [loadCaptcha, refreshKey]);
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -53,14 +57,14 @@ const SxwlCaptcha: React.FC<SxwlCaptchaProps> = ({ form }) => {
           <img
             src={base64Image}
             alt="验证码"
-            style={{ height: 32, borderRadius: 4, display: 'block' }}
+            style={{ height, width: 104, borderRadius: 12, display: 'block' }}
           />
         ) : (
           <div
             style={{
-              width: 100,
-              height: 32,
-              borderRadius: 4,
+              width: 104,
+              height,
+              borderRadius: 12,
               background: '#f5f5f5',
               display: 'flex',
               alignItems: 'center',
