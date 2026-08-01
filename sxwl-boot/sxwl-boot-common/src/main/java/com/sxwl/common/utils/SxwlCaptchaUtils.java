@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentMap;
  * <p>
  * 提供两种验证码生成能力：
  * <ul>
- *   <li>图形验证码：4 位字母数字混合</li>
+ *   <li>图形验证码：4 位数字 + 大写字母</li>
  *   <li>短信/邮箱验证码：6 位纯数字</li>
  * </ul>
  * 纯工具类，无外部依赖（不涉及 Redis 存储），存储逻辑由调用方负责。
@@ -38,19 +38,19 @@ public final class SxwlCaptchaUtils {
     public static final int SMS_CODE_LENGTH = 6;
 
     /**
-     * 默认图片宽度
+     * 默认图片宽度（与前端登录页验证码展示尺寸 104×48 保持一致，避免拉伸变形）
      */
-    public static final int DEFAULT_WIDTH = 120;
+    public static final int DEFAULT_WIDTH = 104;
 
     /**
      * 默认图片高度
      */
-    public static final int DEFAULT_HEIGHT = 40;
+    public static final int DEFAULT_HEIGHT = 48;
 
     /**
-     * 图形验证码字符集（字母数字混合，去掉 0/O/1/I/l 避免混淆）
+     * 图形验证码字符集（数字 + 大写字母，去掉 0/O/1/I 易混淆字符）
      */
-    private static final String IMAGE_CHAR_POOL = "23456789ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz";
+    private static final String IMAGE_CHAR_POOL = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
 
     /**
      * 短信/邮箱验证码字符集（纯数字，去掉 0 避免首位为 0 时前端展示异常）
@@ -58,6 +58,16 @@ public final class SxwlCaptchaUtils {
     private static final String NUMERIC_CHAR_POOL = "123456789";
 
     private static final SecureRandom RANDOM = new SecureRandom();
+
+    /**
+     * 文字深色系（深灰 #333/#444 + 品牌橙 #F2711C 系，随机选用，保证浅底可读）
+     */
+    private static final Color[] TEXT_COLORS = {
+            new Color(0x33, 0x33, 0x33),
+            new Color(0x44, 0x44, 0x44),
+            new Color(0xF2, 0x71, 0x1C),
+            new Color(0xC9, 0x5E, 0x0A),
+    };
 
     /**
      * 缓存常用 Font 对象，避免反复触发字体子系统枚举（首次 new Font 会全量扫描字体）
@@ -130,7 +140,7 @@ public final class SxwlCaptchaUtils {
     // ==================== 验证码图片生成 ====================
 
     /**
-     * 根据验证码文本生成图片（默认尺寸 120×40）
+     * 根据验证码文本生成图片（默认尺寸 104×48）
      *
      * @param code 验证码文本
      * @return BufferedImage
@@ -162,13 +172,13 @@ public final class SxwlCaptchaUtils {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        // 背景色（浅灰）
-        g.setColor(new Color(245, 245, 245));
+        // 背景（白 → 浅灰渐变，浅色底保证深色文字可读）
+        g.setPaint(new GradientPaint(0, 0, Color.WHITE, width, height, new Color(238, 238, 238)));
         g.fillRect(0, 0, width, height);
 
-        // 干扰线（6 条随机彩色线）
-        for (int i = 0; i < 6; i++) {
-            g.setColor(randomColor(180, 220));
+        // 干扰线（少量 4 条随机浅色细线，不盖住字符）
+        for (int i = 0; i < 4; i++) {
+            g.setColor(randomColor(190, 230));
             int x1 = RANDOM.nextInt(width);
             int y1 = RANDOM.nextInt(height);
             int x2 = RANDOM.nextInt(width);
@@ -176,16 +186,16 @@ public final class SxwlCaptchaUtils {
             g.drawLine(x1, y1, x2, y2);
         }
 
-        // 干扰点（30 个）
-        for (int i = 0; i < 30; i++) {
-            g.setColor(randomColor(160, 200));
+        // 干扰噪点（少量 20 个，浅色细点）
+        for (int i = 0; i < 20; i++) {
+            g.setColor(randomColor(170, 220));
             int x = RANDOM.nextInt(width);
             int y = RANDOM.nextInt(height);
-            g.fillOval(x, y, 2, 2);
+            g.fillOval(x, y, 1, 1);
         }
 
-        // 字体（加粗，高度自适应，从缓存获取）
-        int fontSize = Math.max(18, height - 8);
+        // 字体（加粗，字号 20-26px：height=48 → 24，从缓存获取）
+        int fontSize = Math.max(20, Math.min(26, height / 2));
         Font font = cachedFont("Arial", Font.BOLD, fontSize);
         g.setFont(font);
         FontMetrics fm = g.getFontMetrics();
@@ -201,14 +211,14 @@ public final class SxwlCaptchaUtils {
         int startX = (width - totalWidth) / 2;
         int baselineY = (height + fm.getAscent() - fm.getDescent()) / 2;
 
-        // 逐字符绘制，带随机旋转 + 随机颜色
+        // 逐字符绘制：深色文字（#333 深灰 / #F2711C 品牌橙），带轻微倾斜增强识别感
         int curX = startX;
         for (int i = 0; i < code.length(); i++) {
-            g.setColor(randomColor(20, 120));
+            g.setColor(TEXT_COLORS[RANDOM.nextInt(TEXT_COLORS.length)]);
             char ch = code.charAt(i);
             int charWidth = fm.charWidth(ch);
             int cx = curX + charWidth / 2;
-            double angle = (RANDOM.nextDouble() - 0.5) * 0.4;
+            double angle = (RANDOM.nextDouble() - 0.5) * 0.3;
             g.rotate(angle, cx, baselineY);
             g.drawString(String.valueOf(ch), curX, baselineY);
             g.rotate(-angle, cx, baselineY);
@@ -256,7 +266,7 @@ public final class SxwlCaptchaUtils {
     }
 
     /**
-     * 一步生成图形验证码（默认 4 位，120×40）
+     * 一步生成图形验证码（默认 4 位，104×48）
      */
     public static CaptchaResult generateImageCaptcha() {
         return generateImageCaptcha(IMAGE_CODE_LENGTH, DEFAULT_WIDTH, DEFAULT_HEIGHT);

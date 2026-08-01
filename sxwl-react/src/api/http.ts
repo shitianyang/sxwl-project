@@ -62,14 +62,26 @@ instance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 // ==================== 响应拦截器：统一错误 + 401 自动刷新 ====================
 
 let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
 
-function subscribeTokenRefresh(cb: (token: string) => void) {
-  refreshSubscribers.push(cb);
+/** 刷新期间挂起的请求：成功时用新 token 重放，失败时逐个拒绝 */
+interface RefreshSubscriber {
+  resolve: (token: string) => void;
+  reject: (err: unknown) => void;
+}
+let refreshSubscribers: RefreshSubscriber[] = [];
+
+function subscribeTokenRefresh(sub: RefreshSubscriber) {
+  refreshSubscribers.push(sub);
 }
 
 function onTokenRefreshed(newToken: string) {
-  refreshSubscribers.forEach((cb) => cb(newToken));
+  refreshSubscribers.forEach((sub) => sub.resolve(newToken));
+  refreshSubscribers = [];
+}
+
+/** 刷新失败：拒绝所有挂起请求，避免调用方 Promise 永久 pending */
+function onTokenRefreshFailed(err: unknown) {
+  refreshSubscribers.forEach((sub) => sub.reject(err));
   refreshSubscribers = [];
 }
 
@@ -114,22 +126,26 @@ instance.interceptors.response.use(
           useAuthStore.getState().setTokenPair(accessToken, newRefresh);
           isRefreshing = false;
           onTokenRefreshed(accessToken);
-        } catch {
+        } catch (refreshErr) {
           isRefreshing = false;
-          refreshSubscribers = [];
+          // 刷新失败：reject 所有挂起请求（原实现仅清空队列，挂起 Promise 永不落定）
+          onTokenRefreshFailed(refreshErr);
           useAuthStore.getState().clearAuth();
           window.location.href = '/login';
           return Promise.reject(error);
         }
       }
 
-      // 等待刷新完成后重试原请求
-      return new Promise<AxiosResponse>((resolve) => {
-        subscribeTokenRefresh((newToken: string) => {
-          if (config.headers) {
-            config.headers.Authorization = `Bearer ${newToken}`;
-          }
-          resolve(instance(config));
+      // 等待刷新完成后重试原请求（刷新失败时由 onTokenRefreshFailed 统一拒绝）
+      return new Promise<AxiosResponse>((resolve, reject) => {
+        subscribeTokenRefresh({
+          resolve: (newToken: string) => {
+            if (config.headers) {
+              config.headers.Authorization = `Bearer ${newToken}`;
+            }
+            resolve(instance(config));
+          },
+          reject,
         });
       });
     }

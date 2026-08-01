@@ -1,23 +1,42 @@
 // ============================================
 // Login — 登录页样式
-// 仿 ant-design-pro 视觉设计：全屏背景、横排 Logo+标题、328px 表单
+// 浅色系视觉：浅灰渐变背景 + 品牌橙淡光晕 + 白色卡片
+// 视觉对齐 login-redesign 原型
 // ============================================
 
 import { createStyles } from 'antd-style';
 
 const useLoginStyles = createStyles(({ token, css }) => ({
   /**
-   * 页面容器：全屏背景
+   * 页面容器：全屏浅色渐变背景 + 品牌橙光晕 + Plus Jakarta Sans 字体
    */
   container: css`
+    position: relative;
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    min-height: 100vh;
     overflow: auto;
+    font-family: 'Plus Jakarta Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
     background:
-      radial-gradient(ellipse at 80% 20%, rgba(222, 95, 14, 0.04) 0%, transparent 50%),
-      linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
-    background-size: 100% 100%;
+      radial-gradient(50% 45% at 12% 8%, rgba(222, 95, 14, 0.07) 0%, transparent 60%),
+      radial-gradient(45% 45% at 90% 85%, rgba(240, 151, 45, 0.06) 0%, transparent 60%),
+      radial-gradient(50% 40% at 85% 10%, rgba(222, 95, 14, 0.04) 0%, transparent 60%),
+      linear-gradient(160deg, #f7f9fc 0%, #eef2f8 100%);
+  `,
+
+  /**
+   * 极淡网格背景层（对齐原型 .grid）
+   */
+  gridLayer: css`
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(26, 26, 46, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26, 26, 46, 0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    -webkit-mask-image: radial-gradient(75% 75% at 50% 50%, #000 30%, transparent 100%);
+    mask-image: radial-gradient(75% 75% at 50% 50%, #000 30%, transparent 100%);
   `,
 
   /**
@@ -32,7 +51,7 @@ const useLoginStyles = createStyles(({ token, css }) => ({
   `,
 
   /**
-   * 登录容器（模仿 .ant-pro-form-login-container）
+   * 登录容器（单栏居中）
    */
   loginContainer: css`
     display: flex;
@@ -41,65 +60,86 @@ const useLoginStyles = createStyles(({ token, css }) => ({
   `,
 
   /**
-   * 头部区：Logo + 标题 + 副标题
+   * 头部区：Logo + 标题 + 副标题（卡片内顶部居中）
    */
   top: css`
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 30px;
   `,
 
   /**
-   * Logo + 标题横排
+   * Logo + 标题横排（居中对齐）
    */
   header: css`
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    margin-bottom: 12px;
+    gap: 14px;
   `,
 
   /**
-   * Logo 图片
+   * Logo 图片（透明底，无背景色）
    */
   logo: css`
-    width: 44px;
-    height: 44px;
-    margin-right: 12px;
+    width: 62px;
+    height: 62px;
+    object-fit: contain;
+    flex-shrink: 0;
+  `,
+
+  /**
+   * 标题 + 英文小字（左对齐竖排）
+   */
+  logoText: css`
+    text-align: left;
+    display: flex;
+    flex-direction: column;
   `,
 
   /**
    * 标题
    */
   title: css`
-    font-size: 26px;
-    font-weight: 600;
+    font-size: 25px;
+    font-weight: 700;
     color: ${token.colorText};
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     margin: 0;
     line-height: 1.2;
+  `,
+
+  /**
+   * 品牌英文小字
+   */
+  logoEn: css`
+    font-size: 12px;
+    color: ${token.colorTextTertiary};
+    letter-spacing: 2px;
+    margin-top: 3px;
   `,
 
   /**
    * 副标题
    */
   desc: css`
-    font-size: 14px;
+    margin-top: 16px;
+    font-size: 13px;
     color: ${token.colorTextSecondary};
-    letter-spacing: 0.5px;
-    margin: 0;
+    letter-spacing: 0.3px;
   `,
 
   /**
-   * 表单区域（328px 定宽，类似 .ant-pro-form-login-main）
+   * 表单卡片（白色圆角卡片 + 柔和阴影）
    */
   main: css`
-    width: 328px;
+    position: relative;
+    z-index: 1;
+    width: 460px;
     min-width: 280px;
-    max-width: 75vw;
+    max-width: 92vw;
     background: #fff;
-    border-radius: ${token.borderRadiusLG}px;
-    padding: 28px 24px 24px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    border-radius: 20px;
+    padding: 40px 40px 32px;
+    box-shadow: 0 8px 32px rgba(26, 26, 46, 0.08);
     border: 1px solid ${token.colorBorderSecondary};
 
     @media (max-width: 480px) {
@@ -113,24 +153,32 @@ const useLoginStyles = createStyles(({ token, css }) => ({
    */
   form: css`
     .ant-form-item {
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
-    .ant-input-affix-wrapper {
-      padding: 8px 12px;
-      font-size: ${token.fontSize}px;
-      border-radius: ${token.borderRadius}px;
+    .ant-input-affix-wrapper,
+    .ant-input {
+      border-radius: 12px;
       border-color: ${token.colorBorderSecondary};
       transition: all 0.2s;
     }
 
-    .ant-input-affix-wrapper:hover {
+    .ant-input-affix-wrapper {
+      height: 48px;
+      padding: 0 12px;
+      font-size: ${token.fontSize}px;
+      background: #fbfcfe;
+    }
+
+    .ant-input-affix-wrapper:hover,
+    .ant-input:hover {
       border-color: #cbd5e1;
     }
 
     .ant-input-affix-wrapper-focused {
+      background: #fff;
       border-color: ${token.colorPrimary};
-      box-shadow: 0 0 0 2px rgba(222, 95, 14, 0.1);
+      box-shadow: 0 0 0 3px rgba(222, 95, 14, 0.1);
     }
 
     .ant-input-prefix {
@@ -158,37 +206,39 @@ const useLoginStyles = createStyles(({ token, css }) => ({
   `,
 
   /**
-   * 登录按钮
+   * 登录按钮（品牌橙渐变 + 投影）
    */
   button: css`
-    height: 44px;
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: ${token.borderRadius}px;
-    letter-spacing: 4px;
-    background: ${token.colorPrimary};
-    border-color: ${token.colorPrimary};
+    height: 48px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #de5f0e 0%, #f0972d 100%);
+    border-color: transparent;
+    box-shadow: 0 6px 18px rgba(222, 95, 14, 0.3);
     transition: all 0.2s;
+    margin-top: 6px;
 
     &:hover:not(:disabled) {
-      background: #d0550c;
-      border-color: #d0550c;
-      box-shadow: none;
-      transform: none;
+      background: linear-gradient(135deg, #de5f0e 0%, #f0972d 100%);
+      filter: brightness(1.05);
+      box-shadow: 0 8px 22px rgba(222, 95, 14, 0.38);
+      transform: translateY(-1px);
     }
 
     &:active:not(:disabled) {
-      background: #c04a08;
-      border-color: #c04a08;
+      background: linear-gradient(135deg, #c05008 0%, #e07f1a 100%);
+      transform: translateY(0);
     }
   `,
 
   /**
-   * 底部版权
+   * 底部版权（卡片内底部居中）
    */
   footer: css`
     text-align: center;
-    padding: 24px 0;
+    margin-top: 26px;
     font-size: 12px;
     color: ${token.colorTextTertiary};
     letter-spacing: 0.3px;

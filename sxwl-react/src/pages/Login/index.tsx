@@ -1,6 +1,6 @@
 // ============================================
 // LoginPage — 登录页
-// 仿 ant-design-pro 视觉风格：全屏渐变背景、横排 Logo+标题、前缀图标输入框
+// 视觉：全屏浅色渐变背景、横排 Logo+标题、前缀图标输入框
 // ============================================
 
 import { useState } from 'react';
@@ -28,7 +28,8 @@ const CaptchaInput: React.FC<{
   value?: string;
   onChange?: (value: string) => void;
   styles: Record<string, string>;
-}> = ({ form, value, onChange, styles }) => (
+  refreshKey: number;
+}> = ({ form, value, onChange, styles, refreshKey }) => (
   <div className={styles.captchaRow}>
     <SxwlInput
       value={value}
@@ -37,19 +38,27 @@ const CaptchaInput: React.FC<{
       maxLength={4}
       className={styles.captchaInput}
     />
-    <SxwlCaptcha form={form} />
+    <SxwlCaptcha form={form} refreshKey={refreshKey} />
   </div>
 );
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  /** 登录失败后递增，触发验证码刷新 */
+  const [captchaRefreshKey, setCaptchaRefreshKey] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const setTokens = useAuthStore((s) => s.setTokens);
   const [form] = SxwlForm.useForm<LoginFormValues>();
   const { styles } = useLoginStyles();
 
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
+  // 保留 search/hash，避免登录后回跳丢失查询参数与锚点
+  const fromState = location.state as
+    | { from?: { pathname: string; search?: string; hash?: string } }
+    | null;
+  const from = fromState?.from
+    ? fromState.from.pathname + (fromState.from.search || '') + (fromState.from.hash || '')
+    : '/';
 
   const onFinish = async (values: LoginFormValues) => {
     setLoading(true);
@@ -78,6 +87,8 @@ export default function LoginPage() {
       navigate(from, { replace: true });
     } catch (err: unknown) {
       invalidatePublicKeyCache();
+      // 登录失败：刷新验证码，避免同一个失效验证码重复提交
+      setCaptchaRefreshKey((k) => k + 1);
       const e = err as { response?: { data?: { message?: string } } };
       if (!e?.response) {
         SxwlMessage.error('网络连接异常，请检查网络');
@@ -91,19 +102,25 @@ export default function LoginPage() {
 
   return (
     <div className={styles.container}>
+      {/* 极淡网格背景层 */}
+      <div className={styles.gridLayer} />
       <div className={styles.content}>
         <div className={styles.loginContainer}>
-          {/* 头部：Logo + 标题横排 */}
-          <div className={styles.top}>
-            <div className={styles.header}>
-              <img src={logoSrc} alt="数行未来" className={styles.logo} />
-              <h1 className={styles.title}>数行未来·御权</h1>
-            </div>
-            <p className={styles.desc}>统一权限管控平台</p>
-          </div>
-
-          {/* 登录表单卡片 */}
+          {/* 登录卡片（含头部 + 表单 + 底部版权，对齐原型） */}
           <div className={styles.main}>
+            {/* 头部：Logo + 标题 + 副标题（卡片内顶部） */}
+            <div className={styles.top}>
+              <div className={styles.header}>
+                <img src={logoSrc} alt="数行未来" className={styles.logo} />
+                <div className={styles.logoText}>
+                  <strong className={styles.title}>数行未来·御权</strong>
+                  <small className={styles.logoEn}>SXWL PERMISSION PLATFORM</small>
+                </div>
+              </div>
+              <p className={styles.desc}>统一权限管控平台 · 请登录你的账号</p>
+            </div>
+
+            {/* 表单 */}
             <SxwlForm
               form={form}
               name="login"
@@ -146,7 +163,7 @@ export default function LoginPage() {
                 name="captchaCode"
                 rules={[{ required: true, message: '请输入验证码' }]}
               >
-                <CaptchaInput form={form} styles={styles} />
+                <CaptchaInput form={form} styles={styles} refreshKey={captchaRefreshKey} />
               </SxwlForm.Item>
 
               {/* captchaUuid 隐藏字段 */}
@@ -166,13 +183,13 @@ export default function LoginPage() {
                 </SxwlButton>
               </SxwlForm.Item>
             </SxwlForm>
+
+            {/* 底部版权（卡片内底部） */}
+            <div className={styles.footer}>
+              &copy; {new Date().getFullYear()} 河北数行未来科技有限公司
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* 底部版权 */}
-      <div className={styles.footer}>
-        &copy; {new Date().getFullYear()} 河北数行未来科技有限公司
       </div>
     </div>
   );
