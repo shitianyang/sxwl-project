@@ -42,11 +42,29 @@ export default function App() {
 
           // 边框
           colorBorderSecondary: SXWL_TOKENS.colorBorderSecondary,
+          colorBorder: SXWL_TOKENS.colorBorder,
 
-          // 圆角（仅两种：4px 小元素 / 8px 容器）
+          // 圆角（对齐原型：8px 小元素 / 12px 容器 / 16px 卡片 / 20px 弹窗）
           borderRadiusSM: SXWL_TOKENS.borderRadiusSM,
           borderRadius: SXWL_TOKENS.borderRadius,
-          borderRadiusLG: SXWL_TOKENS.borderRadius,
+          borderRadiusLG: SXWL_TOKENS.borderRadiusLG,
+          borderRadiusXL: SXWL_TOKENS.borderRadiusXL,
+
+          // 阴影（对齐原型）
+          boxShadow: SXWL_TOKENS.shadowCard,
+          boxShadowSecondary: SXWL_TOKENS.shadowPopup,
+        },
+        components: {
+          Card: {
+            borderRadiusLG: SXWL_TOKENS.borderRadiusLG,
+            boxShadowTertiary: SXWL_TOKENS.shadowCard,
+          },
+          Modal: {
+            borderRadiusLG: SXWL_TOKENS.borderRadiusXL,
+          },
+          Table: {
+            borderRadiusLG: SXWL_TOKENS.borderRadiusLG,
+          },
         },
       }}
     >
