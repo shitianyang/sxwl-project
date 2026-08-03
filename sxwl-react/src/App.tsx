@@ -64,6 +64,9 @@ export default function App() {
           },
           Table: {
             borderRadiusLG: SXWL_TOKENS.borderRadiusLG,
+            // 行高放宽：垂直内边距 8px → 12px（行高约 54 → 62px）
+            cellPaddingBlock: 12,
+            cellPaddingBlockSM: 8,
           },
         },
       }}

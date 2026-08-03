@@ -27,10 +27,13 @@ const useNoticeStyles = createStyles(({ css }) => ({
     font-size: 18px;
     height: 64px;
     width: 40px;
-    border-radius: 0;
+    border-radius: 8px;
+    color: #5f5e5a;
+    transition: all 0.2s;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.04);
+      color: #DE5F0E;
+      background: #f3ece4;
     }
   `,
 

@@ -20,8 +20,8 @@ export const SXWL_TOKENS = {
 
   /** 背景色：页面（浅色渐变 + 淡橙光晕，对齐 login 原型） */
   colorBgLayout:
-    'radial-gradient(50% 45% at 12% 8%, rgba(222,95,14,.06) 0%, transparent 60%),' +
-    'radial-gradient(45% 45% at 90% 85%, rgba(240,151,45,.05) 0%, transparent 60%),' +
+    'radial-gradient(50% 45% at 12% 8%, rgba(222,95,14,.08) 0%, transparent 60%),' +
+    'radial-gradient(45% 45% at 90% 85%, rgba(240,151,45,.07) 0%, transparent 60%),' +
     'linear-gradient(160deg, #f7f9fc 0%, #eef2f8 100%)',
   /** 背景色：容器 */
   colorBgContainer: '#ffffff',

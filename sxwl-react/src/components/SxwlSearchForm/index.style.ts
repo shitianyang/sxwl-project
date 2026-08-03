@@ -7,7 +7,7 @@ import { createStyles } from 'antd-style';
 const useSearchFormStyles = createStyles(({ token, css }) => ({
   wrapper: css`
     margin-bottom: 16px;
-    padding: 18px 20px;
+    padding: 16px 20px;
     background: ${token.colorBgContainer};
     border-radius: ${token.borderRadiusLG}px;
     border: 1px solid ${token.colorBorderSecondary};

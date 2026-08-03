@@ -3,25 +3,22 @@
 //
 // 一级菜单，与系统管理、日志管理同级。
 // 纯展示型列表页，仅提供查询、预览、下载、删除操作。
+// 使用 SxwlPage 声明式布局，与其余列表页保持统一。
 // ============================================
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { Dayjs } from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlButton,
   SxwlIcon,
   SxwlTag,
   SxwlSpace,
-  SxwlCard,
-  SxwlForm,
-  SxwlTable,
-  SxwlInput,
-  SxwlMessage,
+  SxwlPage,
   SxwlPopconfirm,
-  SxwlRangePicker,
+  SxwlMessage,
   SxwlFilePreview,
   SxwlPermissionButton,
+  type SearchFieldConfig,
 } from '@/components';
 import type { SysFileDTO } from '@/api/system/fileApi';
 import { getFilePageByParams, downloadFile, deleteFile } from '@/api/system/fileApi';
@@ -53,6 +50,17 @@ const columns: ColumnsType<SysFileDTO> = [
     render: (val: number) => formatFileSize(val),
   },
   { title: '上传时间', dataIndex: 'createTime', key: 'createTime', width: 180 },
+];
+
+const searchFields: SearchFieldConfig[] = [
+  { name: 'fileName', label: '文件名', type: 'input', placeholder: '请输入文件名' },
+  {
+    name: 'dateRange',
+    label: '上传时间',
+    type: 'dateRange',
+    dateRangeStartKey: 'startTime',
+    dateRangeEndKey: 'endTime',
+  },
 ];
 
 export default function FilePage() {
@@ -91,6 +99,7 @@ export default function FilePage() {
   }, [loadData]);
 
   const handleSearch = (values: Record<string, any>) => {
+    // dateRange 转换由 SxwlSearchForm 自动处理，无需手动映射
     searchRef.current = values;
     setPage(1);
     loadData(1);
@@ -100,27 +109,6 @@ export default function FilePage() {
     searchRef.current = {};
     setPage(1);
     loadData(1);
-  };
-
-  const [form] = SxwlForm.useForm();
-
-  const onSearchClick = () => {
-    const values = form.getFieldsValue();
-    const dateRange = values.dateRange as [Dayjs, Dayjs] | undefined;
-    if (dateRange && dateRange[0] && dateRange[1]) {
-      values.startTime = dateRange[0].format('YYYY-MM-DD HH:mm:ss');
-      values.endTime = dateRange[1].format('YYYY-MM-DD HH:mm:ss');
-    } else {
-      values.startTime = undefined;
-      values.endTime = undefined;
-    }
-    delete values.dateRange;
-    handleSearch(values);
-  };
-
-  const onResetClick = () => {
-    form.resetFields();
-    handleReset();
   };
 
   const handlePageChange = (newPage: number, newPageSize: number) => {
@@ -182,63 +170,30 @@ export default function FilePage() {
   };
 
   return (
-    <div className="sxwl-page">
-      <div className="sxwl-page-breadcrumb">
-        <span className="sxwl-page-breadcrumb-item is-current">文件管理</span>
-      </div>
-
-      <SxwlCard className="sxwl-search-form">
-        <SxwlForm form={form} layout="inline" className="sxwl-search-form__inner">
-          <SxwlForm.Item name="fileName" label="文件名">
-            <SxwlInput placeholder="请输入" allowClear maxLength={128} />
-          </SxwlForm.Item>
-          <SxwlForm.Item name="dateRange" label="上传时间">
-            <SxwlRangePicker style={{ width: 360 }} />
-          </SxwlForm.Item>
-          <SxwlForm.Item>
-            <SxwlSpace>
-              <SxwlButton
-                type="primary"
-                icon={<SxwlIcon name="SearchOutlined" />}
-                onClick={onSearchClick}
-              >
-                查询
-              </SxwlButton>
-              <SxwlButton
-                icon={<SxwlIcon name="ReloadOutlined" />}
-                onClick={onResetClick}
-              >
-                重置
-              </SxwlButton>
-            </SxwlSpace>
-          </SxwlForm.Item>
-        </SxwlForm>
-      </SxwlCard>
-
-      <SxwlCard className="sxwl-page-table-card">
-        <SxwlTable
-          rowKey="id"
-          columns={[...columns, actionColumn]}
-          dataSource={data}
-          loading={loading}
-          pagination={{
-            current: page,
-            pageSize,
-            total,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (t: number) => `共 ${t} 条`,
-            onChange: handlePageChange,
-          }}
-          scroll={{ x: 900 }}
-        />
-      </SxwlCard>
+    <>
+      <SxwlPage
+        mode="table"
+        paginated
+        rowKey="id"
+        columns={[...columns, actionColumn]}
+        dataSource={data}
+        loading={loading}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        breadcrumb={['文件管理']}
+        searchFields={searchFields}
+        scroll={{ x: 900 }}
+        onSearch={handleSearch}
+        onReset={handleReset}
+        onPageChange={handlePageChange}
+      />
 
       <SxwlFilePreview
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
         file={previewFile}
       />
-    </div>
+    </>
   );
 }

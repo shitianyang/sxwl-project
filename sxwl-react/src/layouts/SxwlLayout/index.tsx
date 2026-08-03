@@ -176,7 +176,7 @@ export default function LayoutPage() {
           </div>
         ) : (
           <SxwlMenu
-            theme="dark"
+            theme="light"
             mode="inline"
             selectedKeys={selectedKeys}
             openKeys={openKeys}

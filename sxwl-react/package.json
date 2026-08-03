@@ -31,6 +31,7 @@
     "antd": "6.5.1",
     "antd-style": "4.1.0",
     "axios": "1.18.1",
+    "dayjs": "1.11.21",
     "highlight.js": "11.11.1",
     "lowlight": "3.3.0",
     "react": "19.2.8",
