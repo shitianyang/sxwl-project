@@ -18,25 +18,34 @@ export const SXWL_TOKENS = {
   /** 文字色：禁用 */
   colorTextDisabled: '#cbd5e1',
 
-  /** 背景色：页面 */
-  colorBgLayout: '#f8fafc',
+  /** 背景色：页面（浅色渐变 + 淡橙光晕，对齐 login 原型） */
+  colorBgLayout:
+    'radial-gradient(50% 45% at 12% 8%, rgba(222,95,14,.08) 0%, transparent 60%),' +
+    'radial-gradient(45% 45% at 90% 85%, rgba(240,151,45,.07) 0%, transparent 60%),' +
+    'linear-gradient(160deg, #f7f9fc 0%, #eef2f8 100%)',
   /** 背景色：容器 */
   colorBgContainer: '#ffffff',
 
   /** 边框色：次级 */
   colorBorderSecondary: '#e2e8f0',
+  /** 边框色：强调（卡片描边，对齐原型 #e2e8f0） */
+  colorBorder: '#e2e8f0',
 
   /** 圆角：小元素（标签、inline-code） */
-  borderRadiusSM: 4,
-  /** 圆角：容器（Card、Table、Pre） */
-  borderRadius: 8,
+  borderRadiusSM: 8,
+  /** 圆角：容器（Card、Table、Pre）对齐原型 16px */
+  borderRadius: 12,
+  /** 圆角：大容器（卡片、弹窗）对齐原型 16px */
+  borderRadiusLG: 16,
+  /** 圆角：超大（弹窗 Modal） */
+  borderRadiusXL: 20,
 
-  /** 阴影：卡片 */
-  shadowCard: '0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06)',
+  /** 阴影：卡片（对齐原型 0 6px 24px rgba(26,26,46,.06)） */
+  shadowCard: '0 6px 24px rgba(26,26,46,.06)',
   /** 阴影：下拉/弹窗 */
-  shadowPopup: '0 4px 12px rgba(0, 0, 0, 0.08)',
+  shadowPopup: '0 8px 24px rgba(26,26,46,.10)',
   /** 阴影：模态框 */
-  shadowModal: '0 8px 24px rgba(0, 0, 0, 0.12)',
+  shadowModal: '0 18px 50px rgba(26,26,46,.22)',
 
   /** 动画时长：hover/过渡 */
   animationDurationFast: '0.2s',

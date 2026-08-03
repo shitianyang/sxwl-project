@@ -128,25 +128,30 @@ export default function CachePage() {
 
   return (
     <>
-      <div style={{ padding: '16px 24px 0' }}>
-        <SxwlTabs
-          activeKey={activeCategory}
-          items={tabItems}
-          onChange={(key) => setActiveCategory(key)}
-        />
-      </div>
+      {/* 外层固定高度容器：Tabs 固定顶部，表格在剩余空间内滚动 */}
+      <div style={{ height: 'calc(100vh - 64px - 48px)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ padding: '16px 24px 0', flexShrink: 0 }}>
+          <SxwlTabs
+            activeKey={activeCategory}
+            items={tabItems}
+            onChange={(key) => setActiveCategory(key)}
+          />
+        </div>
 
-      <SxwlPage
-        mode="table"
-        paginated={false}
-        rowKey="key"
-        columns={columns}
-        dataSource={keys}
-        loading={keysLoading}
-        breadcrumb={['监控运维', '缓存管理']}
-        scroll={{ x: 800 }}
-        toolbarButtons={toolbarButtons}
-      />
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <SxwlPage
+            mode="table"
+            paginated={false}
+            rowKey="key"
+            columns={columns}
+            dataSource={keys}
+            loading={keysLoading}
+            breadcrumb={['监控运维', '缓存管理']}
+            scroll={{ x: 800, y: 'calc(100vh - 480px)' }}
+            toolbarButtons={toolbarButtons}
+          />
+        </div>
+      </div>
 
       <SxwlModal
         title="缓存 Key 详情"

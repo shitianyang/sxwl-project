@@ -8,7 +8,7 @@ import { createStyles } from 'antd-style';
 
 const useLoginStyles = createStyles(({ token, css }) => ({
   /**
-   * 页面容器：全屏浅色渐变背景 + 品牌橙光晕 + Plus Jakarta Sans 字体
+   * 页面容器：全屏浅色渐变背景 + 品牌橙光晕
    */
   container: css`
     position: relative;
@@ -16,7 +16,6 @@ const useLoginStyles = createStyles(({ token, css }) => ({
     flex-direction: column;
     min-height: 100vh;
     overflow: auto;
-    font-family: 'Plus Jakarta Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
     background:
       radial-gradient(50% 45% at 12% 8%, rgba(222, 95, 14, 0.07) 0%, transparent 60%),
       radial-gradient(45% 45% at 90% 85%, rgba(240, 151, 45, 0.06) 0%, transparent 60%),

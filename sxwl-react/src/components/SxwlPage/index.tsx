@@ -1,4 +1,4 @@
-import { type JSX } from 'react';
+import { type JSX, useMemo } from 'react';
 import {
   SxwlButton, SxwlIcon, SxwlPermissionButton,
   SxwlCard, SxwlTable, SxwlSpace, SxwlSearchForm,
@@ -177,6 +177,20 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
 
   // -------- 主体内容 --------
 
+  // 表格纵向滚动：让表头固定、只有数据行滚动。
+  // 用视口高度减去头部/搜索/工具栏/分页/卡片间距等预留区域，
+  // 使表体在剩余空间内滚动，面包屑/搜索/工具栏/分页始终固定在视口内
+  const tableScroll = useMemo(() => {
+    const hasSearch = !!searchFields?.length;
+    const hasToolbar = !!toolbarButtons?.length;
+    // 预留高度：Header 64 + Content margin 48 + 面包屑 40 + 卡片 padding 40 + 分页 60
+    let reserve = 64 + 48 + 40 + 40 + 60;
+    if (hasSearch) reserve += 88;
+    if (hasToolbar) reserve += 52;
+    const y = `calc(100vh - ${reserve}px)`;
+    return scroll ? { ...scroll, y: scroll.y ?? y } : { y };
+  }, [scroll, searchFields, toolbarButtons]);
+
   const renderContent = () => {
     if (mode === 'tree') {
       return (
@@ -188,7 +202,7 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
           rowSelection={rowSelection}
           pagination={false}
           expandable={{ defaultExpandAllRows: true }}
-          scroll={scroll}
+          scroll={tableScroll}
         />
       );
     }
@@ -214,7 +228,7 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
               }
             : false
         }
-        scroll={scroll}
+        scroll={tableScroll}
       />
     );
   };
