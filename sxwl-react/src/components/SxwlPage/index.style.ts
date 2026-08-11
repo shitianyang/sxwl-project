@@ -48,7 +48,7 @@ const usePageStyles = createStyles(({ token, css }) => ({
 
   tableCard: css`
     border-radius: ${token.borderRadiusLG}px;
-    box-shadow: ${token.shadowCard};
+    box-shadow: ${token.boxShadow};
     flex: 1;
     min-height: 0;
     overflow: hidden;
