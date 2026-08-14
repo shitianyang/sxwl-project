@@ -4,7 +4,7 @@
 
 import { createStyles } from 'antd-style';
 
-const useLayoutStyles = createStyles(({ token, css }) => ({
+const useLayoutStyles = createStyles(({ css }) => ({
   layout: css`
     min-height: 100vh;
     // 完整页面背景：浅色渐变 + 淡橙光晕 + 极淡网格（对齐 login 原型）

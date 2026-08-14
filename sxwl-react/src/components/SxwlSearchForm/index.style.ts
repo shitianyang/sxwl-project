@@ -11,7 +11,7 @@ const useSearchFormStyles = createStyles(({ token, css }) => ({
     background: ${token.colorBgContainer};
     border-radius: ${token.borderRadiusLG}px;
     border: 1px solid ${token.colorBorderSecondary};
-    box-shadow: ${token.shadowCard};
+    box-shadow: ${token.boxShadow};
   `,
 
   inner: css`
