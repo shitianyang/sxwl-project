@@ -5,7 +5,7 @@ import {
   SxwlSpace, SxwlForm, SxwlRangePicker,
 } from '@/components';
 import type { FormFieldConfig } from '@/types/FormFieldConfig';
-import useSearchFormStyles from './index.style';
+import './index.scss';
 
 // ==================== Types
 
@@ -21,7 +21,6 @@ export interface SxwlSearchFormProps {
 // ==================== Inner Component
 
 function SxwlSearchFormInner({ fields, onSearch, onReset }: SxwlSearchFormProps): JSX.Element {
-  const { styles } = useSearchFormStyles();
   const [form] = SxwlForm.useForm();
 
   const handleSearch = () => {
@@ -50,8 +49,8 @@ function SxwlSearchFormInner({ fields, onSearch, onReset }: SxwlSearchFormProps)
   };
 
   return (
-    <div className={styles.wrapper}>
-      <SxwlForm form={form} layout="inline" className={styles.inner}>
+    <div className="sxwl-search-form-wrapper">
+      <SxwlForm form={form} layout="inline" className="sxwl-search-form-inner">
         {fields.map((field) => (
           <SxwlForm.Item key={field.name} name={field.name} label={field.label}>
             {field.type === 'select' ? (

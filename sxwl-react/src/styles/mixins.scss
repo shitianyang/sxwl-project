@@ -1,0 +1,25 @@
+// ============================================
+// sxwl-react 混入（sass）
+// 对齐规范 v2.0：仅保留仍被引用的混入
+// 各文件通过 @use "../../styles/mixins" as * 引入
+// ============================================
+
+@use "variables" as *;
+
+// 极细滚动条
+@mixin scrollbar-thin($thumb: #cbd5e1, $hover: #94a3b8) {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $thumb;
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: $hover;
+  }
+}

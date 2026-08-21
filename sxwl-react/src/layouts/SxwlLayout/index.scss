@@ -1,0 +1,231 @@
+// ============================================
+// SxwlLayout — 全局布局样式（sass, 规范 v2.0 · Pro 白底侧边菜单）
+// 白底 Sider + 浅橙激活（亮色菜单），无辉光 / 无暖色遗留
+// ============================================
+
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.sxwl-layout-layout {
+  min-height: 100vh;
+  // 页面背景：Pro 浅灰底
+  background: $sxwl-bg-layout;
+}
+
+// -------- Sider：白底亮色菜单 --------
+.sxwl-layout-sider {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: $sxwl-color-bg-container !important;
+  border-right: 1px solid $sxwl-color-border-secondary;
+  transition: width $sxwl-dur-fast cubic-bezier(0.645, 0.045, 0.355, 1), background $sxwl-dur-fast;
+
+  @include scrollbar-thin(rgba(148, 163, 184, 0.4), rgba(148, 163, 184, 0.7));
+
+  // 侧边栏 antd Menu 整体覆盖
+  .ant-menu {
+    background: transparent;
+    border-inline-end: none !important;
+    padding: 4px 10px 16px;
+
+    // 一级菜单项
+    .ant-menu-item {
+      height: 40px;
+      line-height: 40px;
+      margin: 4px 0;
+      border-radius: $sxwl-radius-sm;
+      color: $sxwl-color-text-secondary;
+      font-size: 14px;
+
+      .ant-menu-item-icon {
+        font-size: 16px;
+        color: $sxwl-color-text-tertiary;
+        transition: color $sxwl-dur-fast;
+      }
+
+      &:hover {
+        background: #f5f5f5;
+        color: $sxwl-color-primary;
+
+        .ant-menu-item-icon {
+          color: $sxwl-color-primary;
+        }
+      }
+
+      // 激活项：品牌浅橙底 + 橙字（Pro 亮色菜单）
+      &.ant-menu-item-selected {
+        background: $sxwl-color-primary-1;
+        color: $sxwl-color-primary;
+        font-weight: 600;
+
+        .ant-menu-item-icon {
+          color: $sxwl-color-primary;
+        }
+      }
+    }
+
+    // 子菜单标题（目录）
+    .ant-menu-submenu-title {
+      height: 40px;
+      line-height: 40px;
+      margin: 4px 0;
+      border-radius: $sxwl-radius-sm;
+      color: $sxwl-color-text-secondary;
+      font-size: 14px;
+
+      .ant-menu-item-icon {
+        font-size: 16px;
+        color: $sxwl-color-text-tertiary;
+      }
+
+      &:hover {
+        color: $sxwl-color-primary;
+        background: #f5f5f5;
+
+        .ant-menu-item-icon {
+          color: $sxwl-color-primary;
+        }
+      }
+    }
+
+    // 子菜单展开容器
+    .ant-menu-sub {
+      background: transparent !important;
+
+      .ant-menu-item {
+        padding-left: 40px !important;
+      }
+    }
+
+    // 目录展开态高亮
+    .ant-menu-submenu-open > .ant-menu-submenu-title {
+      color: $sxwl-color-primary;
+
+      .ant-menu-item-icon {
+        color: $sxwl-color-primary;
+      }
+    }
+  }
+}
+
+// -------- Logo 区 --------
+.sxwl-layout-logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  gap: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  border-bottom: 1px solid $sxwl-color-border-secondary;
+  margin-bottom: 8px;
+}
+
+.sxwl-layout-logo-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  object-fit: contain;
+  border-radius: $sxwl-radius-sm;
+}
+
+.sxwl-layout-logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: $sxwl-color-text-heading;
+  letter-spacing: 2px;
+}
+
+// -------- Header --------
+.sxwl-layout-header {
+  padding: 0 24px 0 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: $sxwl-color-bg-container;
+  border-bottom: 1px solid $sxwl-color-border-secondary;
+  position: sticky;
+  top: 0;
+  z-index: 9;
+  height: 64px;
+  line-height: 64px;
+}
+
+.sxwl-layout-header-left {
+  display: flex;
+  align-items: center;
+
+  .ant-btn {
+    color: $sxwl-color-text-secondary;
+    transition: all $sxwl-dur-fast;
+
+    &:hover {
+      color: $sxwl-color-primary;
+      background: #f5f5f5;
+    }
+  }
+}
+
+.sxwl-layout-header-center {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: $sxwl-color-text-secondary;
+  letter-spacing: 0.3px;
+  user-select: none;
+
+  // SxwlClock（全局类，此处覆盖）
+  .sxwl-header-clock {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: $sxwl-color-text-secondary;
+
+    // 时间前加品牌橙圆点点缀
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: $sxwl-gradient-brand;
+    }
+  }
+}
+
+.sxwl-layout-header-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sxwl-layout-user-dropdown {
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: $sxwl-radius-sm;
+  transition: all $sxwl-dur-fast;
+
+  .anticon {
+    color: $sxwl-color-text-tertiary;
+    transition: color $sxwl-dur-fast;
+  }
+
+  &:hover {
+    background: #f5f5f5;
+
+    .anticon {
+      color: $sxwl-color-primary;
+    }
+  }
+}
+
+.sxwl-layout-content {
+  margin: 24px;
+  min-height: calc(100vh - 64px - 48px);
+}

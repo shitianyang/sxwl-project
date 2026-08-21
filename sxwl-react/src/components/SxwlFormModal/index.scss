@@ -1,0 +1,34 @@
+// ============================================
+// SxwlFormModal — 表单弹窗样式（sass, 规范 v2.0）
+// 所有业务弹窗都通过 SxwlFormModal 拼装，改此文件全局受益
+// 弹窗框架（header/标题）品牌化在 global.scss 的 .ant-modal 统一处理
+// ============================================
+
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.sxwl-form-modal-form {
+  margin-top: 4px;
+
+  // vertical 布局下表单字段间距
+  .ant-form-item {
+    margin-bottom: 18px;
+  }
+
+  // 控件聚焦：品牌橙描边 + 聚焦光晕（规范 12 表单）
+  .ant-input:focus,
+  .ant-input-focused,
+  .ant-input-number-focused .ant-input-number-input,
+  .ant-select-focused .ant-select-selector,
+  .ant-picker-focused {
+    border-color: $sxwl-color-primary !important;
+    box-shadow: $sxwl-focus-ring !important;
+  }
+
+  // 文本域聚焦同样
+  .ant-input-affix-wrapper-focused,
+  .ant-input-affix-wrapper:focus {
+    border-color: $sxwl-color-primary !important;
+    box-shadow: $sxwl-focus-ring !important;
+  }
+}

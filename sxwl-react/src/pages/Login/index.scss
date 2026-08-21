@@ -1,0 +1,213 @@
+// ============================================
+// Login — 登录页样式（sass, 规范 v2.0 · Pro 居中卡片）
+// 白卡片 + 中性标题 + 品牌橙 Logo/按钮点缀，无光斑/无网格/无玻璃
+// ============================================
+
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+// 页面容器：全屏浅灰渐变底 + 一点点淡橙氛围 + 极淡网格装饰（Pro 克制）
+.sxwl-login-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: auto;
+  background:
+    radial-gradient(50% 45% at 12% 8%, rgba(222, 95, 14, 0.05) 0%, transparent 60%),
+    radial-gradient(45% 45% at 90% 85%, rgba(240, 151, 45, 0.04) 0%, transparent 60%),
+    linear-gradient(160deg, #f7f9fc 0%, #eef2f8 100%);
+
+  // 极淡网格装饰层（伪元素，不占 DOM）
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(31, 41, 55, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(31, 41, 55, 0.035) 1px, transparent 1px);
+    background-size: 48px 48px;
+    -webkit-mask-image: radial-gradient(75% 75% at 50% 50%, #000 30%, transparent 100%);
+    mask-image: radial-gradient(75% 75% at 50% 50%, #000 30%, transparent 100%);
+  }
+}
+
+.sxwl-login-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.sxwl-login-login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+// 头部区：Logo + 标题 + 副标题
+.sxwl-login-top {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.sxwl-login-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+// Logo 图片（透明底，无背景色）
+.sxwl-login-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.sxwl-login-logo-text {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
+// 标题：中性加粗（Pro）
+.sxwl-login-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: $sxwl-color-text-heading;
+  letter-spacing: 1.5px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.sxwl-login-logo-en {
+  font-size: 12px;
+  color: $sxwl-color-text-tertiary;
+  letter-spacing: 2px;
+  margin-top: 3px;
+}
+
+.sxwl-login-desc {
+  margin-top: 14px;
+  font-size: 13px;
+  color: $sxwl-color-text-secondary;
+  letter-spacing: 0.3px;
+}
+
+// 表单卡片（白底 + L2 阴影 + 入场动效）
+.sxwl-login-main {
+  position: relative;
+  z-index: 1;
+  width: 420px;
+  min-width: 280px;
+  max-width: 92vw;
+  background: $sxwl-color-bg-container;
+  border-radius: $sxwl-radius-lg;
+  padding: 36px 40px 28px;
+  box-shadow: $sxwl-shadow-popup;
+  border: 1px solid $sxwl-color-border-secondary;
+  animation: sxwl-login-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @media (max-width: 480px) {
+    width: calc(100% - 32px);
+    padding: 28px 20px 24px;
+  }
+}
+
+@keyframes sxwl-login-rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 表单内部样式覆盖
+.sxwl-login-form {
+  .ant-form-item {
+    margin-bottom: 18px;
+  }
+
+  .ant-input-affix-wrapper,
+  .ant-input {
+    border-radius: $sxwl-radius;
+    border-color: $sxwl-color-border-secondary;
+    transition: all $sxwl-dur-fast;
+  }
+
+  .ant-input-affix-wrapper {
+    height: 44px;
+    padding: 0 12px;
+    font-size: $sxwl-font-size;
+    background: $sxwl-color-bg-container;
+  }
+
+  .ant-input-affix-wrapper:hover,
+  .ant-input:hover {
+    border-color: $sxwl-color-border;
+  }
+
+  .ant-input-affix-wrapper-focused {
+    background: $sxwl-color-bg-container;
+    border-color: $sxwl-color-primary;
+    box-shadow: $sxwl-focus-ring;
+  }
+
+  .ant-input-prefix {
+    margin-right: 8px;
+    color: $sxwl-color-text-tertiary;
+    font-size: 16px;
+  }
+}
+
+// 验证码行
+.sxwl-login-captcha-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sxwl-login-captcha-input {
+  flex: 1;
+  min-width: 0;
+}
+
+// 登录按钮（品牌橙渐变，无大辉光）
+.sxwl-login-button {
+  height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  border-radius: $sxwl-radius;
+  background: $sxwl-gradient-brand;
+  border-color: transparent;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
+  transition: all $sxwl-dur-fast;
+  margin-top: 4px;
+
+  &:hover:not(:disabled) {
+    background: $sxwl-gradient-brand;
+    filter: brightness(1.05);
+  }
+
+  &:active:not(:disabled) {
+    background: linear-gradient(135deg, $sxwl-color-primary-active 0%, #e07f1a 100%);
+  }
+}
+
+// 底部版权
+.sxwl-login-footer {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 12px;
+  color: $sxwl-color-text-tertiary;
+  letter-spacing: 0.3px;
+}

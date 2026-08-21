@@ -1,66 +1,46 @@
 // ============================================
 // sxwl-react 自定义品牌 Token
-// antd Design Token 未覆盖的自定义值集中管理
-// 换产品时只需改此文件 + ConfigProvider
+// 对齐 docs/UI设计规范.md v2.0（Web 端 · Pro 骨架 + 品牌橙点缀）
+// 仅保留被实际引用的字段（App.tsx ConfigProvider 使用），已按"无冗余"原则清理
+// 自定义样式层变量见 variables.scss（编译期），两处值必须保持一致
 // ============================================
 
 export const SXWL_TOKENS = {
-  /** 品牌色渐变 */
-  gradientBrand: 'linear-gradient(135deg, #DE5F0E 0%, #f0972d 100%)',
-  /** 文字色：标题 */
-  colorTextHeading: '#1a1a2e',
-  /** 文字色：正文（antd 默认覆盖） */
-  colorText: '#333333',
-  /** 文字色：说明 */
-  colorTextSecondary: '#64748b',
-  /** 文字色：置灰 */
-  colorTextTertiary: '#94a3b8',
-  /** 文字色：禁用 */
-  colorTextDisabled: '#cbd5e1',
+  /** 文字色：正文（规范中性阶 1） */
+  colorText: '#1F2329',
+  /** 文字色：次级（规范中性阶 2） */
+  colorTextSecondary: '#4E5969',
+  /** 文字色：弱化（规范中性阶 3） */
+  colorTextTertiary: '#86909C',
+  /** 文字色：禁用/占位（规范中性阶 4） */
+  colorTextDisabled: '#C9CDD4',
 
-  /** 背景色：页面（浅色渐变 + 淡橙光晕，对齐 login 原型） */
-  colorBgLayout:
-    'radial-gradient(50% 45% at 12% 8%, rgba(222,95,14,.08) 0%, transparent 60%),' +
-    'radial-gradient(45% 45% at 90% 85%, rgba(240,151,45,.07) 0%, transparent 60%),' +
-    'linear-gradient(160deg, #f7f9fc 0%, #eef2f8 100%)',
+  /** 背景色：页面（Pro 浅灰底 #F0F2F5） */
+  colorBgLayout: '#F0F2F5',
   /** 背景色：容器 */
   colorBgContainer: '#ffffff',
 
-  /** 边框色：次级 */
-  colorBorderSecondary: '#e2e8f0',
-  /** 边框色：强调（卡片描边，对齐原型 #e2e8f0） */
-  colorBorder: '#e2e8f0',
+  /** 边框色：次级（表格内分割） */
+  colorBorderSecondary: '#F0F0F0',
+  /** 边框色：常规控件 */
+  colorBorder: '#E5E6EB',
 
-  /** 圆角：小元素（标签、inline-code） */
-  borderRadiusSM: 8,
-  /** 圆角：容器（Card、Table、Pre）对齐原型 16px */
-  borderRadius: 12,
-  /** 圆角：大容器（卡片、弹窗）对齐原型 16px */
-  borderRadiusLG: 16,
-  /** 圆角：超大（弹窗 Modal） */
-  borderRadiusXL: 20,
+  /** 圆角：按钮/小元素 */
+  borderRadiusSM: 6,
+  /** 圆角：输入框/表格 */
+  borderRadius: 8,
+  /** 圆角：卡片/弹窗 */
+  borderRadiusLG: 12,
+  /** 圆角：超大容器（Modal） */
+  borderRadiusXL: 16,
 
-  /** 阴影：卡片（对齐原型 0 6px 24px rgba(26,26,46,.06)） */
-  shadowCard: '0 6px 24px rgba(26,26,46,.06)',
-  /** 阴影：下拉/弹窗 */
-  shadowPopup: '0 8px 24px rgba(26,26,46,.10)',
-  /** 阴影：模态框 */
-  shadowModal: '0 18px 50px rgba(26,26,46,.22)',
+  /** 阴影：L1 卡片常驻 */
+  shadowCard: '0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06)',
+  /** 阴影：L2 悬浮 */
+  shadowPopup: '0 4px 12px rgba(16,24,40,.08), 0 2px 6px rgba(16,24,40,.05)',
 
-  /** 动画时长：hover/过渡 */
-  animationDurationFast: '0.2s',
-  /** 动画时长：结构变化 */
-  animationDurationNormal: '0.3s',
-
-  /** 字重：标题 */
-  fontWeightHeading: 500,
-  /** 字重：强调 */
-  fontWeightStrong: 600,
-  /** 字重：正文 */
-  fontWeightRegular: 400,
-
-  /** 品牌色 hover */
-  colorPrimaryHover: '#f57020',
-  /** 品牌色 active */
-  colorPrimaryActive: '#c05008',
+  /** 品牌色 hover（橙阶 400 亮） */
+  colorPrimaryHover: '#F57020',
+  /** 品牌色 active（橙阶 600 深） */
+  colorPrimaryActive: '#C74E08',
 } as const;

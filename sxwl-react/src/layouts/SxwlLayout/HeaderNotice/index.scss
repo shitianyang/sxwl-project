@@ -1,0 +1,154 @@
+// ============================================
+// HeaderNotice — 通知铃铛样式（sass, 规范 v2.0）
+// 中性观感：橙色仅用于 hover / 未读标记点缀
+// ============================================
+
+@use "../../../styles/variables" as *;
+@use "../../../styles/mixins" as *;
+
+.sxwl-notice-badge {
+  margin-right: 16px;
+  cursor: pointer;
+  line-height: 64px;
+}
+
+.sxwl-notice-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.sxwl-notice-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  height: 64px;
+  width: 40px;
+  border-radius: $sxwl-radius-sm;
+  color: $sxwl-color-text-secondary;
+  transition: all $sxwl-dur-fast;
+
+  &:hover {
+    color: $sxwl-color-primary;
+    background: #f5f5f5;
+  }
+}
+
+// -------- Popover 弹窗 --------
+.sxwl-notice-overlay {
+  .ant-popover-inner {
+    padding: 0;
+  }
+}
+
+.sxwl-notice-popover {
+  width: 360px;
+  max-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sxwl-notice-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid $sxwl-color-border-secondary;
+}
+
+.sxwl-notice-popover-loading {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+// -------- 公告列表 --------
+.sxwl-notice-list {
+  overflow-y: auto;
+  max-height: 380px;
+}
+
+.sxwl-notice-list-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background $sxwl-dur-fast;
+
+  &.unread {
+    background: $sxwl-color-primary-1;
+  }
+
+  &:hover {
+    background: #fafafa;
+  }
+}
+
+.sxwl-notice-list-item-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+  line-height: 22px;
+}
+
+.sxwl-notice-list-item-desc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.sxwl-notice-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff4d4f;
+  vertical-align: middle;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+// -------- SSE 连接状态点（功能色，规范 2.3） --------
+.sxwl-notice-sse-wrapper {
+  display: inline-flex;
+  align-items: center;
+  line-height: 64px;
+  margin-right: 4px;
+  cursor: default;
+}
+
+.sxwl-notice-sse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  vertical-align: middle;
+  flex-shrink: 0;
+  transition: background $sxwl-dur;
+
+  &.connected {
+    background: #52c41a;
+  }
+
+  &.connecting {
+    background: #faad14;
+    animation: sxwl-sse-pulse 1s ease-in-out infinite;
+  }
+
+  &.disconnected {
+    background: #ff4d4f;
+  }
+}
+
+// -------- 关键帧动画 --------
+@keyframes sxwl-sse-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}

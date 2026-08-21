@@ -3,36 +3,33 @@ import { useNavigate } from 'react-router';
 import { useAuthStore } from '@/stores/authStore';
 import { SxwlIcon, SxwlCard, SxwlRow, SxwlCol, SxwlTitle, SxwlText } from '@/components';
 import { getDashboardStatistics, type DashboardStatistics } from '@/api/system/dashboardApi';
-import useDashboardStyles from './index.style';
+import './index.scss';
 
 interface StatCardConfig {
   title: string;
   field: keyof DashboardStatistics;
   icon: React.ReactNode;
-  color: string;
-  bgColor: string;
 }
 
 const STAT_CARDS: StatCardConfig[] = [
-  { title: '用户总数', field: 'userCount', icon: <SxwlIcon name="UserOutlined" />, color: '#3b82f6', bgColor: '#eff6ff' },
-  { title: '角色总数', field: 'roleCount', icon: <SxwlIcon name="TeamOutlined" />, color: '#10b981', bgColor: '#ecfdf5' },
-  { title: '菜单总数', field: 'menuCount', icon: <SxwlIcon name="ApartmentOutlined" />, color: '#f59e0b', bgColor: '#fffbeb' },
-  { title: '今日日志', field: 'todayLogCount', icon: <SxwlIcon name="FileTextOutlined" />, color: '#ec4899', bgColor: '#fdf2f8' },
+  { title: '用户总数', field: 'userCount', icon: <SxwlIcon name="UserOutlined" /> },
+  { title: '角色总数', field: 'roleCount', icon: <SxwlIcon name="TeamOutlined" /> },
+  { title: '菜单总数', field: 'menuCount', icon: <SxwlIcon name="ApartmentOutlined" /> },
+  { title: '今日日志', field: 'todayLogCount', icon: <SxwlIcon name="FileTextOutlined" /> },
 ];
 
 const QUICK_LINKS = [
-  { label: '用户管理', icon: <SxwlIcon name="UserOutlined" />, path: '/system/user', color: '#3b82f6' },
-  { label: '角色管理', icon: <SxwlIcon name="TeamOutlined" />, path: '/system/role', color: '#10b981' },
-  { label: '菜单管理', icon: <SxwlIcon name="ApartmentOutlined" />, path: '/system/menu', color: '#8b5cf6' },
-  { label: '组织架构', icon: <SxwlIcon name="SafetyOutlined" />, path: '/system/organization', color: '#f59e0b' },
-  { label: '岗位管理', icon: <SxwlIcon name="ReadOutlined" />, path: '/system/position', color: '#ec4899' },
-  { label: '字典管理', icon: <SxwlIcon name="SettingOutlined" />, path: '/system/dict', color: '#06b6d4' },
-  { label: '操作日志', icon: <SxwlIcon name="FileTextOutlined" />, path: '/log/operation', color: '#64748b' },
-  { label: '登录日志', icon: <SxwlIcon name="LoginOutlined" />, path: '/log/login', color: '#84cc16' },
+  { label: '用户管理', icon: <SxwlIcon name="UserOutlined" />, path: '/system/user' },
+  { label: '角色管理', icon: <SxwlIcon name="TeamOutlined" />, path: '/system/role' },
+  { label: '菜单管理', icon: <SxwlIcon name="ApartmentOutlined" />, path: '/system/menu' },
+  { label: '组织架构', icon: <SxwlIcon name="SafetyOutlined" />, path: '/system/organization' },
+  { label: '岗位管理', icon: <SxwlIcon name="ReadOutlined" />, path: '/system/position' },
+  { label: '字典管理', icon: <SxwlIcon name="SettingOutlined" />, path: '/system/dict' },
+  { label: '操作日志', icon: <SxwlIcon name="FileTextOutlined" />, path: '/log/operation' },
+  { label: '登录日志', icon: <SxwlIcon name="LoginOutlined" />, path: '/log/login' },
 ];
 
 export default function DashboardPage() {
-  const { styles, cx } = useDashboardStyles();
   const navigate = useNavigate();
   const username = useAuthStore((s) => s.username);
   const [statistics, setStatistics] = useState<DashboardStatistics | null>(null);
@@ -57,15 +54,15 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className={styles.page}>
+    <div className="sxwl-dashboard-page">
       {/* 欢迎横幅 */}
-      <div className={styles.banner}>
-        <div className={styles.bannerContent}>
+      <div className="sxwl-dashboard-banner">
+        <div className="sxwl-dashboard-banner-content">
           <div className="banner-text">
-            <SxwlTitle level={4} className={styles.bannerTitle}>欢迎回来{username ? `，${username}` : ''}</SxwlTitle>
-            <SxwlText className={styles.bannerDesc}>数行未来·御权 — 统一权限管控平台</SxwlText>
+            <SxwlTitle level={4} className="sxwl-dashboard-banner-title">欢迎回来{username ? `，${username}` : ''}</SxwlTitle>
+            <SxwlText className="sxwl-dashboard-banner-desc">数行未来·御权 — 统一权限管控平台</SxwlText>
           </div>
-          <div className={cx(styles.bannerTip, systemStatus === 'error' && 'banner-tip--error')}>
+          <div className={`sxwl-dashboard-banner-tip${systemStatus === 'error' ? ' banner-tip--error' : ''}`}>
             <SxwlIcon name={systemStatus === 'error' ? 'CloseCircleOutlined' : 'SafetyOutlined'} />
             <span>
               {systemStatus === 'loading' ? '系统检查中...' :
@@ -77,20 +74,17 @@ export default function DashboardPage() {
       </div>
 
       {/* 统计卡片 */}
-      <SxwlRow gutter={[16, 16]} className={styles.stats}>
+      <SxwlRow gutter={[16, 16]} className="sxwl-dashboard-stats">
         {STAT_CARDS.map((card) => (
           <SxwlCol xs={24} sm={12} lg={6} key={card.title}>
-            <SxwlCard className={styles.statCard}>
-              <div className={styles.statCardBody}>
-                <div
-                  className={styles.statCardIcon}
-                  style={{ background: card.bgColor, color: card.color }}
-                >
+            <SxwlCard className="sxwl-dashboard-stat-card">
+              <div className="sxwl-dashboard-stat-card-body">
+                <div className="sxwl-dashboard-stat-card-icon">
                   {card.icon}
                 </div>
-                <div className={styles.statCardContent}>
-                  <div className={styles.statCardValue}>{displayValue(card.field)}</div>
-                  <div className={styles.statCardLabel}>{card.title}</div>
+                <div className="sxwl-dashboard-stat-card-content">
+                  <div className="sxwl-dashboard-stat-card-value">{displayValue(card.field)}</div>
+                  <div className="sxwl-dashboard-stat-card-label">{card.title}</div>
                 </div>
               </div>
             </SxwlCard>
@@ -100,20 +94,20 @@ export default function DashboardPage() {
 
       {/* 快捷入口 */}
       <SxwlCard
-        title={<span className={styles.sectionTitle}>快捷入口</span>}
-        className={styles.quickLinks}
+        title={<span className="sxwl-dashboard-section-title">快捷入口</span>}
+        className="sxwl-dashboard-quick-links"
       >
         <SxwlRow gutter={[16, 16]}>
           {QUICK_LINKS.map((link) => (
             <SxwlCol xs={12} sm={8} md={6} lg={3} key={link.label}>
               <div
-                className={styles.quickLinkItem}
+                className="sxwl-dashboard-quick-link-item"
                 onClick={() => navigate(link.path)}
               >
-                <span className={styles.quickLinkIcon} style={{ color: link.color, background: `${link.color}14` }}>
+                <span className="sxwl-dashboard-quick-link-icon">
                   {link.icon}
                 </span>
-                <span className={styles.quickLinkLabel}>{link.label}</span>
+                <span className="sxwl-dashboard-quick-link-label">{link.label}</span>
               </div>
             </SxwlCol>
           ))}
