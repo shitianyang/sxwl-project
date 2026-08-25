@@ -56,6 +56,16 @@ public class SxwlRedisHelper {
         return Optional.ofNullable(stringRedisTemplate.opsForValue().get(key));
     }
 
+    /** 原子读取并删除字符串值，用于一次性票据消费。 */
+    public Optional<String> getAndDelete(String key) {
+        DefaultRedisScript<String> script = new DefaultRedisScript<>(
+                "local value = redis.call('GET', KEYS[1]); "
+                        + "if value then redis.call('DEL', KEYS[1]); end; return value;",
+                String.class);
+        return Optional.ofNullable(stringRedisTemplate.execute(script, Collections.singletonList(key)));
+    }
+
+
     /**
      * 判断 Key 是否存在
      */

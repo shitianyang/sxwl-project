@@ -94,7 +94,8 @@ public class SysOnlineUserServiceImpl implements SysOnlineUserService {
     @Override
     public void forceLogout(Long userId) {
         // 1. 删除 Token 白名单依赖：用户信息缓存（Filter 读不到 → 视为未认证）
-        redisHelper.delete(SxwlRedisKeyUtils.tokenInfoKey(userId));
+        redisHelper.delete(SxwlRedisKeyUtils.tokenInfoKey("admin", userId));
+        redisHelper.delete(SxwlRedisKeyUtils.tokenInfoKey("front", userId));
 
         // 2. 删除 Token 辅助索引（admin + front）
         redisHelper.delete(SxwlRedisKeyUtils.tokenUserSetKey("admin", userId));

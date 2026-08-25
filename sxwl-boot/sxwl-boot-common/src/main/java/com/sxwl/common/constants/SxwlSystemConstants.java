@@ -177,10 +177,10 @@ public final class SxwlSystemConstants {
      * 超级管理员角色标识
      * <p>用于代码中判断是否为超管，进行特殊权限处理</p>
      */
-    public static final String ADMIN_ROLE_CODE = "superadmin";
+    public static final String ADMIN_ROLE_CODE = "super_admin";
 
     /**
      * 默认超管用户名
      */
-    public static final String DEFAULT_ADMIN_USERNAME = "superadmin";
+    public static final String ADMIN_USERNAME = "SuperAdmin";
 }

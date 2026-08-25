@@ -29,9 +29,11 @@ public class SxwlRequestLogFilter implements Filter {
     private static final Logger log = LoggerFactory.getLogger(SxwlRequestLogFilter.class);
 
     private final boolean enabled;
+    private final boolean trustForwardedHeaders;
 
-    public SxwlRequestLogFilter(boolean enabled) {
+    public SxwlRequestLogFilter(boolean enabled, boolean trustForwardedHeaders) {
         this.enabled = enabled;
+        this.trustForwardedHeaders = trustForwardedHeaders;
     }
 
     @Override
@@ -101,6 +103,9 @@ public class SxwlRequestLogFilter implements Filter {
     }
 
     private String getClientIp(HttpServletRequest request) {
+        if (!trustForwardedHeaders) {
+            return request.getRemoteAddr();
+        }
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("X-Real-IP");

@@ -12,6 +12,8 @@ import { getUserPageByParams, createUser, updateUser, deleteUserById, batchDelet
 import { encryptPassword } from '@/utils/sm2Utils';
 import { getCachedPublicKey, invalidatePublicKeyCache } from '@/utils/publicKeyUtils';
 
+const SUPER_ADMIN_USERNAME = 'SuperAdmin';
+
 export default function UserPage() {
   const [data, setData] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -105,6 +107,7 @@ export default function UserPage() {
   const rowSelection = {
     selectedRowKeys,
     onChange: (keys: React.Key[]) => setSelectedRowKeys(keys as number[]),
+    getCheckboxProps: (record: UserItem) => ({ disabled: isProtectedAdmin(record) }),
   };
 
   const handleSave = async () => {
@@ -149,6 +152,8 @@ export default function UserPage() {
 
   // -------- 列定义 --------
 
+  const isProtectedAdmin = (record: UserItem) => record.superAdmin || record.username === SUPER_ADMIN_USERNAME;
+
   const columns: ColumnsType<UserItem> = [
     { title: '用户名', dataIndex: 'username', key: 'username', width: 120 },
     { title: '真实姓名', dataIndex: 'realName', key: 'realName', width: 130 },
@@ -169,14 +174,18 @@ export default function UserPage() {
       width: 160,
       render: (_, record) => (
           <SxwlSpace>
-          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="system:user:edit" onClick={() => handleEdit(record)}>
-            编辑
-          </SxwlPermissionButton>
-          <SxwlPopconfirm title="确定删除该用户吗？" onConfirm={() => handleDelete(record)}>
-            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:user:delete">
-              删除
+          {!isProtectedAdmin(record) && (
+            <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="system:user:edit" onClick={() => handleEdit(record)}>
+              编辑
             </SxwlPermissionButton>
-          </SxwlPopconfirm>
+          )}
+          {!isProtectedAdmin(record) && (
+            <SxwlPopconfirm title="确定删除该用户吗？" onConfirm={() => handleDelete(record)}>
+              <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:user:delete">
+                删除
+              </SxwlPermissionButton>
+            </SxwlPopconfirm>
+          )}
         </SxwlSpace>
       ),
     },

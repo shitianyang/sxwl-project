@@ -60,6 +60,9 @@ public class SysFileServiceImpl implements SysFileService {
     /** 分片状态：已上传 */
     private static final int CHUNK_STATUS_UPLOADED = 1;
 
+    private static final long MAX_FILE_SIZE = 2L * 1024 * 1024 * 1024;
+    private static final int MAX_CHUNK_COUNT = 10_000;
+
     private final SysFileInfoMapper sysFileInfoMapper;
     private final SysFileSessionInfoMapper sysFileSessionInfoMapper;
     private final SysFileChunkInfoMapper sysFileChunkInfoMapper;
@@ -81,6 +84,7 @@ public class SysFileServiceImpl implements SysFileService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long initUpload(UploadInitDTO dto) {
+        validateUploadBounds(dto);
         // 检查是否有同 md5 未完成的会话
         SysFileSessionInfo existing = sysFileSessionInfoMapper.getByMd5(dto.getFileMd5());
         if (existing != null) {
@@ -130,6 +134,9 @@ public class SysFileServiceImpl implements SysFileService {
         if (chunkIndex < 0 || chunkIndex >= session.getTotalChunks()) {
             throw new IllegalArgumentException("分片序号超出范围: " + chunkIndex);
         }
+        if (file.isEmpty() || file.getSize() > session.getChunkSize()) {
+            throw new IllegalArgumentException("分片大小不合法");
+        }
 
         // 上传分片到 S3 临时目录
         String objectKey = properties.getTempPathPrefix() + uploadId + "/" + chunkIndex;
@@ -170,6 +177,9 @@ public class SysFileServiceImpl implements SysFileService {
         SysFileSessionInfo session = sysFileSessionInfoMapper.getById(uploadId);
         if (session == null) {
             throw new IllegalArgumentException("上传会话不存在: uploadId=" + uploadId);
+        }
+        if (!fileMd5.equalsIgnoreCase(session.getFileMd5())) {
+            throw new IllegalArgumentException("文件 MD5 与上传会话不一致");
         }
         if (session.getStatus() != SESSION_STATUS_UPLOADING) {
             throw new IllegalArgumentException("上传会话已结束: uploadId=" + uploadId);
@@ -219,7 +229,7 @@ public class SysFileServiceImpl implements SysFileService {
         sysFileInfoMapper.insertFile(fileInfo);
 
         // 更新会话状态为已完成
-        sysFileSessionInfoMapper.updateStatus(uploadId, SESSION_STATUS_COMPLETED);
+        sysFileSessionInfoMapper.updateStatus(uploadId, SESSION_STATUS_COMPLETED, session.getCreateBy());
 
         // 清理临时分片
         try {
@@ -235,6 +245,9 @@ public class SysFileServiceImpl implements SysFileService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SysFileDTO simpleUpload(MultipartFile file) {
+        if (file == null || file.isEmpty() || file.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("文件为空或大小超出允许范围");
+        }
         String originalName = file.getOriginalFilename();
         if (originalName == null || originalName.isEmpty()) {
             originalName = "unknown";
@@ -325,6 +338,20 @@ public class SysFileServiceImpl implements SysFileService {
             return null;
         }
         return buildSysFileDTO(fileInfo);
+    }
+
+    private void validateUploadBounds(UploadInitDTO dto) {
+        if (dto.getFileSize() == null || dto.getFileSize() <= 0 || dto.getFileSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("文件大小超出允许范围");
+        }
+        if (dto.getTotalChunks() == null || dto.getTotalChunks() < 1 || dto.getTotalChunks() > MAX_CHUNK_COUNT
+                || dto.getChunkSize() == null || dto.getChunkSize() < 1) {
+            throw new IllegalArgumentException("分片参数不合法");
+        }
+        long capacity = (long) dto.getTotalChunks() * dto.getChunkSize();
+        if (capacity < dto.getFileSize()) {
+            throw new IllegalArgumentException("分片总容量小于文件大小");
+        }
     }
 
     @Override

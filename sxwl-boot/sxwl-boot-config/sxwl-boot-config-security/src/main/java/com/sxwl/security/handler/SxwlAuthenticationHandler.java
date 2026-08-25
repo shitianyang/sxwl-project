@@ -55,7 +55,7 @@ public class SxwlAuthenticationHandler {
     public SxwlTokenPair createTokenPair(SxwlLoginUser loginUser, String deviceId, String clientType, String ip, String userAgent) {
         SxwlTokenPair tokenPair = buildTokenPair(loginUser.getUserId(), deviceId, clientType);
         // 用户信息缓存（Hash）
-        cacheUserInfo(loginUser);
+        cacheUserInfo(loginUser, clientType);
         // 在线用户数据
         cacheOnlineUserInfo(loginUser, deviceId, ip, userAgent);
         return tokenPair;
@@ -159,7 +159,7 @@ public class SxwlAuthenticationHandler {
         }
 
         // 删除用户信息缓存（Filter 读不到用户信息 → 视为未认证）
-        String infoKey = SxwlRedisKeyUtils.tokenInfoKey(userId);
+        String infoKey = SxwlRedisKeyUtils.tokenInfoKey(clientType, userId);
         redisHelper.delete(infoKey);
 
         // 删除辅助索引
@@ -182,8 +182,8 @@ public class SxwlAuthenticationHandler {
     /**
      * 缓存用户信息到 Redis Hash（供 JwtAuthenticationFilter 读取）
      */
-    private void cacheUserInfo(SxwlLoginUser loginUser) {
-        String infoKey = SxwlRedisKeyUtils.tokenInfoKey(loginUser.getUserId());
+    private void cacheUserInfo(SxwlLoginUser loginUser, String clientType) {
+        String infoKey = SxwlRedisKeyUtils.tokenInfoKey(clientType, loginUser.getUserId());
 
         Map<String, String> userInfo = new LinkedHashMap<>();
         userInfo.put("username", nullSafe(loginUser.getUsername()));
@@ -203,7 +203,9 @@ public class SxwlAuthenticationHandler {
         }
 
         // TTL 与 Refresh Token 一致
-        long refreshExpire = securityProperties.getRefreshTokenExpire();
+        long refreshExpire = "admin".equals(clientType)
+                ? securityProperties.getRefreshTokenExpire()
+                : securityProperties.getFrontRefreshTokenExpire();
         redisHelper.hmset(infoKey, userInfo);
         redisHelper.expire(infoKey, Duration.ofSeconds(refreshExpire));
     }

@@ -2,6 +2,7 @@ package com.sxwl.system.service.impl;
 
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.constants.SxwlSystemConstants;
 import com.sxwl.common.utils.SxwlDiffUtils;
 import com.sxwl.common.utils.SxwlSnowFlakeUtils;
 import com.sxwl.security.key.SxwlSM2KeyManager;
@@ -14,6 +15,7 @@ import com.sxwl.system.service.SysUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -84,7 +86,20 @@ public class SysUserServiceImpl implements SysUserService {
      * @throws SxwlBusinessException 用户名/手机号重复或新增失败时抛出
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int createUser(SysUserDTO dto) {
+        Long superAdminRoleId = sysUserMapper.lockRoleIdByCode(SxwlSystemConstants.ADMIN_ROLE_CODE);
+        boolean isSuperAdminRole = superAdminRoleId != null
+                && dto.getRoleIds() != null
+                && dto.getRoleIds().contains(superAdminRoleId);
+        boolean isAdminUsername = SxwlSystemConstants.ADMIN_USERNAME.equals(dto.getUsername());
+        if (isSuperAdminRole && sysUserMapper.countUsersByRoleId(superAdminRoleId) > 0) {
+            throw new SxwlBusinessException(10003, "禁止添加超级管理员账号");
+        }
+        if (isAdminUsername || isSuperAdminRole) {
+            throw new SxwlBusinessException(10003,
+                    "禁止添加超级管理员账号");
+        }
         // 1. 唯一性校验
         if (sysUserMapper.checkUsernameUnique(dto.getUsername(), null) > 0) {
             throw new SxwlBusinessException(10002, "用户名已存在");
@@ -132,6 +147,14 @@ public class SysUserServiceImpl implements SysUserService {
      */
     @Override
     public int updateUser(SysUserDTO dto) {
+        SysUserDTO oldDto = sysUserMapper.getUserById(dto.getId());
+        if (oldDto == null) {
+            throw new SxwlBusinessException(10004, "用户不存在或已被删除");
+        }
+        if (isProtectedAdminUser(oldDto)
+                || SxwlSystemConstants.ADMIN_USERNAME.equals(dto.getUsername())) {
+            throw new SxwlBusinessException(10003, "超级管理员账号为系统保留账号，不允许修改");
+        }
         // 1. 唯一性校验（排除自身）
         if (sysUserMapper.checkUsernameUnique(dto.getUsername(), dto.getId()) > 0) {
             throw new SxwlBusinessException(10002, "用户名已存在");
@@ -141,15 +164,12 @@ public class SysUserServiceImpl implements SysUserService {
         }
 
         // 2. 查询旧数据并计算字段级变更差异
-        SysUserDTO oldDto = sysUserMapper.getUserById(dto.getId());
-        if (oldDto != null) {
-            SysUser oldEntity = toEntity(oldDto);
-            SysUser newEntity = toEntity(dto);
-            newEntity.setId(dto.getId());
-            String diffJson = SxwlDiffUtils.diff(oldEntity, newEntity);
-            if (diffJson != null) {
-                SxwlDiffUtils.setContextDiff(diffJson);
-            }
+        SysUser oldEntity = toEntity(oldDto);
+        SysUser newEntity = toEntity(dto);
+        newEntity.setId(dto.getId());
+        String diffJson = SxwlDiffUtils.diff(oldEntity, newEntity);
+        if (diffJson != null) {
+            SxwlDiffUtils.setContextDiff(diffJson);
         }
 
         // 3. 构建实体（审计字段由 SxwlAutoFillInterceptor 自动填充）
@@ -177,6 +197,10 @@ public class SysUserServiceImpl implements SysUserService {
      */
     @Override
     public int deleteUserById(Long id) {
+        SysUserDTO user = sysUserMapper.getUserById(id);
+        if (user != null && isProtectedAdminUser(user)) {
+            throw new SxwlBusinessException(10003, "超级管理员账号不允许删除");
+        }
         int affected = sysUserMapper.deleteUserById(id);
         if (affected == 0) {
             throw new SxwlBusinessException(10004, "用户不存在或已被删除");
@@ -193,9 +217,16 @@ public class SysUserServiceImpl implements SysUserService {
      * @throws SxwlBusinessException 列表为空或全部不存在时抛出
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int batchDeleteByIds(List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             throw new SxwlBusinessException(10001, "删除用户列表不能为空");
+        }
+        for (Long id : ids) {
+            SysUserDTO user = id != null ? sysUserMapper.getUserById(id) : null;
+            if (user != null && isProtectedAdminUser(user)) {
+                throw new SxwlBusinessException(10003, "超级管理员账号不允许删除");
+            }
         }
         int affected = sysUserMapper.batchDeleteByIds(ids);
         if (affected == 0) {
@@ -233,6 +264,11 @@ public class SysUserServiceImpl implements SysUserService {
         entity.setEmail(dto.getEmail());
         entity.setStatus(dto.getStatus());
         return entity;
+    }
+
+    private boolean isProtectedAdminUser(SysUserDTO user) {
+        return Boolean.TRUE.equals(user.getSuperAdmin())
+                || SxwlSystemConstants.ADMIN_USERNAME.equals(user.getUsername());
     }
 
 }

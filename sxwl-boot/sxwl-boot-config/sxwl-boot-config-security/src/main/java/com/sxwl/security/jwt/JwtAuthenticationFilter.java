@@ -71,7 +71,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String deviceId = SxwlJwtUtils.resolveDeviceId(claims);
             String clientType = SxwlClientTypeUtils.normalize(SxwlJwtUtils.resolveClientType(claims));
 
-            if (userId == null || jti == null) {
+            if (userId == null || jti == null || !SxwlJwtUtils.TOKEN_TYPE_ACCESS.equals(tokenType)) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -85,7 +85,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             // 从 Redis 读取用户信息缓存
-            String infoKey = SxwlRedisKeyUtils.tokenInfoKey(userId);
+            String infoKey = SxwlRedisKeyUtils.tokenInfoKey(clientType, userId);
             Map<String, String> userInfo = redisHelper.hgetAll(infoKey);
             if (userInfo.isEmpty()) {
                 log.debug("用户信息缓存不存在: userId={}", userId);
@@ -116,18 +116,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * 提取 Token
-     * <p>优先从 Authorization Header 提取，失败时尝试从 query 参数提取（支持 EventSource）。</p>
+     * <p>仅从 Authorization Header 提取，避免 Token 进入 URL、代理和访问日志。</p>
      */
     private String resolveToken(HttpServletRequest request) {
         // 1. 优先从 Authorization Header 提取
         String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (bearerToken != null && bearerToken.startsWith(BEARER_PREFIX)) {
             return bearerToken.substring(BEARER_PREFIX.length()).trim();
-        }
-        // 2. 支持从 query 参数提取（EventSource 无法设置自定义请求头）
-        String queryToken = request.getParameter("token");
-        if (queryToken != null && !queryToken.isEmpty()) {
-            return queryToken;
         }
         return null;
     }
@@ -186,19 +181,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (remaining > 0 && remaining < securityProperties.getTokenRenewThreshold()) {
             // 签发新 Token（旧 jti 保留至自然过期）
             String newJti = UUID.randomUUID().toString();
+            long accessExpire = SxwlClientTypeUtils.ADMIN.equals(clientType)
+                    ? securityProperties.getAccessTokenExpire()
+                    : securityProperties.getFrontAccessTokenExpire();
             String newToken = SxwlJwtUtils.builder()
                     .userId(userId)
                     .tokenType(SxwlJwtUtils.TOKEN_TYPE_ACCESS)
                     .deviceId(deviceId)
                     .clientType(clientType)
                     .jti(newJti)
-                    .expireSeconds(securityProperties.getAccessTokenExpire())
+                    .expireSeconds(accessExpire)
                     .build(secret);
 
             // 写新白名单
             String newWhitelistKey = SxwlRedisKeyUtils.tokenJwtKey(clientType, userId, deviceId, newJti);
-            redisHelper.set(newWhitelistKey, "access",
-                    java.time.Duration.ofSeconds(securityProperties.getAccessTokenExpire()));
+            redisHelper.set(newWhitelistKey, "access", java.time.Duration.ofSeconds(accessExpire));
 
             // 辅助索引
             String userSetKey = SxwlRedisKeyUtils.tokenUserSetKey(clientType, userId);

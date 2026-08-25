@@ -16,14 +16,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class SxwlWebProperties {
 
     /**
-     * CORS 允许的跨域来源（逗号分隔），默认 *（允许所有）
+     * CORS 允许的跨域来源（逗号分隔）。默认拒绝所有跨域请求。
      */
-    private String allowedOrigins = "*";
+    private String allowedOrigins = "";
 
     /**
      * 是否启用请求日志，默认 true
      */
     private boolean requestLogEnabled = true;
+
+    /** 是否信任反向代理传入的 X-Forwarded-For / X-Real-IP。默认关闭。 */
+    private boolean trustForwardedHeaders = false;
 
     public String getAllowedOrigins() {
         return allowedOrigins;
@@ -39,5 +42,13 @@ public class SxwlWebProperties {
 
     public void setRequestLogEnabled(boolean requestLogEnabled) {
         this.requestLogEnabled = requestLogEnabled;
+    }
+
+    public boolean isTrustForwardedHeaders() {
+        return trustForwardedHeaders;
+    }
+
+    public void setTrustForwardedHeaders(boolean trustForwardedHeaders) {
+        this.trustForwardedHeaders = trustForwardedHeaders;
     }
 }

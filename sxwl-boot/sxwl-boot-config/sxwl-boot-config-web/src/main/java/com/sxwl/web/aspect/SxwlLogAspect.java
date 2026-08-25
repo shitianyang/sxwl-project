@@ -92,16 +92,19 @@ public class SxwlLogAspect {
     private final ObjectMapper objectMapper;
     private final ExpressionParser spelParser;
     private final ParameterNameDiscoverer parameterNameDiscoverer;
+    private final boolean trustForwardedHeaders;
 
         private final Optional<SxwlIpLocationService> ipLocationService;
 
     public SxwlLogAspect(ApplicationEventPublisher eventPublisher, ObjectMapper objectMapper,
-                         Optional<SxwlIpLocationService> ipLocationService) {
+                         Optional<SxwlIpLocationService> ipLocationService,
+                         boolean trustForwardedHeaders) {
         this.eventPublisher = eventPublisher;
         this.objectMapper = objectMapper;
         this.ipLocationService = ipLocationService;
         this.spelParser = new SpelExpressionParser();
         this.parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
+        this.trustForwardedHeaders = trustForwardedHeaders;
     }
 
     @Around("@annotation(sxwlLog)")
@@ -275,6 +278,9 @@ public class SxwlLogAspect {
      * 获取客户端真实 IP
      */
     private String getClientIp(HttpServletRequest request) {
+        if (!trustForwardedHeaders) {
+            return request.getRemoteAddr();
+        }
         String ip = request.getHeader("X-Forwarded-For");
         if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
             // 多层代理时取第一个

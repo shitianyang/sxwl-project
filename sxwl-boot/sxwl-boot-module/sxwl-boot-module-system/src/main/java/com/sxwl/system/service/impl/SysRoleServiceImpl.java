@@ -2,6 +2,7 @@ package com.sxwl.system.service.impl;
 
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.constants.SxwlSystemConstants;
 import com.sxwl.common.utils.SxwlDiffUtils;
 import com.sxwl.system.mapper.SysRoleMapper;
 import com.sxwl.system.model.dto.SysRoleDTO;
@@ -77,6 +78,12 @@ public class SysRoleServiceImpl implements SysRoleService {
      */
     @Override
     public int createRole(SysRoleDTO dto) {
+        if (SxwlSystemConstants.ADMIN_ROLE_CODE.equals(dto.getRoleCode())) {
+            throw new SxwlBusinessException(10003, "禁止添加超级管理员角色");
+        }
+        if (Integer.valueOf(1).equals(dto.getDataScope())) {
+            throw new SxwlBusinessException(10003, "只有超级管理员角色允许使用全部数据权限");
+        }
         // 唯一性校验
         if (sysRoleMapper.checkRoleCodeUnique(dto.getRoleCode(), null) > 0) {
             throw new SxwlBusinessException(10002, "角色编码已存在");
@@ -102,21 +109,29 @@ public class SysRoleServiceImpl implements SysRoleService {
      */
     @Override
     public int updateRole(SysRoleDTO dto) {
+        SysRoleDTO oldDto = sysRoleMapper.getRoleById(dto.getId());
+        if (oldDto == null) {
+            throw new SxwlBusinessException(10004, "角色不存在或已被删除");
+        }
+        if (SxwlSystemConstants.ADMIN_ROLE_CODE.equals(oldDto.getRoleCode())
+                || SxwlSystemConstants.ADMIN_ROLE_CODE.equals(dto.getRoleCode())) {
+            throw new SxwlBusinessException(10003, "超级管理员角色为系统保留角色，不允许修改");
+        }
+        if (Integer.valueOf(1).equals(dto.getDataScope())) {
+            throw new SxwlBusinessException(10003, "只有超级管理员角色允许使用全部数据权限");
+        }
         // 唯一性校验（排除自身）
         if (sysRoleMapper.checkRoleCodeUnique(dto.getRoleCode(), dto.getId()) > 0) {
             throw new SxwlBusinessException(10002, "角色编码已存在");
         }
 
         // 查询旧数据并计算字段级变更差异
-        SysRoleDTO oldDto = sysRoleMapper.getRoleById(dto.getId());
-        if (oldDto != null) {
-            SysRole oldEntity = toEntity(oldDto);
-            SysRole newEntity = toEntity(dto);
-            newEntity.setId(dto.getId());
-            String diffJson = SxwlDiffUtils.diff(oldEntity, newEntity);
-            if (diffJson != null) {
-                SxwlDiffUtils.setContextDiff(diffJson);
-            }
+        SysRole oldEntity = toEntity(oldDto);
+        SysRole newEntity = toEntity(dto);
+        newEntity.setId(dto.getId());
+        String diffJson = SxwlDiffUtils.diff(oldEntity, newEntity);
+        if (diffJson != null) {
+            SxwlDiffUtils.setContextDiff(diffJson);
         }
 
         SysRole entity = toEntity(dto);
@@ -139,6 +154,13 @@ public class SysRoleServiceImpl implements SysRoleService {
      */
     @Override
     public int deleteRoleById(Long id) {
+        SysRoleDTO role = sysRoleMapper.getRoleById(id);
+        if (role == null) {
+            throw new SxwlBusinessException(10004, "角色不存在或已被删除");
+        }
+        if (SxwlSystemConstants.ADMIN_ROLE_CODE.equals(role.getRoleCode())) {
+            throw new SxwlBusinessException(10003, "超级管理员角色为系统保留角色，不允许删除");
+        }
         int affected = sysRoleMapper.deleteRoleById(id);
         if (affected == 0) {
             throw new SxwlBusinessException(10004, "角色不存在或已被删除");
@@ -158,6 +180,7 @@ public class SysRoleServiceImpl implements SysRoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveRoleMenus(Long roleId, List<Long> menuIds) {
+        ensureMutableRole(roleId);
         // 先删
         sysRoleMapper.deleteRoleMenusByRoleId(roleId);
 
@@ -191,6 +214,7 @@ public class SysRoleServiceImpl implements SysRoleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveRoleDataScope(Long roleId, List<Long> orgIds) {
+        ensureMutableRole(roleId);
         // 先删
         sysRoleMapper.deleteRoleDataScopeByRoleId(roleId);
 
@@ -230,5 +254,15 @@ public class SysRoleServiceImpl implements SysRoleService {
         entity.setStatus(dto.getStatus());
         entity.setDescription(dto.getDescription());
         return entity;
+    }
+
+    private void ensureMutableRole(Long roleId) {
+        SysRoleDTO role = sysRoleMapper.getRoleById(roleId);
+        if (role == null) {
+            throw new SxwlBusinessException(10004, "角色不存在或已被删除");
+        }
+        if (SxwlSystemConstants.ADMIN_ROLE_CODE.equals(role.getRoleCode())) {
+            throw new SxwlBusinessException(10003, "超级管理员角色为系统保留角色，不允许修改权限");
+        }
     }
 }

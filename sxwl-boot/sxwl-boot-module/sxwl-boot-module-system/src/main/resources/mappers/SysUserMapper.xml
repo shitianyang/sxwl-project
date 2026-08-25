@@ -11,12 +11,25 @@
         phone,
         email,
         status,
+        (
+            sys_user_info.username = 'SuperAdmin'
+            OR EXISTS (
+                SELECT 1
+                FROM sys_user_role_info ur
+                INNER JOIN sys_role_info r ON r.id = ur.role_id
+                WHERE ur.user_id = sys_user_info.id
+                  AND ur.delete_flag = 0
+                  AND r.role_code = 'super_admin'
+                  AND r.delete_flag = 0
+            )
+        ) AS super_admin,
         TO_CHAR(create_time, 'YYYY-MM-DD HH24:MI:SS') AS createTime
     </sql>
 
     <!-- SysUserDTO 结果映射 -->
     <resultMap id="SysUserDTOResultMap" type="com.sxwl.system.model.dto.SysUserDTO" autoMapping="true">
         <id column="id" property="id"/>
+        <result column="super_admin" property="superAdmin"/>
     </resultMap>
 
     <!-- 根据 ID 查询用户（含密码字段，Service 层会置空后返回） -->
@@ -35,6 +48,7 @@
         <include refid="selectUserColumns"/>
         FROM sys_user_info
         WHERE delete_flag = 0
+          AND username <> 'SuperAdmin'
         <if test="username != null and username != ''">
             AND username LIKE CONCAT('%', #{username}, '%')
         </if>
@@ -64,6 +78,22 @@
         <if test="excludeId != null">
             AND id != #{excludeId}
         </if>
+    </select>
+
+    <select id="lockRoleIdByCode" resultType="long">
+        SELECT id
+        FROM sys_role_info
+        WHERE role_code = #{roleCode}
+          AND delete_flag = 0
+        FOR UPDATE
+    </select>
+
+    <select id="countUsersByRoleId" resultType="int">
+        SELECT COUNT(*)
+        FROM sys_user_role_info ur
+        INNER JOIN sys_user_info u ON u.id = ur.user_id AND u.delete_flag = 0
+        WHERE ur.role_id = #{roleId}
+          AND ur.delete_flag = 0
     </select>
 
     <!-- 新增用户 -->

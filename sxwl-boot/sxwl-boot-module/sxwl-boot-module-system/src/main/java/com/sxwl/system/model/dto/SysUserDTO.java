@@ -40,6 +40,9 @@ public class SysUserDTO {
     /** 角色 ID 列表（仅新增时使用） */
     private List<Long> roleIds;
 
+    /** 是否为超级管理员账号（仅列表展示使用） */
+    private Boolean superAdmin;
+
     public Long getId() {
         return id;
     }
@@ -110,5 +113,13 @@ public class SysUserDTO {
 
     public void setRoleIds(List<Long> roleIds) {
         this.roleIds = roleIds;
+    }
+
+    public Boolean getSuperAdmin() {
+        return superAdmin;
+    }
+
+    public void setSuperAdmin(Boolean superAdmin) {
+        this.superAdmin = superAdmin;
     }
 }

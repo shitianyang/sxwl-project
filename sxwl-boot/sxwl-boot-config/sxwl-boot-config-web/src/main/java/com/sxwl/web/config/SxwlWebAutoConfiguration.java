@@ -91,7 +91,8 @@ public class SxwlWebAutoConfiguration {
     @ConditionalOnMissingBean
     public FilterRegistrationBean<SxwlRequestLogFilter> requestLogFilter(SxwlWebProperties webProperties) {
         FilterRegistrationBean<SxwlRequestLogFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(new SxwlRequestLogFilter(webProperties.isRequestLogEnabled()));
+        registration.setFilter(new SxwlRequestLogFilter(webProperties.isRequestLogEnabled(),
+                webProperties.isTrustForwardedHeaders()));
         registration.addUrlPatterns("/*");
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
         return registration;
@@ -102,7 +103,9 @@ public class SxwlWebAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public SxwlLogAspect sxwlLogAspect(ApplicationEventPublisher eventPublisher, ObjectMapper objectMapper,
-                                         Optional<SxwlIpLocationService> ipLocationService) {
-        return new SxwlLogAspect(eventPublisher, objectMapper, ipLocationService);
+                                         Optional<SxwlIpLocationService> ipLocationService,
+                                         SxwlWebProperties webProperties) {
+        return new SxwlLogAspect(eventPublisher, objectMapper, ipLocationService,
+                webProperties.isTrustForwardedHeaders());
     }
 }

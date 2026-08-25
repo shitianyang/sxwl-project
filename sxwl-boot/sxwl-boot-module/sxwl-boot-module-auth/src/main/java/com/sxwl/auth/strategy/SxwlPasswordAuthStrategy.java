@@ -2,6 +2,7 @@ package com.sxwl.auth.strategy;
 
 import com.sxwl.auth.crypto.SxwlPasswordDecryptor;
 import com.sxwl.auth.mapper.SysAuthUserMapper;
+import com.sxwl.common.constants.SxwlSystemConstants;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.security.model.SxwlLoginRequest;
 import com.sxwl.security.model.SxwlLoginUser;
@@ -133,6 +134,11 @@ public class SxwlPasswordAuthStrategy implements SxwlAuthenticationStrategy {
             if (dataScope == null) {
                 continue;
             }
+            boolean isProtectedSuperAdmin = SxwlSystemConstants.ADMIN_USERNAME.equals(loginUser.getUsername())
+                    && SxwlSystemConstants.ADMIN_ROLE_CODE.equals(roleCode);
+            if (dataScope == 1 && !isProtectedSuperAdmin) {
+                continue;
+            }
             strongestScope = strongestScope == null ? dataScope : Math.min(strongestScope, dataScope);
 
             if (dataScope == 1) {
@@ -155,9 +161,7 @@ public class SxwlPasswordAuthStrategy implements SxwlAuthenticationStrategy {
 
         Set<String> perms = new HashSet<>(sysUserMapper.selectPermissionsByUserId(loginUser.getUserId()));
         if (allData) {
-            roles.add("admin");
             perms.add("*:*:*");
-            allData = true;
         }
 
         loginUser.setRoles(roles);

@@ -19,14 +19,16 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -81,6 +83,8 @@ public class SysBackupServiceImpl implements SysBackupService {
     public void backup(Long userId) {
         log.info("开始执行数据备份...");
         sendProgress(userId, 5, "开始备份数据库...");
+        Path backupPath = null;
+        Path errorPath = null;
         try {
             String dbName = parseDbNameFromUrl(datasourceUrl);
             if (dbName == null) {
@@ -92,7 +96,10 @@ public class SysBackupServiceImpl implements SysBackupService {
 
             log.info("备份文件名: {}, 数据库: {}", backupFileName, dbName);
 
-            // 1. 执行 pg_dump，捕获 stdout
+            backupPath = Files.createTempFile("sxwl-backup-", ".sql.gz");
+            errorPath = Files.createTempFile("sxwl-backup-", ".err");
+
+            // 1. 执行 pg_dump。stderr 重定向到文件，避免管道缓冲区阻塞子进程。
             ProcessBuilder dumpPb = new ProcessBuilder(
                     pgDumpPath,
                     "-h", parseHostFromUrl(datasourceUrl),
@@ -104,38 +111,35 @@ public class SysBackupServiceImpl implements SysBackupService {
                     "--no-password"
             );
             dumpPb.environment().put("PGPASSWORD", datasourcePassword);
-            dumpPb.redirectErrorStream(false);
+            dumpPb.redirectError(errorPath.toFile());
 
             Process dumpProcess = dumpPb.start();
 
-            // 2. 读取 stdout 并 gzip 压缩
-            ByteArrayOutputStream gzippedOs = new ByteArrayOutputStream(64 * 1024 * 1024);
-            try (GZIPOutputStream gzipOs = new GZIPOutputStream(gzippedOs);
+            // 2. 读取 stdout 并直接写入临时 gzip 文件，避免整个备份常驻堆内存。
+            try (OutputStream fileOutput = Files.newOutputStream(backupPath);
+                 GZIPOutputStream gzipOs = new GZIPOutputStream(fileOutput);
                  InputStream pgStdout = dumpProcess.getInputStream()) {
                 pgStdout.transferTo(gzipOs);
-                gzipOs.finish();
             }
 
             int exitCode = dumpProcess.waitFor();
             if (exitCode != 0) {
-                // 读取 stderr 获取错误详情
-                String errorMsg = new String(dumpProcess.getErrorStream().readAllBytes());
+                String errorMsg = readError(errorPath);
                 log.error("pg_dump 执行失败, exitCode={}, error={}", exitCode, errorMsg);
                 throw new SxwlBusinessException(10001, "数据库备份执行失败: " + errorMsg);
             }
 
-            byte[] gzippedData = gzippedOs.toByteArray();
-            log.info("pg_dump 完成, 压缩后大小: {} bytes", gzippedData.length);
+            long backupSize = Files.size(backupPath);
+            log.info("pg_dump 完成, 压缩后大小: {} bytes", backupSize);
             sendProgress(userId, 50, "数据库导出完成，压缩上传中...");
 
             // 3. 上传到 RustFS S3
             String bucket = rustfsProperties.getDefaultBucket();
             String objectKey = "backup/" + timestamp + "/" + UUID.randomUUID().toString().replace("-", "") + ".sql.gz";
 
-            rustfsTemplate.upload(bucket, objectKey,
-                    new ByteArrayInputStream(gzippedData),
-                    gzippedData.length,
-                    "application/gzip");
+            try (InputStream backupInput = new BufferedInputStream(Files.newInputStream(backupPath))) {
+                rustfsTemplate.upload(bucket, objectKey, backupInput, backupSize, "application/gzip");
+            }
 
             log.info("备份文件已上传至 S3: bucket={}, key={}", bucket, objectKey);
 
@@ -144,7 +148,7 @@ public class SysBackupServiceImpl implements SysBackupService {
             fileInfo.setFileName(backupFileName);
             fileInfo.setObjectKey(objectKey);
             fileInfo.setFileUrl(null); // 由 presigned URL 按需生成
-            fileInfo.setFileSize((long) gzippedData.length);
+            fileInfo.setFileSize(backupSize);
             fileInfo.setFileType("application/gzip");
             fileInfo.setFileSuffix("sql.gz");
             fileInfo.setBucketName(bucket);
@@ -161,6 +165,9 @@ public class SysBackupServiceImpl implements SysBackupService {
         } catch (Exception e) {
             log.error("数据备份异常", e);
             throw new SxwlBusinessException(10001, "数据库备份异常: " + e.getMessage());
+        } finally {
+            deleteTempFile(backupPath);
+            deleteTempFile(errorPath);
         }
     }
 
@@ -184,7 +191,7 @@ public class SysBackupServiceImpl implements SysBackupService {
     public void restore(Long fileId) {
         log.info("开始恢复备份: fileId={}", fileId);
 
-        SysFileInfo fileInfo = sysFileInfoMapper.getFileById(fileId);
+        SysFileInfo fileInfo = sysFileInfoMapper.getVisibleFileById(fileId);
         if (fileInfo == null) {
             throw new SxwlBusinessException(10004, "备份记录不存在");
         }
@@ -214,7 +221,7 @@ public class SysBackupServiceImpl implements SysBackupService {
     public void delete(Long id) {
         log.info("删除备份文件: id={}", id);
 
-        SysFileInfo fileInfo = sysFileInfoMapper.getFileById(id);
+        SysFileInfo fileInfo = sysFileInfoMapper.getVisibleFileById(id);
         if (fileInfo == null) {
             throw new SxwlBusinessException(10004, "备份记录不存在");
         }
@@ -283,6 +290,21 @@ public class SysBackupServiceImpl implements SysBackupService {
             unitIndex++;
         }
         return String.format("%.2f %s", size, units[unitIndex]);
+    }
+
+    private String readError(Path errorPath) throws java.io.IOException {
+        try (InputStream input = Files.newInputStream(errorPath)) {
+            return new String(input.readNBytes(8192), StandardCharsets.UTF_8);
+        }
+    }
+
+    private void deleteTempFile(Path path) {
+        if (path == null) return;
+        try {
+            Files.deleteIfExists(path);
+        } catch (Exception e) {
+            log.warn("清理备份临时文件失败: {}", path, e);
+        }
     }
 
     private String parseDbNameFromUrl(String url) {

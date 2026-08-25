@@ -61,14 +61,13 @@
 | Axios | 1.18.1 | HTTP 客户端 |
 | TipTap | 3.29.2 | 富文本编辑器 |
 | Sass | 1.103.1 | 样式预处理 |
-| Vitest | 4.1.11 | 单元测试 |
 
 ## 项目结构
 
 ```text
 sxwl-project/
 ├── sxwl-boot/                         # 后端 Maven 聚合工程
-│   ├── sxwl-boot-app/                 # 应用启动、环境配置、初始化 SQL 与集成测试
+│   ├── sxwl-boot-app/                 # 应用启动、环境配置与初始化 SQL
 │   ├── sxwl-boot-common/              # 公共实体、DTO、异常、常量、工具类
 │   ├── sxwl-boot-config/              # 基础设施配置模块
 │   │   ├── sxwl-boot-config-web/      # Web、跨域、Jackson、异常与日志 AOP
@@ -154,20 +153,18 @@ npm run dev
 
 默认前端地址为 `http://127.0.0.1:31001`。开发服务器将 `/sxwl-api` 代理到 `http://127.0.0.1:30101`，并已配置 `@` 指向 `src/`。
 
-## 构建与测试
+## 构建
 
 ```bash
 # 后端：在 sxwl-boot 目录执行
-mvn test
 mvn clean install
 
 # 前端：在 sxwl-react 目录执行
 npm run build
 npm run lint
-npm test
 ```
 
-前端构建会执行 TypeScript 类型检查。后端集成测试依赖 PostgreSQL、Redis 等运行环境；执行前请确保相应配置可用。
+前端构建会执行 TypeScript 类型检查。当前前端未保留自动化测试脚本。
 
 ## 开发说明
 
