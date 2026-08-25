@@ -25,6 +25,13 @@ export default defineConfig({
       },
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern',
+      } as Record<string, unknown>,
+    },
+  },
   build: {
     rolldownOptions: {
       preserveEntrySignatures: 'allow-extension',

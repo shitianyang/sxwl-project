@@ -1,0 +1,54 @@
+// ============================================
+// ServerMonitor — 系统监控页样式（sass, 规范 v2.0）
+// 中性卡片 + 细边框，无渐变线 / 无渐变标题；图表配色由 tsx 常量控制（v1.1 规范）
+// ============================================
+
+@use "../../../styles/variables" as *;
+@use "../../../styles/mixins" as *;
+
+.sxwl-monitor-page {
+  padding: 24px;
+
+  // 区块卡片（Pro 白卡）
+  .ant-card {
+    position: relative;
+    border-radius: $sxwl-radius-lg;
+    background: $sxwl-color-bg-container;
+    border: 1px solid $sxwl-color-border-secondary;
+    box-shadow: $sxwl-shadow-card;
+    overflow: hidden;
+    transition: box-shadow $sxwl-dur ease, transform $sxwl-dur ease;
+    animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) both;
+
+    &:hover {
+      box-shadow: $sxwl-shadow-popup;
+    }
+  }
+
+  // 卡片标题：中性加粗
+  .ant-card-head {
+    border-bottom: 1px solid $sxwl-color-border-secondary;
+  }
+
+  .ant-card-head-title {
+    font-weight: 600;
+    color: $sxwl-color-text-heading;
+  }
+
+  // 顶部面包屑 / 状态区
+  .sxwl-monitor-head {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: $sxwl-color-text-secondary;
+    font-size: 14px;
+    animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  // 统计数字强调
+  .ant-statistic-content {
+    color: $sxwl-color-text-heading;
+    font-weight: 600;
+  }
+}

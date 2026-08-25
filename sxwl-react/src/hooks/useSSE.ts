@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createConnectionTicket } from '@/api/sse';
 import { useAuthStore } from '@/stores/authStore';
 
 /** SSE 连接状态 */
@@ -45,32 +46,43 @@ export function useSSE(path: string, options: SSEOptions = {}): { status: SSESta
 
     setStatus('connecting');
 
-    const url = `/sxwl-api${path}?token=${encodeURIComponent(accessToken)}`;
-    const es = new EventSource(url);
-    esRef.current = es;
+    let cancelled = false;
+    let reconnectTimer: number | undefined;
+    const connect = async () => {
+      try {
+        const result = await createConnectionTicket();
+        if (cancelled) return;
+        if (!result.data.data) throw new Error('SSE ticket response is invalid');
 
-    es.onopen = () => {
-      if (!mountedRef.current) return;
-      setStatus('connected');
-      onOpenRef.current?.();
+        const es = new EventSource(`/sxwl-api${path}?ticket=${encodeURIComponent(result.data.data)}`);
+        esRef.current = es;
+        es.onopen = () => {
+          if (!mountedRef.current) return;
+          setStatus('connected');
+          onOpenRef.current?.();
+        };
+        const currentEvents = eventsRef.current;
+        if (currentEvents) {
+          Object.entries(currentEvents).forEach(([name, handler]) => es.addEventListener(name, handler));
+        }
+        es.onerror = () => {
+          es.close();
+          if (!mountedRef.current || cancelled) return;
+          setStatus('disconnected');
+          reconnectTimer = window.setTimeout(() => void connect(), 1000);
+        };
+      } catch {
+        if (!mountedRef.current || cancelled) return;
+        setStatus('disconnected');
+        reconnectTimer = window.setTimeout(() => void connect(), 1000);
+      }
     };
-
-    // 注册自定义事件（从 ref 读最新回调，避免重建 EventSource）
-    const currentEvents = eventsRef.current;
-    if (currentEvents) {
-      Object.entries(currentEvents).forEach(([name, handler]) => {
-        es.addEventListener(name, handler);
-      });
-    }
-
-    es.onerror = () => {
-      if (!mountedRef.current) return;
-      // EventSource 会自动重连，仅标记状态
-      setStatus('disconnected');
-    };
+    void connect();
 
     return () => {
-      es.close();
+      cancelled = true;
+      if (reconnectTimer !== undefined) window.clearTimeout(reconnectTimer);
+      esRef.current?.close();
       esRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

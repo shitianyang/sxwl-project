@@ -1,5 +1,6 @@
 package com.sxwl.rustfs.mapper;
 
+import com.sxwl.common.annotation.SxwlDataScope;
 import com.sxwl.rustfs.model.entity.SysFileSessionInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -30,7 +31,8 @@ public interface SysFileSessionInfoMapper {
      * @param status 新状态
      * @return 影响行数
      */
-    int updateStatus(@Param("id") Long id, @Param("status") Integer status);
+    int updateStatus(@Param("id") Long id, @Param("status") Integer status,
+                     @Param("userId") Long userId);
 
     /**
      * 根据 MD5 查询未完成的会话
@@ -38,6 +40,7 @@ public interface SysFileSessionInfoMapper {
      * @param fileMd5 文件 MD5
      * @return 会话实体
      */
+    @SxwlDataScope
     SysFileSessionInfo getByMd5(@Param("fileMd5") String fileMd5);
 
     /**
@@ -46,5 +49,6 @@ public interface SysFileSessionInfoMapper {
      * @param id 会话 ID
      * @return 会话实体
      */
+    @SxwlDataScope
     SysFileSessionInfo getById(@Param("id") Long id);
 }

@@ -24,6 +24,7 @@ import com.sxwl.security.model.SxwlTokenPair;
 import com.sxwl.security.spi.SxwlAuthenticationStrategy;
 import com.sxwl.security.utils.SxwlClientTypeUtils;
 import com.sxwl.security.utils.SxwlSecurityUtils;
+import com.sxwl.web.config.SxwlWebProperties;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -63,6 +64,7 @@ public class AuthController {
     private final SxwlSmsAuthStrategy smsAuthStrategy;
     private final SxwlSM2KeyManager keyManager;
     private final Optional<SxwlIpLocationService> ipLocationService;
+    private final SxwlWebProperties webProperties;
 
     public AuthController(SxwlAuthenticationHandler handler,
                           SxwlRedisHelper redisHelper,
@@ -72,7 +74,8 @@ public class AuthController {
                           SxwlPasswordAuthStrategy passwordAuthStrategy,
                           SxwlSmsAuthStrategy smsAuthStrategy,
                           SxwlSM2KeyManager keyManager,
-                          Optional<SxwlIpLocationService> ipLocationService) {
+                          Optional<SxwlIpLocationService> ipLocationService,
+                          SxwlWebProperties webProperties) {
         this.handler = handler;
         this.redisHelper = redisHelper;
         this.properties = properties;
@@ -82,6 +85,7 @@ public class AuthController {
         this.smsAuthStrategy = smsAuthStrategy;
         this.keyManager = keyManager;
         this.ipLocationService = ipLocationService;
+        this.webProperties = webProperties;
     }
 
     /**
@@ -279,6 +283,9 @@ public class AuthController {
      * 获取客户端真实 IP
      */
     private String getClientIp(HttpServletRequest request) {
+        if (!webProperties.isTrustForwardedHeaders()) {
+            return request.getRemoteAddr();
+        }
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("X-Real-IP");

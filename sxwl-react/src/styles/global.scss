@@ -1,0 +1,142 @@
+// ============================================
+// sxwl-react 全局样式（sass）
+// 对齐规范 v2.0：中性 Pro 观感，橙色仅用于链接/关闭 hover 等点缀
+// 替代原 global.style.ts：作用域限定在 .sxwl-root 容器内
+// ============================================
+
+@use "variables" as *;
+@use "mixins" as *;
+
+// ============================================
+// 全局基础样式（html/body/#root，作用域之外）
+// 原 global.css 合并于此，统一收口到 global.scss
+// ============================================
+*,
+*::before,
+*::after {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+#root {
+  height: 100%;
+}
+
+// ============================================
+// 全局动画（供各组件 scss 的 animation 引用）
+// ============================================
+@keyframes sxwl-rise-soft {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ============================================
+// antd Modal（portal 渲染到 body，必须在 .sxwl-root 之外才能生效）
+// Pro 观感：白底 header + 中性加粗标题 + 橙色关闭 hover
+// ============================================
+.ant-modal {
+  &-content {
+    overflow: hidden;
+  }
+
+  &-header {
+    margin-bottom: 0;
+    padding: 16px 24px;
+    border-bottom: 1px solid $sxwl-color-border-secondary;
+    background: $sxwl-color-bg-container;
+  }
+
+  &-title {
+    color: $sxwl-color-text-heading;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  &-close {
+    color: $sxwl-color-text-tertiary;
+    transition: color $sxwl-dur-fast;
+
+    &:hover {
+      color: $sxwl-color-primary !important;
+    }
+  }
+
+  &-body {
+    padding: 20px 24px;
+  }
+
+  &-footer {
+    margin-top: 0;
+    padding: 12px 24px;
+    border-top: 1px solid $sxwl-color-border-secondary;
+  }
+}
+
+// ============================================
+// antd Result（Error 404 / 403 / 500 三页自动受益）
+// ============================================
+.ant-result {
+  padding-top: 6vh;
+
+  &-title {
+    color: $sxwl-color-text-heading;
+    font-size: 64px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+
+  &-subtitle {
+    font-size: 15px;
+    color: $sxwl-color-text-secondary;
+  }
+
+  &-extra {
+    margin-top: 20px;
+  }
+}
+
+.sxwl-root {
+  height: 100%;
+
+  // HTML 文本渲染优化
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  // 全局重置（作用域限定在 #root 容器内）
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  a {
+    color: $sxwl-color-primary;
+    text-decoration: none;
+    transition: color $sxwl-dur-fast;
+  }
+
+  a:hover {
+    color: $sxwl-color-primary-hover;
+  }
+
+  // 滚动条美化
+  @include scrollbar-thin(#e5e6eb, #c9cdd4);
+}

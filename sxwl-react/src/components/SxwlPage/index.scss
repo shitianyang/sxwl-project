@@ -1,0 +1,128 @@
+// ============================================
+// SxwlPage — CRUD 页面骨架样式（sass, 规范 v2.0 · Pro 中性观感）
+// 所有业务页都通过 SxwlPage 拼装，改此文件全局受益
+// ============================================
+
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+// 页面根容器：撑满 Content，flex 纵向排布
+.sxwl-page-wrapper {
+  height: calc(100vh - 64px - 48px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+// 面包屑
+.sxwl-page-breadcrumb {
+  margin-bottom: 16px;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: $sxwl-color-text-tertiary;
+  animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
+}
+
+.sxwl-page-breadcrumb-sep {
+  margin: 0 8px;
+  color: $sxwl-color-text-quaternary;
+}
+
+.sxwl-page-breadcrumb-item {
+  transition: color $sxwl-dur-fast;
+
+  &:hover {
+    color: $sxwl-color-primary;
+  }
+
+  // 当前项：中性加粗（Pro 风格）
+  &.is-current {
+    color: $sxwl-color-text-heading;
+    font-weight: 700;
+  }
+}
+
+// 工具栏
+.sxwl-page-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+  animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+// 表格卡片（白底 + 细边框 + L1 阴影，Pro 观感）
+.sxwl-page-table-card {
+  position: relative;
+  border-radius: $sxwl-radius-lg;
+  background: $sxwl-color-bg-container;
+  border: 1px solid $sxwl-color-border-secondary;
+  box-shadow: $sxwl-shadow-card;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+
+  .ant-card-body {
+    height: 100%;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+
+    .ant-table-wrapper {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+
+      .ant-spin-nested-loading {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+
+        .ant-spin-container {
+          flex: 1;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+
+          .ant-table {
+            flex: 1;
+            min-height: 0;
+          }
+
+          // 分页固定在底部，上下留白
+          .ant-pagination {
+            flex-shrink: 0;
+            padding: 16px 0;
+            text-align: right;
+          }
+        }
+      }
+
+      .ant-table-container {
+        border-radius: 0 0 $sxwl-radius-lg $sxwl-radius-lg;
+      }
+    }
+  }
+
+  // 表头：浅灰底 + 加粗（Pro 表格规范）
+  .ant-table-thead > tr > th {
+    background: #fafafa;
+    color: $sxwl-color-text-secondary;
+    font-weight: 600;
+    border-bottom: 1px solid $sxwl-color-border-secondary;
+  }
+
+  // 行 hover：浅灰
+  .ant-table-tbody > tr:hover > td {
+    background: #fafafa !important;
+  }
+
+  // 选中行：品牌浅橙底（点缀）
+  .ant-table-row-selected > td {
+    background: $sxwl-color-primary-1 !important;
+  }
+}

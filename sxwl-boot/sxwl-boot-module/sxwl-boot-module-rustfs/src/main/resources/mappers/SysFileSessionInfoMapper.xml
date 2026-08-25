@@ -20,7 +20,7 @@
     <update id="updateStatus">
         UPDATE sys_file_session_info
         SET status = #{status}, update_time = NOW()
-        WHERE id = #{id}
+        WHERE id = #{id} AND create_by = #{userId}
     </update>
 
     <!-- 根据 MD5 查询未完成的会话 -->

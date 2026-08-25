@@ -17,6 +17,8 @@ import {
 import { getMenuTree } from '@/api/system/menuApi';
 import { getOrganizationTree } from '@/api/system/organizationApi';
 
+const SUPER_ADMIN_ROLE_CODE = 'super_admin';
+
 /** 菜单树转为 DataNode */
 function toMenuTreeData(list: any[]): DataNode[] {
   return list.map((item: any) => ({
@@ -237,23 +239,25 @@ export default function RolePage() {
     { title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 180 },
     {
       title: '操作', key: 'action', width: 300,
-      render: (_, record) => (
-        <SxwlSpace>
-          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="SafetyCertificateOutlined" />} permission="system:role:grant" onClick={() => handleAssignMenu(record)}>
-            菜单
-          </SxwlPermissionButton>
-          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="TeamOutlined" />} permission="system:role:grant" onClick={() => handleConfigDataScope(record)}>
-            数据权限
-          </SxwlPermissionButton>
-          <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="system:role:edit" onClick={() => handleEdit(record)}>
-            编辑
-          </SxwlPermissionButton>
-          <SxwlPopconfirm title="确定删除该角色吗？" onConfirm={() => handleDelete(record)}>
-            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:role:delete">
-              删除
+      render: (_, record) => record.roleCode === SUPER_ADMIN_ROLE_CODE ? (
+        <SxwlTag color="blue">系统保留</SxwlTag>
+      ) : (
+          <SxwlSpace>
+            <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="SafetyCertificateOutlined" />} permission="system:role:grant" onClick={() => handleAssignMenu(record)}>
+              菜单
             </SxwlPermissionButton>
-          </SxwlPopconfirm>
-        </SxwlSpace>
+            <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="TeamOutlined" />} permission="system:role:grant" onClick={() => handleConfigDataScope(record)}>
+              数据权限
+            </SxwlPermissionButton>
+            <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="system:role:edit" onClick={() => handleEdit(record)}>
+              编辑
+            </SxwlPermissionButton>
+            <SxwlPopconfirm title="确定删除该角色吗？" onConfirm={() => handleDelete(record)}>
+              <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:role:delete">
+                删除
+              </SxwlPermissionButton>
+            </SxwlPopconfirm>
+          </SxwlSpace>
       ),
     },
   ];
@@ -282,7 +286,6 @@ export default function RolePage() {
     {
       name: 'dataScope', label: '数据权限', type: 'select', required: true, initialValue: 4,
       options: [
-        { value: 1, label: '全部' },
         { value: 2, label: '本组织' },
         { value: 3, label: '本组织及下级' },
         { value: 4, label: '仅本人' },

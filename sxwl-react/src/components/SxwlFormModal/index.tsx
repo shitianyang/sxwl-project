@@ -4,7 +4,7 @@ import { SxwlInput, SxwlSelect, SxwlModal, SxwlForm, SxwlMarkdownEditor,
   SxwlRichTextEditor, SxwlRow, SxwlCol,
 } from '@/components';
 import type { FormFieldConfig } from '@/types/FormFieldConfig';
-import useFormModalStyles from './index.style';
+import './index.scss';
 
 // ==================== Types
 
@@ -92,7 +92,6 @@ function SxwlFormModal({
   initialValues,
   editingData,
 }: SxwlFormModalProps): JSX.Element {
-  const { styles } = useFormModalStyles();
   const colSpan = columns === 1 ? 24 : 12;
   const buildRules = (field: FormFieldConfig) => {
     const rules = [...(field.rules ?? [])];
@@ -128,7 +127,7 @@ function SxwlFormModal({
       <SxwlForm
         form={form}
         layout={layout}
-        className={styles.form}
+        className="sxwl-form-modal-form"
         labelCol={layout === 'horizontal' ? { style: { minWidth: 100 } } : undefined}
         preserve={false}
       >

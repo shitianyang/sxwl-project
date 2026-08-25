@@ -7,7 +7,7 @@ import {
   markAsRead, markAllAsRead,
 } from '@/api/system/noticeApi';
 import type { SysNoticeUnreadItem, SysNoticeItem } from '@/api/system/noticeApi';
-import useNoticeStyles from './index.style';
+import './index.scss';
 
 
 
@@ -29,7 +29,6 @@ const LEVEL_LABEL: Record<string, string> = {
  * 未读 Badge + Popover 列表 + 点击预览（Markdown 渲染）+ SSE 状态指示。
  */
 export default function HeaderNotice() {
-  const { styles, cx } = useNoticeStyles();
   const [open, setOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [noticeList, setNoticeList] = useState<SysNoticeUnreadItem[]>([]);
@@ -178,12 +177,12 @@ export default function HeaderNotice() {
 
   // ===== 弹窗内容 =====
   const popoverContent = (
-    <div className={styles.popover}>
-      <div className={styles.popoverHeader}>
+    <div className="sxwl-notice-popover">
+      <div className="sxwl-notice-popover-header">
         <SxwlSpace size={8}>
           <SxwlText strong>消息通知</SxwlText>
           <SxwlTooltip title={sseState === 'connected' ? '实时连接中' : sseState === 'connecting' ? '连接中...' : '连接断开，轮询中'}>
-            <span className={cx(styles.sseDot, sseState)} />
+            <span className={`sxwl-notice-sse-dot ${sseState}`} />
           </SxwlTooltip>
         </SxwlSpace>
         {unreadCount > 0 && (
@@ -193,21 +192,21 @@ export default function HeaderNotice() {
         )}
       </div>
       {loading ? (
-        <div className={styles.popoverLoading}>
+        <div className="sxwl-notice-popover-loading">
           <SxwlSpin size="small" />
         </div>
       ) : noticeList.length === 0 ? (
         <SxwlEmpty description="暂无通知" image={SxwlEmpty.PRESENTED_IMAGE_SIMPLE} />
       ) : (
-        <div className={styles.list}>
+        <div className="sxwl-notice-list">
           {noticeList.map((item) => (
-            <div
-              key={item.id}
-              className={cx(styles.listItem, item.readFlag === 0 && 'unread')}
-              onClick={() => handlePreview(item)}
-            >
-              <div className={styles.listItemTitle}>
-                {item.readFlag === 0 && <span className={styles.dot} />}
+              <div
+                key={item.id}
+                className={`sxwl-notice-list-item${item.readFlag === 0 ? ' unread' : ''}`}
+                onClick={() => handlePreview(item)}
+              >
+                <div className="sxwl-notice-list-item-title">
+                {item.readFlag === 0 && <span className="sxwl-notice-dot" />}
                 <SxwlText
                   strong={item.readFlag === 0}
                   ellipsis={{ tooltip: item.title }}
@@ -216,7 +215,7 @@ export default function HeaderNotice() {
                   {item.title}
                 </SxwlText>
               </div>
-              <div className={styles.listItemDesc}>
+              <div className="sxwl-notice-list-item-desc">
                 <SxwlTag color={LEVEL_COLOR[item.level] || 'blue'} style={{ fontSize: 11, lineHeight: '18px' }}>
                   {LEVEL_LABEL[item.level] || item.level}
                 </SxwlTag>
@@ -234,9 +233,9 @@ export default function HeaderNotice() {
   return (
     <>
       {/* SSE 状态指示器（独立于 Popover，点击只显示连接状态） */}
-      <span className={styles.sseWrapper}>
+      <span className="sxwl-notice-sse-wrapper">
         <SxwlTooltip title={sseState === 'connected' ? '实时连接中' : sseState === 'connecting' ? '连接中...' : '连接断开，轮询中'}>
-          <span className={cx(styles.sseDot, sseState)} />
+          <span className={`sxwl-notice-sse-dot ${sseState}`} />
         </SxwlTooltip>
       </span>
       <SxwlPopover
@@ -245,12 +244,12 @@ export default function HeaderNotice() {
         placement="bottomRight"
         open={open}
         onOpenChange={handleOpenChange}
-        classNames={{ root: styles.overlay }}
+        classNames={{ root: 'sxwl-notice-overlay' }}
       >
-        <div className={styles.trigger}>
-          <SxwlBadge count={unreadCount} showZero={false} size="small" offset={[-2, 2]} className={styles.badge}>
+        <div className="sxwl-notice-trigger">
+          <SxwlBadge count={unreadCount} showZero={false} size="small" offset={[-2, 2]} className="sxwl-notice-badge">
             <SxwlTooltip title="消息通知">
-              <SxwlButton type="text" className={styles.btn} icon={<SxwlIcon name="BellOutlined" />} />
+              <SxwlButton type="text" className="sxwl-notice-btn" icon={<SxwlIcon name="BellOutlined" />} />
             </SxwlTooltip>
           </SxwlBadge>
         </div>

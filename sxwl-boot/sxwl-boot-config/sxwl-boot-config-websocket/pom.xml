@@ -31,5 +31,13 @@
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-config-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-config-web</artifactId>
+        </dependency>
     </dependencies>
 </project>

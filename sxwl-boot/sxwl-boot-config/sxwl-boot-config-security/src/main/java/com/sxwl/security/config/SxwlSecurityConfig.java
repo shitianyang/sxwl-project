@@ -60,6 +60,7 @@ public class SxwlSecurityConfig {
                 // 禁用表单登录 / HTTP Basic（纯 JWT，不需要 UserDetailsService）
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
+                .cors(cors -> {})
                 // 无状态会话
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 放行规则
@@ -70,6 +71,8 @@ public class SxwlSecurityConfig {
                                 "/auth/logout",
                                 "/auth/public-key",
                                 "/captcha/**",
+                                "/sse/connect",
+                                "/ws/connect",
                                 "/public/**",
                                 "/actuator/**"
                         ).permitAll()

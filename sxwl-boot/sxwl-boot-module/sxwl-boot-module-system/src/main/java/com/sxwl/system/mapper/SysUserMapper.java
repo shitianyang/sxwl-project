@@ -58,6 +58,12 @@ public interface SysUserMapper {
     int checkPhoneUnique(@Param("phone") String phone,
                           @Param("excludeId") Long excludeId);
 
+    /** 锁定超级管理员角色并返回其 ID，避免并发创建多个超级管理员。 */
+    Long lockRoleIdByCode(@Param("roleCode") String roleCode);
+
+    /** 查询角色下已关联的用户数，作为超级管理员唯一性二次校验。 */
+    int countUsersByRoleId(@Param("roleId") Long roleId);
+
     /**
      * 新增用户
      *

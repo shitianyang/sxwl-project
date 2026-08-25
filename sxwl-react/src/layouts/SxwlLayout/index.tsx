@@ -9,7 +9,7 @@ import type { MenuTreeItem } from '@/api/system/menuApi';
 import logoSrc from '@/assets/images/logo.png';
 import HeaderNotice from './HeaderNotice';
 import SxwlClock from '@/components/SxwlClock';
-import useLayoutStyles from './index.style';
+import './index.scss';
 
 
 /** DB 图标名 → SxwlIcon PascalCase 映射 */
@@ -108,7 +108,6 @@ function computeParentDirs(items: MenuProps['items'], currentPath: string): stri
 }
 
 export default function LayoutPage() {
-  const { styles } = useLayoutStyles();
   const [collapsed, setCollapsed] = useState(false);
   const menuTree = useMenuStore((s) => s.menuTree);
   const loading = useMenuStore((s) => s.loading);
@@ -158,17 +157,17 @@ export default function LayoutPage() {
   ];
 
   return (
-    <SxwlLayout className={styles.layout}>
+    <SxwlLayout className="sxwl-layout-layout">
       <SxwlLayout.Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
         width={220}
-        className={styles.sider}
+        className="sxwl-layout-sider"
       >
-        <div className={styles.logo}>
-          <img src={logoSrc} alt="数行未来" className={styles.logoIcon} />
-          {!collapsed && <span className={styles.logoText}>数行未来·御权</span>}
+        <div className="sxwl-layout-logo">
+          <img src={logoSrc} alt="数行未来" className="sxwl-layout-logo-icon" />
+          {!collapsed && <span className="sxwl-layout-logo-text">数行未来·御权</span>}
         </div>
         {loading ? (
           <div style={{ textAlign: 'center', padding: 40 }}>
@@ -195,28 +194,28 @@ export default function LayoutPage() {
         )}
       </SxwlLayout.Sider>
       <SxwlLayout>
-        <SxwlLayout.Header className={styles.header}>
-          <div className={styles.headerLeft}>
+        <SxwlLayout.Header className="sxwl-layout-header">
+          <div className="sxwl-layout-header-left">
             <SxwlButton
               type="text"
               icon={collapsed ? <SxwlIcon name="MenuUnfoldOutlined" /> : <SxwlIcon name="MenuFoldOutlined" />}
               onClick={() => setCollapsed(!collapsed)}
             />
           </div>
-          <div className={styles.headerCenter}>
+          <div className="sxwl-layout-header-center">
             <SxwlClock />
           </div>
-          <div className={styles.headerRight}>
+          <div className="sxwl-layout-header-right">
             <HeaderNotice />
             <SxwlDropdown menu={{ items: userMenuItems }} placement="bottomRight">
-              <SxwlSpace className={styles.userDropdown}>
+              <SxwlSpace className="sxwl-layout-user-dropdown">
                 <SxwlAvatar size="small" icon={<SxwlIcon name="UserOutlined" />} />
                 <SxwlText>{username || '未知用户'}</SxwlText>
               </SxwlSpace>
             </SxwlDropdown>
           </div>
         </SxwlLayout.Header>
-        <SxwlLayout.Content className={styles.content}>
+        <SxwlLayout.Content className="sxwl-layout-content">
           <Outlet />
         </SxwlLayout.Content>
       </SxwlLayout>

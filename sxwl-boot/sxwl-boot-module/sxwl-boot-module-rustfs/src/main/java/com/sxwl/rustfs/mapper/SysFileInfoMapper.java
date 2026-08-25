@@ -53,6 +53,7 @@ public interface SysFileInfoMapper {
      * @param md5 文件 MD5
      * @return 文件实体
      */
+    @SxwlDataScope
     SysFileInfo getFileByMd5(String md5);
 
     /**

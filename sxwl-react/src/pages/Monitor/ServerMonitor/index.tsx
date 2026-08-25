@@ -2,6 +2,17 @@ import { SxwlCard, SxwlRow, SxwlCol, SxwlStatistic, SxwlTag, SxwlTable } from '@
 import SxwlLineChart from '@/components/SxwlChart/SxwlLineChart';
 import SxwlChart from '@/components/SxwlChart';
 import { useMonitorSSE } from '@/hooks/useMonitorSSE';
+import './index.scss';
+
+/** 品牌主色（与 variables.scss $sxwl-color-primary 对齐） */
+const BRAND = '#DE5F0E';
+const BRAND_LIGHT = '#F0972D';
+/** 面积图填充/描边（替代原硬编码蓝 #1677ff33） */
+const AREA_STYLE = { fill: 'rgba(222, 95, 14, 0.16)', stroke: BRAND, fillOpacity: 1, lineWidth: 2 };
+/** 单系列折线品牌橙 */
+const LINE_STYLE = { stroke: BRAND, lineWidth: 2.5 };
+/** 多系列（堆内存已用/最大）橙系深浅，可区分且统一 */
+const DUAL_RANGE = [BRAND, BRAND_LIGHT];
 
 /** 字节格式化 */
 function formatBytes(bytes: number | null | undefined): string {
@@ -34,10 +45,10 @@ export default function ServerMonitorPage() {
   ];
 
   return (
-    <div style={{ padding: 24 }}>
-      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, color: '#666' }}>
+    <div className="sxwl-monitor-page">
+      <div className="sxwl-monitor-head">
         <span>监控运维 / 系统监控</span>
-        <SxwlTag color={connected ? 'green' : 'red'}>
+        <SxwlTag color={connected ? BRAND : 'red'}>
           {connected ? '实时' : '连接断开'}
         </SxwlTag>
       </div>
@@ -74,6 +85,7 @@ export default function ServerMonitorPage() {
               xField="time"
               yField="cpuLoad"
               height={200}
+              markStyle={LINE_STYLE}
               tooltip={{ channel: 'y', valueFormatter: (v: number) => formatPercent(v) }}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: 'CPU 负载 (%)' } }}
               scale={{ y: { min: 0, max: 100 } }}
@@ -89,7 +101,7 @@ export default function ServerMonitorPage() {
               xField="time"
               yField="memUsedMB"
               height={200}
-              markStyle={{ fill: '#1677ff33', fillOpacity: 0.5 }}
+              markStyle={AREA_STYLE}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '内存使用 (MB)' } }}
               tooltip={{ channel: 'y', valueFormatter: (v: number) => formatBytes(v * 1024 * 1024) }}
             />
@@ -140,6 +152,7 @@ export default function ServerMonitorPage() {
               yField="value"
               colorField="type"
               height={200}
+              scale={{ color: { range: DUAL_RANGE } }}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '堆内存 (MB)' } }}
               tooltip={{ channel: 'y', valueFormatter: (v: number) => `${v} MB` }}
             />
@@ -150,6 +163,7 @@ export default function ServerMonitorPage() {
               xField="time"
               yField="threadCount"
               height={200}
+              markStyle={LINE_STYLE}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '线程数' } }}
             />
           </SxwlCol>
@@ -190,6 +204,7 @@ export default function ServerMonitorPage() {
               xField="time"
               yField="hitRate"
               height={200}
+              markStyle={LINE_STYLE}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '命中率 (%)' } }}
               scale={{ y: { min: 0, max: 100 } }}
               tooltip={{ channel: 'y', valueFormatter: (v: number) => formatPercent(v) }}
@@ -205,7 +220,7 @@ export default function ServerMonitorPage() {
               xField="time"
               yField="usedMemoryMB"
               height={200}
-              markStyle={{ fill: '#1677ff33', fillOpacity: 0.5 }}
+              markStyle={AREA_STYLE}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '内存使用 (MB)' } }}
               tooltip={{ channel: 'y', valueFormatter: (v: number) => formatBytes(v * 1024 * 1024) }}
             />
@@ -228,6 +243,7 @@ export default function ServerMonitorPage() {
               xField="time"
               yField="activeConnections"
               height={200}
+              markStyle={LINE_STYLE}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '活跃连接数' } }}
             />
           </SxwlCol>

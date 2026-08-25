@@ -1,0 +1,43 @@
+// ============================================
+// SxwlSearchForm — 搜索表单样式（sass, 规范 v2.0 · Pro 白卡）
+// 所有业务页搜索区都通过 SxwlSearchForm 拼装，改此文件全局受益
+// ============================================
+
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.sxwl-search-form-wrapper {
+  position: relative;
+  margin-bottom: 16px;
+  padding: 16px 20px;
+  background: $sxwl-color-bg-container;
+  border: 1px solid $sxwl-color-border-secondary;
+  border-radius: $sxwl-radius-lg;
+  box-shadow: $sxwl-shadow-card;
+  animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+
+  // 搜索标签：次级文字
+  .ant-form-item-label > label {
+    color: $sxwl-color-text-secondary;
+    font-size: 13px;
+  }
+
+  .ant-select {
+    min-width: 140px;
+  }
+}
+
+.sxwl-search-form-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+  align-items: center;
+
+  .ant-form-item {
+    margin-bottom: 0;
+  }
+
+  .ant-form-item-label {
+    padding-right: 8px;
+  }
+}

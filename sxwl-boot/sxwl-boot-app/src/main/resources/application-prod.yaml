@@ -31,8 +31,9 @@ spring:
 # ==================== 自定义配置 ====================
 sxwl:
   web:
-    allowed-origins: "*"              # CORS 允许来源（逗号分隔，* = 所有）
+    allowed-origins: "${SXWL_ALLOWED_ORIGINS:}" # 必须通过部署环境显式配置域名白名单
     request-log-enabled: false         # 生产关闭请求日志，减少 IO
+    trust-forwarded-headers: ${SXWL_TRUST_FORWARDED_HEADERS:false}
   mybatis:
     slow-sql-threshold: 3000           # 生产阈值放宽，仅记录真正慢的查询
   redis:

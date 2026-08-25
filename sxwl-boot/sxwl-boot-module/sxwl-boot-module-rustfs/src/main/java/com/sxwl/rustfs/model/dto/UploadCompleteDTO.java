@@ -1,5 +1,9 @@
 package com.sxwl.rustfs.model.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 /**
  * 合并完成请求 DTO
  *
@@ -9,9 +13,12 @@ package com.sxwl.rustfs.model.dto;
 public class UploadCompleteDTO {
 
     /** 上传会话 ID */
+    @NotNull
     private Long uploadId;
 
     /** 文件 MD5 */
+    @NotBlank
+    @Size(min = 32, max = 32)
     private String fileMd5;
 
     public Long getUploadId() { return uploadId; }

@@ -21,6 +21,7 @@ export interface UserItem {
   phone: string;
   email: string;
   status: number;
+  superAdmin: boolean;
   createTime: string;
 }
 

@@ -22,6 +22,8 @@
         SELECT <include refid="selectRoleColumns"/>
         FROM sys_role_info
         WHERE delete_flag = 0
+          AND role_code <> 'super_admin'
+          AND data_scope <> 1
         <if test="roleCode != null and roleCode != ''">
             AND role_code LIKE CONCAT('%', #{roleCode}, '%')
         </if>

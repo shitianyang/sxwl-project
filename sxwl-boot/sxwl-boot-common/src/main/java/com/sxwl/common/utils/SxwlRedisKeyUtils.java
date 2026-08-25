@@ -85,10 +85,11 @@ public final class SxwlRedisKeyUtils {
 
     /**
      * 构建用户信息缓存 Key
-     * <p>完整 Key：token:info:{userId}，Hash 存储用户名/角色/权限/数据范围</p>
+     * <p>完整 Key：token:info:{clientType}:{userId}，Hash 存储用户名/角色/权限/数据范围。</p>
+     * 前后台用户使用独立缓存，避免同一用户 ID 的权限和登出状态相互覆盖。
      */
-    public static String tokenInfoKey(long userId) {
-        return SxwlRedisKeyConstants.TOKEN_INFO_PREFIX + userId;
+    public static String tokenInfoKey(String clientType, long userId) {
+        return SxwlRedisKeyConstants.TOKEN_INFO_PREFIX + clientType + ":" + userId;
     }
 
     /**
@@ -97,6 +98,11 @@ public final class SxwlRedisKeyUtils {
      */
     public static String tokenJwtKey(String clientType, long userId, String deviceId, String jti) {
         return SxwlRedisKeyConstants.TOKEN_JWT_PREFIX + clientType + ":" + userId + ":" + deviceId + ":" + jti;
+    }
+
+    /** 构建 SSE / WebSocket 一次性连接票据 Key。 */
+    public static String connectionTicketKey(String ticket) {
+        return SxwlRedisKeyConstants.CONNECTION_TICKET_PREFIX + ticket;
     }
 
     /**

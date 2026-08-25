@@ -4,7 +4,6 @@ import zhCN from 'antd/locale/zh_CN'
 import { useEffect } from 'react'
 import { THEME_CONFIG } from '@/config'
 import { initMessageInstance } from '@/components/SxwlMessage'
-import useGlobalStyles from '@/styles/global.style'
 import { SXWL_TOKENS } from '@/styles/theme.token'
 
 /** 在 antd App 组件内初始化上下文感知的 message 实例 */
@@ -19,8 +18,6 @@ function MessageInitializer() {
 }
 
 export default function App() {
-  const { styles } = useGlobalStyles()
-
   return (
     <ConfigProvider
       locale={zhCN}
@@ -71,7 +68,7 @@ export default function App() {
       }}
     >
       <AntApp>
-        <div className={styles.root}>
+        <div className="sxwl-root">
           <AppRouter />
         </div>
         <MessageInitializer />

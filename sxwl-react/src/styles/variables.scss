@@ -1,0 +1,50 @@
+// ============================================
+// sxwl-react 设计变量（sass）
+// 对齐 docs/UI设计规范.md v2.0（Web 端 · 中性 Pro + 品牌橙点缀）
+// 与 theme.token.ts / theme.config.ts 对齐；antd ConfigProvider 负责组件内部主题
+// ============================================
+
+// -------- 品牌色（规范 2.1 橙色阶） --------
+$sxwl-color-primary: #DE5F0E;
+$sxwl-color-primary-hover: #F57020;
+$sxwl-color-primary-active: #C74E08;
+$sxwl-color-primary-1: #FFF7E6; // 品牌浅底（选中态 / 图标底 / 浅橙横幅）
+$sxwl-gradient-brand: linear-gradient(135deg, #DE5F0E 0%, #F0972D 100%);
+
+// -------- 文字色阶（规范 2.2 中性阶） --------
+$sxwl-color-text: #1F2329;
+$sxwl-color-text-heading: #1F2329;
+$sxwl-color-text-secondary: #4E5969;
+$sxwl-color-text-tertiary: #86909C;
+$sxwl-color-text-quaternary: #C9CDD4;
+
+// -------- 背景 --------
+$sxwl-color-bg-container: #ffffff;
+$sxwl-bg-layout: #F0F2F5; // Web 页面底（规范 2.2）
+
+// -------- 边框 --------
+$sxwl-color-border: #E5E6EB;
+$sxwl-color-border-secondary: #F0F0F0;
+
+// -------- 圆角（规范 05，Web 偏锐） --------
+$sxwl-radius-sm: 6px;
+$sxwl-radius: 8px;
+$sxwl-radius-lg: 12px;
+$sxwl-radius-xl: 16px;
+
+// -------- 阴影（规范 06：L1/L2/L3） --------
+$sxwl-shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+$sxwl-shadow-popup: 0 4px 12px rgba(16, 24, 40, 0.08), 0 2px 6px rgba(16, 24, 40, 0.05);
+$sxwl-shadow-modal: 0 18px 44px rgba(16, 24, 40, 0.14), 0 6px 16px rgba(16, 24, 40, 0.10);
+
+// -------- 聚焦态（输入/控件聚焦光晕，规范 12 表单） --------
+$sxwl-focus-ring: 0 0 0 2px rgba(222, 95, 14, 0.10);
+
+// -------- 字号（规范 03） --------
+$sxwl-font-size: 14px;
+$sxwl-font-size-sm: 13px;
+$sxwl-font-size-heading-2: 24px;
+
+// -------- 动画时长（规范 09：Web 150-300ms） --------
+$sxwl-dur-fast: 0.15s;
+$sxwl-dur: 0.3s;

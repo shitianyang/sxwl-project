@@ -95,6 +95,12 @@ public final class SxwlRedisKeyConstants {
      */
     public static final String TOKEN_JWT_PREFIX = "token:jwt:";
 
+    /**
+     * 流式连接一次性票据 Key 前缀。
+     * <p>完整 Key：connection:ticket:{uuid}，Value 为用户 ID。</p>
+     */
+    public static final String CONNECTION_TICKET_PREFIX = "connection:ticket:";
+
     // ==================== 在线用户（辅助索引） ====================
 
     /**

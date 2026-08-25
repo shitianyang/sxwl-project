@@ -61,7 +61,7 @@ instance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 
 // ==================== 响应拦截器：统一错误 + 401 自动刷新 ====================
 
-let isRefreshing = false;
+let refreshPromise: Promise<string> | null = null;
 
 /** 刷新期间挂起的请求：成功时用新 token 重放，失败时逐个拒绝 */
 interface RefreshSubscriber {
@@ -116,27 +116,28 @@ instance.interceptors.response.use(
         return Promise.reject(error);
       }
 
-      if (!isRefreshing) {
-        isRefreshing = true;
-        try {
-          const res = await refreshInstance.post<
-            SxwlResult<{ accessToken: string; refreshToken: string }>
-          >('/auth/refresh', { refreshToken, deviceId: useAuthStore.getState().deviceId });
-          const { accessToken, refreshToken: newRefresh } = res.data.data;
-          useAuthStore.getState().setTokenPair(accessToken, newRefresh);
-          isRefreshing = false;
-          onTokenRefreshed(accessToken);
-        } catch (refreshErr) {
-          isRefreshing = false;
-          // 刷新失败：reject 所有挂起请求（原实现仅清空队列，挂起 Promise 永不落定）
-          onTokenRefreshFailed(refreshErr);
-          useAuthStore.getState().clearAuth();
-          window.location.href = '/login';
-          return Promise.reject(error);
-        }
+      if (!refreshPromise) {
+        refreshPromise = refreshInstance.post<
+          SxwlResult<{ accessToken: string; refreshToken: string }>
+        >('/auth/refresh', { refreshToken, deviceId: useAuthStore.getState().deviceId })
+          .then((res) => {
+            const { accessToken, refreshToken: newRefresh } = res.data.data;
+            useAuthStore.getState().setTokenPair(accessToken, newRefresh);
+            onTokenRefreshed(accessToken);
+            return accessToken;
+          })
+          .catch((refreshErr) => {
+            onTokenRefreshFailed(refreshErr);
+            useAuthStore.getState().clearAuth();
+            window.location.href = '/login';
+            throw refreshErr;
+          })
+          .finally(() => {
+            refreshPromise = null;
+          });
       }
 
-      // 等待刷新完成后重试原请求（刷新失败时由 onTokenRefreshFailed 统一拒绝）
+      // 先订阅当前请求，再等待共享刷新任务完成，避免首个 401 请求永久挂起。
       return new Promise<AxiosResponse>((resolve, reject) => {
         subscribeTokenRefresh({
           resolve: (newToken: string) => {
@@ -147,6 +148,7 @@ instance.interceptors.response.use(
           },
           reject,
         });
+        void refreshPromise?.catch(() => undefined);
       });
     }
 

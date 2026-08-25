@@ -12,7 +12,7 @@ import { encryptPassword } from '@/utils/sm2Utils';
 import { getCachedPublicKey, invalidatePublicKeyCache } from '@/utils/publicKeyUtils';
 import { SxwlButton, SxwlForm, SxwlInput, SxwlMessage, SxwlCaptcha, SxwlIcon } from '@/components';
 import logoSrc from '@/assets/images/logo.png';
-import useLoginStyles from './index.style';
+import './index.scss';
 
 /** 每次登录都从后端获取最新公钥，防止后端重启后密钥不匹配 */
 interface LoginFormValues {
@@ -27,16 +27,15 @@ const CaptchaInput: React.FC<{
   form: FormInstance;
   value?: string;
   onChange?: (value: string) => void;
-  styles: Record<string, string>;
   refreshKey: number;
-}> = ({ form, value, onChange, styles, refreshKey }) => (
-  <div className={styles.captchaRow}>
+}> = ({ form, value, onChange, refreshKey }) => (
+  <div className="sxwl-login-captcha-row">
     <SxwlInput
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
       placeholder="验证码"
       maxLength={4}
-      className={styles.captchaInput}
+      className="sxwl-login-captcha-input"
     />
     <SxwlCaptcha form={form} refreshKey={refreshKey} />
   </div>
@@ -50,7 +49,6 @@ export default function LoginPage() {
   const location = useLocation();
   const setTokens = useAuthStore((s) => s.setTokens);
   const [form] = SxwlForm.useForm<LoginFormValues>();
-  const { styles } = useLoginStyles();
 
   // 保留 search/hash，避免登录后回跳丢失查询参数与锚点
   const fromState = location.state as
@@ -101,23 +99,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className={styles.container}>
-      {/* 极淡网格背景层 */}
-      <div className={styles.gridLayer} />
-      <div className={styles.content}>
-        <div className={styles.loginContainer}>
+    <div className="sxwl-login-container">
+      <div className="sxwl-login-content">
+        <div className="sxwl-login-login-container">
           {/* 登录卡片（含头部 + 表单 + 底部版权，对齐原型） */}
-          <div className={styles.main}>
+          <div className="sxwl-login-main">
             {/* 头部：Logo + 标题 + 副标题（卡片内顶部） */}
-            <div className={styles.top}>
-              <div className={styles.header}>
-                <img src={logoSrc} alt="数行未来" className={styles.logo} />
-                <div className={styles.logoText}>
-                  <strong className={styles.title}>数行未来·御权</strong>
-                  <small className={styles.logoEn}>SXWL PERMISSION PLATFORM</small>
+            <div className="sxwl-login-top">
+              <div className="sxwl-login-header">
+                <img src={logoSrc} alt="数行未来" className="sxwl-login-logo" />
+                <div className="sxwl-login-logo-text">
+                  <strong className="sxwl-login-title">数行未来·御权</strong>
+                  <small className="sxwl-login-logo-en">SXWL PERMISSION PLATFORM</small>
                 </div>
               </div>
-              <p className={styles.desc}>统一权限管控平台 · 请登录你的账号</p>
+              <p className="sxwl-login-desc">统一权限管控平台 · 请登录你的账号</p>
             </div>
 
             {/* 表单 */}
@@ -128,7 +124,7 @@ export default function LoginPage() {
               onFinish={onFinish}
               autoComplete="off"
               layout="vertical"
-              className={styles.form}
+              className="sxwl-login-form"
             >
               <SxwlForm.Item
                 name="username"
@@ -163,7 +159,7 @@ export default function LoginPage() {
                 name="captchaCode"
                 rules={[{ required: true, message: '请输入验证码' }]}
               >
-                <CaptchaInput form={form} styles={styles} refreshKey={captchaRefreshKey} />
+                <CaptchaInput form={form} refreshKey={captchaRefreshKey} />
               </SxwlForm.Item>
 
               {/* captchaUuid 隐藏字段 */}
@@ -177,7 +173,7 @@ export default function LoginPage() {
                   htmlType="submit"
                   loading={loading}
                   block
-                  className={styles.button}
+                  className="sxwl-login-button"
                 >
                   {loading ? null : '登 录'}
                 </SxwlButton>
@@ -185,7 +181,7 @@ export default function LoginPage() {
             </SxwlForm>
 
             {/* 底部版权（卡片内底部） */}
-            <div className={styles.footer}>
+            <div className="sxwl-login-footer">
               &copy; {new Date().getFullYear()} 河北数行未来科技有限公司
             </div>
           </div>
