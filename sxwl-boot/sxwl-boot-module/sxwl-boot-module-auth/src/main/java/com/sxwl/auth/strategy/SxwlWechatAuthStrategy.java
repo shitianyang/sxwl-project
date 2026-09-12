@@ -77,7 +77,7 @@ public class SxwlWechatAuthStrategy {
         Map<String, Object> session = code2session(code);
         String openId = (String) session.get("openid");
         if (openId == null || openId.isBlank()) {
-            log.warn("code2session 未返回 openid: {}", session);
+            log.warn("code2session 未返回 openid, errcode={}", session.get("errcode"));
             throw new SxwlBusinessException(400, "微信登录失败：未获取到用户标识");
         }
 
@@ -152,8 +152,8 @@ public class SxwlWechatAuthStrategy {
     private PlaUserInfo registerUser(String openId, String nickname, String avatarUrl) {
         PlaUserInfo user = new PlaUserInfo();
         user.setWxOpenId(openId);
-        user.setNickname(nickname != null && !nickname.isBlank() ? nickname : "微信用户");
-        user.setAvatar(avatarUrl);
+        user.setNickname(sanitizeNickname(nickname));
+        user.setAvatar(sanitizeAvatarUrl(avatarUrl));
         user.setRegisterSource("wechat");
         user.setLoginType("wechat");
         user.setStatus(1);
@@ -175,9 +175,34 @@ public class SxwlWechatAuthStrategy {
     private void updateUserLoginInfo(PlaUserInfo user, String nickname, String avatarUrl) {
         plaUserInfoMapper.updateLoginInfo(user.getId());
         if (nickname != null && !nickname.isBlank()) {
-            plaUserInfoMapper.updateProfile(user.getId(), nickname, avatarUrl);
-            user.setNickname(nickname);
-            user.setAvatar(avatarUrl);
+            String safeNick = sanitizeNickname(nickname);
+            String safeAvatar = sanitizeAvatarUrl(avatarUrl);
+            plaUserInfoMapper.updateProfile(user.getId(), safeNick, safeAvatar);
+            user.setNickname(safeNick);
+            user.setAvatar(safeAvatar);
         }
+    }
+
+    /**
+     * 净化微信昵称：去除 HTML 标签，防止存储型 XSS；限制长度。
+     */
+    private String sanitizeNickname(String nickname) {
+        if (nickname == null) return "微信用户";
+        String sanitized = nickname.replaceAll("<[^>]*>", "").trim();
+        if (sanitized.length() > 64) {
+            sanitized = sanitized.substring(0, 64);
+        }
+        return sanitized.isBlank() ? "微信用户" : sanitized;
+    }
+
+    /**
+     * 净化微信头像 URL：仅允许 https 协议，防止 javascript:/data: 钓鱼或注入。
+     */
+    private String sanitizeAvatarUrl(String avatarUrl) {
+        if (avatarUrl == null) return null;
+        if (!avatarUrl.startsWith("https://") || avatarUrl.length() > 512) {
+            return null;
+        }
+        return avatarUrl;
     }
 }

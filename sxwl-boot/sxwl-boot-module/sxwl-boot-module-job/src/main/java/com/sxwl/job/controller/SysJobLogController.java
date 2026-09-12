@@ -27,12 +27,24 @@ public class SysJobLogController {
         this.sysJobLogService = sysJobLogService;
     }
 
+    /**
+     * 查询任务日志详情
+     *
+     * @param id 日志 ID
+     * @return 日志 DTO
+     */
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:query')")
     public SysJobLogDTO getLogById(@PathVariable("id") Long id) {
         return sysJobLogService.getLogById(id);
     }
 
+    /**
+     * 分页查询任务日志列表
+     *
+     * @param params 分页查询参数
+     * @return 日志分页列表
+     */
     @GetMapping("/page")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:list')")
     @SxwlLog(title = "定时任务", description = "查询任务日志列表")
@@ -40,6 +52,11 @@ public class SysJobLogController {
         return sysJobLogService.getLogPageByParams(params);
     }
 
+    /**
+     * 删除单条任务日志（软删除）
+     *
+     * @param id 日志 ID
+     */
     @DeleteMapping("/{id}")
     @SxwlRepeatSubmit
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:delete')")
@@ -48,6 +65,11 @@ public class SysJobLogController {
         sysJobLogService.deleteLogById(id);
     }
 
+    /**
+     * 清理 N 天前的任务日志
+     *
+     * @param days 保留天数（默认 30 天）
+     */
     @DeleteMapping("/clean")
     @SxwlRepeatSubmit(message = "清理操作过于频繁")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:clean')")

@@ -36,6 +36,10 @@ public class CodegenServiceImpl implements CodegenService {
 
     private static final Logger log = LoggerFactory.getLogger(CodegenServiceImpl.class);
 
+    private static final Pattern JAVA_IDENTIFIER = Pattern.compile("^[A-Za-z_][A-Za-z0-9_]*$");
+    private static final Pattern PACKAGE_PATTERN = Pattern.compile("^([A-Za-z_][A-Za-z0-9_]*)(\\.[A-Za-z_][A-Za-z0-9_]*)*$");
+    private static final Pattern MODULE_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
+
     private static final List<String> TEMPLATES = Arrays.asList(
             "Entity.java.ftl", "DTO.java.ftl", "PageParams.java.ftl",
             "Mapper.java.ftl", "Mapper.xml.ftl", "Service.java.ftl",
@@ -95,6 +99,7 @@ public class CodegenServiceImpl implements CodegenService {
         }
         List<SysCodegenFieldDTO> fields = sysCodegenFieldMapper.getFieldsByTableId(tableId);
         table.setFields(fields);
+        validateTableForGen(table);
         return table;
     }
 
@@ -139,7 +144,7 @@ public class CodegenServiceImpl implements CodegenService {
 
                     log.debug("生成文件：{}", filePath);
                 } catch (Exception e) {
-                    log.error("渲染模板失败：{}", templateName, e);
+                    throw new SxwlBusinessException(10001, "渲染模板失败: " + templateName, e);
                 }
             }
         } catch (IOException e) {
@@ -172,5 +177,25 @@ public class CodegenServiceImpl implements CodegenService {
             case "Page.tsx.ftl" -> frontendPath + "/pages/" + table.getModulePrefix() + "/" + name + "/index.tsx";
             default -> "unknown/" + templateName.replace(".ftl", "");
         };
+        // 路径穿越防护：解析后不允许出现 ".." 或为绝对路径（上游已校验字段，此处兜底）
+        if (filePath.contains("..") || filePath.startsWith("/")) {
+            throw new SxwlBusinessException(10001, "代码生成路径非法(疑似路径穿越): " + filePath);
+        }
+        return filePath;
+    }
+
+    /**
+     * 生成前校验表配置字段，防止 NPE / 非法 Java 标识符 / 路径注入。
+     */
+    private void validateTableForGen(SysCodegenTableDTO table) {
+        if (table.getBizName() == null || !JAVA_IDENTIFIER.matcher(table.getBizName()).matches()) {
+            throw new SxwlBusinessException(10001, "业务名(bizName)非法，必须为合法 Java 标识符: " + table.getBizName());
+        }
+        if (table.getPackageName() == null || !PACKAGE_PATTERN.matcher(table.getPackageName()).matches()) {
+            throw new SxwlBusinessException(10001, "包名(packageName)非法: " + table.getPackageName());
+        }
+        if (table.getModulePrefix() == null || !MODULE_PATTERN.matcher(table.getModulePrefix()).matches()) {
+            throw new SxwlBusinessException(10001, "模块前缀(modulePrefix)非法: " + table.getModulePrefix());
+        }
     }
 }

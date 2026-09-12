@@ -3,9 +3,9 @@ package com.sxwl.rustfs.service;
 import com.github.pagehelper.PageInfo;
 import com.sxwl.rustfs.model.dto.*;
 import com.sxwl.rustfs.model.params.SysFilePageParams;
-import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 /**
  * 系统文件 Service 接口
@@ -62,9 +62,9 @@ public interface SysFileService {
      * 下载文件
      *
      * @param id 文件 ID
-     * @return 文件流响应
+     * @return 文件流响应（流式写出并在结束时关闭 S3 连接，避免连接池泄漏）
      */
-    ResponseEntity<Resource> downloadFile(Long id);
+    ResponseEntity<StreamingResponseBody> downloadFile(Long id);
 
     /**
      * 获取预签名文件 URL
@@ -83,7 +83,7 @@ public interface SysFileService {
     SysFileDTO checkMd5(String md5);
 
     /**
-     * 软删除文件
+     * 软删除文件（同时删除 S3 存储对象，避免孤儿存储）
      *
      * @param id 文件 ID
      */
@@ -96,4 +96,19 @@ public interface SysFileService {
      * @return 分页文件列表
      */
     PageInfo<SysFileDTO> getFilePageByParams(SysFilePageParams params);
+
+    /**
+     * 批量删除文件（同时删除 S3 存储对象，避免孤儿存储）
+     *
+     * @param ids 文件 ID 列表
+     */
+    void batchDeleteFiles(java.util.List<Long> ids);
+
+    /**
+     * 清理超过指定小时的未完成上传会话
+     *
+     * @param hours 小时数（默认 24 小时）
+     * @return 清理的会话数量
+     */
+    int cleanupExpiredUploadSessions(int hours);
 }

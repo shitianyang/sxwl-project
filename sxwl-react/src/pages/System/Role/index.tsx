@@ -48,6 +48,8 @@ export default function RolePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<RoleItem | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<RoleItem | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [form] = SxwlForm.useForm();
   const searchRef = useRef<Record<string, any>>({});
 
@@ -108,14 +110,23 @@ export default function RolePage() {
     setModalOpen(true);
   };
 
-  const handleDelete = async (record: RoleItem) => {
+  const handleDeleteClick = (record: RoleItem) => {
+    setDeleteTarget(record);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
     try {
-      await deleteRoleById(record.id);
+      await deleteRoleById(deleteTarget.id);
       SxwlMessage.success('删除成功');
       setSelectedRowKeys([]);
       loadData();
     } catch {
       SxwlMessage.error('删除失败');
+    } finally {
+      setDeleteLoading(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -252,8 +263,14 @@ export default function RolePage() {
             <SxwlPermissionButton type="link" size="small" icon={<SxwlIcon name="EditOutlined" />} permission="system:role:edit" onClick={() => handleEdit(record)}>
               编辑
             </SxwlPermissionButton>
-            <SxwlPopconfirm title="确定删除该角色吗？" onConfirm={() => handleDelete(record)}>
-              <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:role:delete">
+            <SxwlPopconfirm
+              title="确定删除该角色吗？"
+              open={deleteTarget?.id === record.id}
+              confirmLoading={deleteLoading}
+              onConfirm={handleDeleteConfirm}
+              onCancel={() => setDeleteTarget(null)}
+            >
+              <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:role:delete" onClick={() => handleDeleteClick(record)}>
                 删除
               </SxwlPermissionButton>
             </SxwlPopconfirm>

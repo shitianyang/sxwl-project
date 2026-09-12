@@ -25,8 +25,8 @@ const QUICK_LINKS = [
   { label: '组织架构', icon: <SxwlIcon name="SafetyOutlined" />, path: '/system/organization' },
   { label: '岗位管理', icon: <SxwlIcon name="ReadOutlined" />, path: '/system/position' },
   { label: '字典管理', icon: <SxwlIcon name="SettingOutlined" />, path: '/system/dict' },
-  { label: '操作日志', icon: <SxwlIcon name="FileTextOutlined" />, path: '/log/operation' },
-  { label: '登录日志', icon: <SxwlIcon name="LoginOutlined" />, path: '/log/login' },
+  { label: '操作日志', icon: <SxwlIcon name="FileTextOutlined" />, path: '/system/log/operation' },
+  { label: '登录日志', icon: <SxwlIcon name="LoginOutlined" />, path: '/system/log/login' },
 ];
 
 export default function DashboardPage() {

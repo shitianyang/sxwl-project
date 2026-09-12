@@ -29,6 +29,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -66,12 +67,14 @@ public class SxwlLogAspect {
     /** 描述字段最大长度（字符，对应 sys_log_info.description varchar(500)） */
     private static final int MAX_DESC_LENGTH = 500;
 
-    /** 需要脱敏的参数名关键词 */
+    /** 需要脱敏的参数名关键词（含 PII：手机号/邮箱/用户名等） */
     private static final Set<String> SENSITIVE_KEYS = Set.of(
             "password", "pwd", "passwd",
             "secret", "token", "accessToken", "refreshToken",
             "idCard", "id_card",
-            "oldPassword", "newPassword", "confirmPassword"
+            "oldPassword", "newPassword", "confirmPassword",
+            "phone", "mobile", "tel", "email", "mail",
+            "username", "userName", "loginName", "account", "nickname"
     );
 
     /** JSON 中敏感字段值替换后的占位 */
@@ -118,8 +121,9 @@ public class SxwlLogAspect {
 
         // 2. 解析 SpEL 描述
         String description = parseDescription(sxwlLog.description(), joinPoint);
-        if (description != null && description.length() > MAX_DESC_LENGTH) {
-            description = description.substring(0, MAX_DESC_LENGTH);
+        // 按字节数截断（UTF-8），避免中文等多字节字符使字符数 ≤ 500 但字节数超限写库失败（L38）
+        if (description != null) {
+            description = truncateToBytes(description, MAX_DESC_LENGTH);
         }
         event.description(description);
 
@@ -182,6 +186,28 @@ public class SxwlLogAspect {
     }
 
     // ==================== 私有方法 ====================
+
+    /**
+     * 按 UTF-8 字节数截断字符串，避免多字节字符导致字节数超出 DB 列长度（L38）。
+     */
+    private static String truncateToBytes(String value, int maxBytes) {
+        byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+        if (bytes.length <= maxBytes) {
+            return value;
+        }
+        StringBuilder sb = new StringBuilder();
+        int len = 0;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            int charBytes = String.valueOf(c).getBytes(StandardCharsets.UTF_8).length;
+            if (len + charBytes > maxBytes) {
+                break;
+            }
+            sb.append(c);
+            len += charBytes;
+        }
+        return sb.toString();
+    }
 
     /**
      * 解析 SpEL 描述表达式

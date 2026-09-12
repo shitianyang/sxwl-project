@@ -87,6 +87,7 @@ export function useChunkedUpload() {
   const [status, setStatus] = useState<UploadStatus>('idle');
   const cancelRef = useRef(false);
   const progressRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const updateProgress = useCallback((pct: number) => {
     progressRef.current = pct;
@@ -96,6 +97,7 @@ export function useChunkedUpload() {
   /** 开始上传 */
   const start = useCallback(async (file: File, options?: UploadTaskOptions) => {
     cancelRef.current = false;
+    abortControllerRef.current = new AbortController();
     setStatus('calculating');
     updateProgress(0);
 
@@ -115,13 +117,14 @@ export function useChunkedUpload() {
     if (file.size < CHUNK_SIZE) {
       setStatus('uploading');
       try {
-        const res = await simpleUpload(file);
+        const res = await simpleUpload(file, abortControllerRef.current?.signal);
         updateProgress(100);
         setStatus('success');
         options?.onProgress?.(100);
         options?.onSuccess?.(res.data.data);
         return;
       } catch (err) {
+        if (cancelRef.current) { setStatus('canceled'); return; }
         setStatus('error');
         options?.onError?.(err as Error);
         return;
@@ -190,7 +193,7 @@ export function useChunkedUpload() {
       .filter(i => !uploadedSet.has(i));
 
     try {
-      await concurrentUpload(uploadId!, file, pendingIndices);
+      await concurrentUpload(uploadId!, file, pendingIndices, abortControllerRef.current?.signal);
 
       if (cancelRef.current) { setStatus('canceled'); return; }
 
@@ -212,6 +215,7 @@ export function useChunkedUpload() {
 
   /** 取消上传 */
   const cancel = useCallback(() => {
+    abortControllerRef.current?.abort();
     cancelRef.current = true;
     setStatus('canceled');
   }, []);
@@ -219,6 +223,7 @@ export function useChunkedUpload() {
   /** 重置状态 */
   const reset = useCallback(() => {
     cancelRef.current = false;
+    abortControllerRef.current = null;
     progressRef.current = 0;
     setProgress(0);
     setStatus('idle');
@@ -234,6 +239,7 @@ async function concurrentUpload(
   uploadId: number,
   file: File,
   indices: number[],
+  signal?: AbortSignal,
 ) {
   const queue = [...indices];
   let completedCount = 0;
@@ -246,7 +252,7 @@ async function concurrentUpload(
       const blob = file.slice(start, end);
 
       const chunkMd5 = await computeBlobMd5(blob);
-      await uploadChunk(uploadId, idx, chunkMd5, blob);
+      await uploadChunk(uploadId, idx, chunkMd5, blob, signal);
 
       completedCount++;
     }

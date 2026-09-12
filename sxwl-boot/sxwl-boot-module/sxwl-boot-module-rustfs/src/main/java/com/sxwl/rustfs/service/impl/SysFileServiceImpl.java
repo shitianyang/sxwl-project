@@ -17,15 +17,17 @@ import com.sxwl.rustfs.service.SysFileService;
 import com.sxwl.security.utils.SxwlSecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import javax.annotation.PostConstruct;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -58,7 +60,7 @@ public class SysFileServiceImpl implements SysFileService {
     private static final int SESSION_STATUS_COMPLETED = 1;
 
     /** 分片状态：已上传 */
-    private static final int CHUNK_STATUS_UPLOADED = 1;
+    private static final int CHUNK_STATUS_UPLODED = 1;
 
     private static final long MAX_FILE_SIZE = 2L * 1024 * 1024 * 1024;
     private static final int MAX_CHUNK_COUNT = 10_000;
@@ -124,7 +126,6 @@ public class SysFileServiceImpl implements SysFileService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public UploadChunkDTO uploadChunk(Long uploadId, Integer chunkIndex, String chunkMd5, MultipartFile file) {
         // 校验会话存在且未完成
         SysFileSessionInfo session = sysFileSessionInfoMapper.getById(uploadId);
@@ -138,14 +139,31 @@ public class SysFileServiceImpl implements SysFileService {
             throw new IllegalArgumentException("分片大小不合法");
         }
 
+        // 幂等：分片已上传则直接返回，支持断点续传重试（L21）
+        if (sysFileChunkInfoMapper.countChunkUploaded(uploadId, chunkIndex) > 0) {
+            return new UploadChunkDTO(uploadId, chunkIndex);
+        }
+
+        // 校验分片内容 MD5（客户端传入时）：防止传输损坏/篡改（L21）
+        byte[] data;
+        try {
+            data = file.getBytes();
+        } catch (Exception e) {
+            throw new SxwlBusinessException(10001, "读取分片数据失败: uploadId=" + uploadId + ", chunkIndex=" + chunkIndex, e);
+        }
+        if (chunkMd5 != null && !chunkMd5.isEmpty()
+                && !DigestUtils.md5Hex(data).equalsIgnoreCase(chunkMd5)) {
+            throw new SxwlBusinessException(10001, "分片 MD5 校验失败: chunkIndex=" + chunkIndex);
+        }
+
         // 上传分片到 S3 临时目录
         String objectKey = properties.getTempPathPrefix() + uploadId + "/" + chunkIndex;
-        try (InputStream inputStream = file.getInputStream()) {
+        try (InputStream inputStream = new ByteArrayInputStream(data)) {
             rustfsTemplate.upload(
                     properties.getDefaultBucket(),
                     objectKey,
                     inputStream,
-                    file.getSize(),
+                    data.length,
                     file.getContentType());
         } catch (Exception e) {
             throw new SxwlBusinessException(10001, "分片上传到 S3 失败: uploadId=" + uploadId + ", chunkIndex=" + chunkIndex, e);
@@ -168,7 +186,6 @@ public class SysFileServiceImpl implements SysFileService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public SysFileDTO completeUpload(UploadCompleteDTO dto) {
         Long uploadId = dto.getUploadId();
         String fileMd5 = dto.getFileMd5();
@@ -181,8 +198,15 @@ public class SysFileServiceImpl implements SysFileService {
         if (!fileMd5.equalsIgnoreCase(session.getFileMd5())) {
             throw new IllegalArgumentException("文件 MD5 与上传会话不一致");
         }
-        if (session.getStatus() != SESSION_STATUS_UPLOADING) {
-            throw new IllegalArgumentException("上传会话已结束: uploadId=" + uploadId);
+
+        // 幂等推进：仅当会话仍为上传中时才置为已完成；否则视为重复请求，直接返回已生成文件（L25）
+        int updated = sysFileSessionInfoMapper.updateStatus(uploadId, SESSION_STATUS_COMPLETED, session.getCreateBy());
+        if (updated == 0) {
+            SysFileInfo existing = sysFileInfoMapper.getFileByMd5(fileMd5);
+            if (existing != null) {
+                return buildSysFileDTO(existing);
+            }
+            throw new SxwlBusinessException(10001, "上传会话状态更新失败: uploadId=" + uploadId);
         }
 
         // 校验所有分片已上传
@@ -198,57 +222,52 @@ public class SysFileServiceImpl implements SysFileService {
                 .collect(Collectors.toList());
 
         // 生成最终对象键
-        String originalName = session.getOriginalName();
+        String originalName = sanitizeFileName(session.getOriginalName());
         String suffix = "";
         int dotIndex = originalName.lastIndexOf(".");
         if (dotIndex > 0) {
-            suffix = originalName.substring(dotIndex);
+            suffix = originalName.substring(dotIndex).replace("/", "");
         }
         String datePrefix = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
         String uuid = UUID.randomUUID().toString().replace("-", "");
         String finalObjectKey = datePrefix + "/" + uuid + suffix;
 
-        // 合并分片
+        // 合并分片 + 写库；临时分片在 finally 中统一清理（无论成功或失败，避免孤儿分片/连接泄漏）
         String bucket = properties.getDefaultBucket();
         try {
             rustfsTemplate.composeObject(bucket, sourceKeys, finalObjectKey);
+
+            // 写入 sys_file_info
+            SysFileInfo fileInfo = new SysFileInfo();
+            fileInfo.setFileName(originalName);
+            fileInfo.setObjectKey(finalObjectKey);
+            fileInfo.setFileSize(session.getFileSize());
+            fileInfo.setFileType(session.getContentType() != null ? session.getContentType() : "application/octet-stream");
+            fileInfo.setFileSuffix(suffix.isEmpty() ? null : suffix.substring(1));
+            fileInfo.setBucketName(bucket);
+            fileInfo.setMd5(fileMd5);
+            fileInfo.setStatus(FILE_STATUS_NORMAL);
+            sysFileInfoMapper.insertFile(fileInfo);
+
+            log.info("Complete upload: uploadId={}, fileId={}, objectKey={}", uploadId, fileInfo.getId(), finalObjectKey);
+            return buildSysFileDTO(fileInfo);
         } catch (Exception e) {
             throw new SxwlBusinessException(10001, "分片合并失败: uploadId=" + uploadId, e);
+        } finally {
+            try {
+                rustfsTemplate.deleteByPrefix(bucket, properties.getTempPathPrefix() + uploadId + "/");
+            } catch (Exception ex) {
+                log.warn("清理临时分片失败: uploadId={}", uploadId, ex);
+            }
         }
-
-        // 写入 sys_file_info
-        SysFileInfo fileInfo = new SysFileInfo();
-        fileInfo.setFileName(originalName);
-        fileInfo.setObjectKey(finalObjectKey);
-        fileInfo.setFileSize(session.getFileSize());
-        fileInfo.setFileType(session.getContentType() != null ? session.getContentType() : "application/octet-stream");
-        fileInfo.setFileSuffix(suffix.isEmpty() ? null : suffix.substring(1));
-        fileInfo.setBucketName(bucket);
-        fileInfo.setMd5(fileMd5);
-        fileInfo.setStatus(FILE_STATUS_NORMAL);
-        sysFileInfoMapper.insertFile(fileInfo);
-
-        // 更新会话状态为已完成
-        sysFileSessionInfoMapper.updateStatus(uploadId, SESSION_STATUS_COMPLETED, session.getCreateBy());
-
-        // 清理临时分片
-        try {
-            rustfsTemplate.deleteByPrefix(bucket, properties.getTempPathPrefix() + uploadId + "/");
-        } catch (Exception e) {
-            log.warn("清理临时分片失败: uploadId={}", uploadId, e);
-        }
-
-        log.info("Complete upload: uploadId={}, fileId={}, objectKey={}", uploadId, fileInfo.getId(), finalObjectKey);
-        return buildSysFileDTO(fileInfo);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public SysFileDTO simpleUpload(MultipartFile file) {
         if (file == null || file.isEmpty() || file.getSize() > MAX_FILE_SIZE) {
             throw new IllegalArgumentException("文件为空或大小超出允许范围");
         }
-        String originalName = file.getOriginalFilename();
+        String originalName = sanitizeFileName(file.getOriginalFilename());
         if (originalName == null || originalName.isEmpty()) {
             originalName = "unknown";
         }
@@ -256,7 +275,7 @@ public class SysFileServiceImpl implements SysFileService {
         String suffix = "";
         int dotIndex = originalName.lastIndexOf(".");
         if (dotIndex > 0) {
-            suffix = originalName.substring(dotIndex);
+            suffix = originalName.substring(dotIndex).replace("/", "");
         }
         String datePrefix = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
         String uuid = UUID.randomUUID().toString().replace("-", "");
@@ -296,17 +315,22 @@ public class SysFileServiceImpl implements SysFileService {
     }
 
     @Override
-    public ResponseEntity<Resource> downloadFile(Long id) {
+    public ResponseEntity<StreamingResponseBody> downloadFile(Long id) {
         SysFileInfo fileInfo = sysFileInfoMapper.getVisibleFileById(id);
         if (fileInfo == null) {
             throw new IllegalArgumentException("文件不存在: id=" + id);
         }
 
-        InputStream inputStream = rustfsTemplate.download(
-                fileInfo.getBucketName() != null ? fileInfo.getBucketName() : properties.getDefaultBucket(),
-                fileInfo.getObjectKey());
+        String bucket = fileInfo.getBucketName() != null ? fileInfo.getBucketName() : properties.getDefaultBucket();
+        String objectKey = fileInfo.getObjectKey();
 
-        Resource resource = new InputStreamResource(inputStream);
+        // 使用 StreamingResponseBody：在响应写出时打开 S3 流，结束时 try-with-resources 自动关闭，
+        // 避免 InputStreamResource 不会被关闭导致的 S3 连接池泄漏。
+        StreamingResponseBody stream = outputStream -> {
+            try (InputStream in = rustfsTemplate.download(bucket, objectKey)) {
+                in.transferTo(outputStream);
+            }
+        };
 
         String encodedFileName = URLEncoder.encode(fileInfo.getFileName(), StandardCharsets.UTF_8)
                 .replace("+", "%20");
@@ -315,7 +339,7 @@ public class SysFileServiceImpl implements SysFileService {
                 .contentType(MediaType.parseMediaType(fileInfo.getFileType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename*=UTF-8''" + encodedFileName)
-                .body(resource);
+                .body(stream);
     }
 
     @Override
@@ -340,6 +364,14 @@ public class SysFileServiceImpl implements SysFileService {
         return buildSysFileDTO(fileInfo);
     }
 
+    /**
+     * 清理文件名中的路径分隔符，避免对象键被破坏
+     */
+    private String sanitizeFileName(String name) {
+        if (name == null) return null;
+        return name.replace("/", "_").replace("\\", "_");
+    }
+
     private void validateUploadBounds(UploadInitDTO dto) {
         if (dto.getFileSize() == null || dto.getFileSize() <= 0 || dto.getFileSize() > MAX_FILE_SIZE) {
             throw new IllegalArgumentException("文件大小超出允许范围");
@@ -355,14 +387,74 @@ public class SysFileServiceImpl implements SysFileService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void deleteFile(Long id) {
         SysFileInfo fileInfo = sysFileInfoMapper.getVisibleFileById(id);
         if (fileInfo == null) {
             throw new IllegalArgumentException("文件不存在: id=" + id);
         }
+        // 先删 S3 对象：失败直接抛出，DB 记录保留，避免产生孤儿存储。
+        String bucket = fileInfo.getBucketName() != null ? fileInfo.getBucketName() : properties.getDefaultBucket();
+        String objectKey = fileInfo.getObjectKey();
+        if (objectKey != null && !objectKey.isEmpty()) {
+            try {
+                rustfsTemplate.delete(bucket, objectKey);
+            } catch (Exception e) {
+                log.error("删除 S3 对象失败: bucket={}, key={}", bucket, objectKey, e);
+                throw new SxwlBusinessException(10001, "删除文件存储对象失败: " + objectKey);
+            }
+        }
         sysFileInfoMapper.deleteFileById(id);
         log.info("Soft delete file: id={}, objectKey={}", id, fileInfo.getObjectKey());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchDeleteFiles(java.util.List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+        
+        int successCount = 0;
+        List<String> failures = new ArrayList<>();
+        
+        for (Long id : ids) {
+            try {
+                deleteFile(id);
+                successCount++;
+            } catch (Exception e) {
+                log.warn("批量删除文件时失败: id={}, error={}", id, e.getMessage());
+                failures.add(String.format("文件 ID %d: %s", id, e.getMessage()));
+            }
+        }
+        
+        if (!failures.isEmpty()) {
+            log.error("批量删除文件存在失败: 共 {} 个, 成功 {} 个, 失败 {} 个: {}",
+                    ids.size(), successCount, failures.size(), failures);
+            throw new SxwlBusinessException(10001, "批量删除部分文件失败，详见日志");
+        }
+        
+        log.info("批量删除文件完成: count={}", successCount);
+    }
+
+    @Override
+    public int cleanupExpiredUploadSessions(int hours) {
+        if (hours <= 0) {
+            hours = 24; // 默认 24 小时
+        }
+        
+        // 先查询需要清理的会话数量（用于日志）
+        List<SysFileSessionInfo> expiredSessions = sysFileSessionInfoMapper.selectExpiredSessions(hours);
+        int count = expiredSessions.size();
+        
+        if (count > 0) {
+            // 执行清理操作
+            int deletedRows = sysFileSessionInfoMapper.cleanupExpiredSessions(hours);
+            log.info("清理过期上传会话完成: hours={}, 清理 {} 个会话, 影响 {} 行", hours, count, deletedRows);
+        } else {
+            log.info("无过期上传会话需要清理: hours={}", hours);
+        }
+        
+        return count;
     }
 
     @Override

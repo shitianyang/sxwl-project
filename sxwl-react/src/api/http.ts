@@ -90,7 +90,13 @@ instance.interceptors.response.use(
     // 检查业务状态码：HTTP 200 但业务 code 非 200 时转为 reject
     const result = response.data as SxwlResult;
     if (result && typeof result.code === 'number' && result.code !== 200) {
-      return Promise.reject({ response, config: response.config });
+      // 业务错误：携带后端 message 与 code，便于调用方/全局提示展示，而非吞掉信息
+      const bizError = Object.assign(new Error(result.message || '业务处理失败'), {
+        code: result.code,
+        response,
+        config: response.config,
+      });
+      return Promise.reject(bizError);
     }
 
     // X-New-Token 头处理：Token 自动续期
@@ -180,9 +186,10 @@ export const http = {
    * @param url 上传地址
    * @param formData FormData 对象（含文件）
    */
-  upload<T = unknown>(url: string, formData: FormData) {
+  upload<T = unknown>(url: string, formData: FormData, signal?: AbortSignal) {
     return instance.post<SxwlResult<T>>(url, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      signal,
     });
   },
 

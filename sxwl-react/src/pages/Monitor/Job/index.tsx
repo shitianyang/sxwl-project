@@ -13,6 +13,14 @@ import {
   pauseJob, resumeJob, runOnceJob,
 } from '@/api/system/jobApi';
 
+/**
+ * Cron 表达式正则校验器
+ * 
+ * <p>校验规则：6 段或 7 段格式（秒 分 时 日 月 周 [年]）</p>
+ * <p>示例：* 0/5 * * * ?、0 0/2 * * * ?、0 0 12 * * WED</p>
+ */
+const CRON_REGEX = /^(\*|[0-9\/,\-\?])(\s+(\*|[0-9\/,\-\?])){5}(\s+(\*|[0-9\/,\-\?]))?$/;
+
 export default function JobPage() {
   const [data, setData] = useState<SysJobItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -194,7 +202,18 @@ export default function JobPage() {
     { name: 'className', label: '类名', type: 'input', required: true, maxLength: 256, placeholder: '请输入完整类名' },
     { name: 'methodName', label: '方法名', type: 'input', required: true, maxLength: 64, placeholder: '请输入方法名' },
     { name: 'methodParams', label: '方法参数', type: 'input', maxLength: 200, placeholder: '可选，方法参数' },
-    { name: 'cronExpression', label: 'Cron 表达式', type: 'input', required: true, maxLength: 64, placeholder: '请输入 Cron 表达式' },
+    { 
+      name: 'cronExpression', 
+      label: 'Cron 表达式', 
+      type: 'input', 
+      required: true, 
+      maxLength: 64, 
+      placeholder: '如: 0 0/2 * * * ? 或 * 0/5 * * * ?',
+      rules: [{
+        pattern: CRON_REGEX,
+        message: 'Cron 表达式格式不正确，应为 6 段或 7 段格式（秒 分 时 日 月 周 [年]），例如: 0 0/2 * * * ?',
+      }],
+    },
     { name: 'description', label: '描述', type: 'input', maxLength: 200, placeholder: '请输入描述' },
     {
       name: 'status', label: '状态', type: 'select', required: true, initialValue: 1,

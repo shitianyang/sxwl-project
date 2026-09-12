@@ -160,16 +160,21 @@ public class SysMonitorSseService {
      * 推送给所有在线用户
      */
     private void broadcastMonitorData() {
-        if (sseEmitterManager.getOnlineCount() == 0) {
-            return;
+        try {
+            if (sseEmitterManager.getOnlineCount() == 0) {
+                return;
+            }
+
+            SysMonitorDataDTO data = collectData();
+
+            // 异步持久化
+            persistenceService.saveAsync(data);
+
+            sseEmitterManager.sendToAll("monitor-data", data);
+        } catch (Exception e) {
+            // 单轮推送异常不应冒泡取消 scheduleAtFixedRate 调度器
+            log.warn("监控数据推送异常（已跳过本轮）: {}", e.getMessage());
         }
-
-        SysMonitorDataDTO data = collectData();
-
-        // 异步持久化
-        persistenceService.saveAsync(data);
-
-        sseEmitterManager.sendToAll("monitor-data", data);
     }
 
     /**

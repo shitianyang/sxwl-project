@@ -68,4 +68,13 @@ public interface SysFileChunkInfoMapper {
      * @return 已上传数
      */
     int countUploadedChunks(@Param("uploadId") Long uploadId);
+
+    /**
+     * 判断指定分片是否已上传完成（断点续传幂等，L21）
+     *
+     * @param uploadId   会话 ID
+     * @param chunkIndex 分片序号
+     * @return 已上传计数（0 或 1）
+     */
+    int countChunkUploaded(@Param("uploadId") Long uploadId, @Param("chunkIndex") Integer chunkIndex);
 }

@@ -1,0 +1,62 @@
+# ==================== 测试环境配置模板 ====================
+# 说明：此为模板文件，提供配置结构参考
+# 使用前请复制为 application-test.yaml 并修改为真实的本地配置
+# 警告：此模板文件已提交，实际配置文件绝不提交到 Git
+# =========================================================
+
+spring:
+  datasource:
+    # 数据库连接 URL（修改为你的 PostgreSQL 地址）
+    url: jdbc:postgresql://localhost:5432/sxwl_project?currentSchema=public&useUnicode=true&characterEncoding=utf8
+    username: sxwl                 # 数据库用户名（修改为你的用户名）
+    password: your_db_password     # 数据库密码（⚠️ 修改为你的真实密码）
+    driver-class-name: org.postgresql.Driver
+    # HikariCP 连接池配置
+    hikari:
+      minimum-idle: 5                  # 最小空闲连接数
+      maximum-pool-size: 20            # 最大连接数
+      idle-timeout: 300000             # 空闲连接超时（毫秒）：5分钟
+      max-lifetime: 1800000            # 连接最大存活时间（毫秒）：30分钟
+      connection-timeout: 30000        # 连接超时（毫秒）：30秒
+      pool-name: SxwlHikariPool        # 连接池名称（日志中显示）
+  data:
+    redis:
+      host: localhost                  # Redis 主机
+      port: 6379                       # Redis 端口（默认 6379）
+      password: your_redis_password    # Redis 密码（如无密码则留空或删除此行）
+      database: 0                      # 使用的数据库索引（0-15）
+      timeout: 10000                   # 连接超时（毫秒）
+      # Lettuce 连接池配置
+      lettuce:
+        pool:
+          max-active: 16               # 最大活跃连接数
+          max-idle: 8                  # 最大空闲连接数
+          min-idle: 2                  # 最小空闲连接数
+          max-wait: 3000               # 获取连接最大等待时间（毫秒）
+
+# ==================== 自定义配置 ====================
+sxwl:
+  web:
+    allowed-origins: "http://127.0.0.1:31001,http://localhost:31001"
+    request-log-enabled: true          # 测试环境开启请求日志，便于排查
+    trust-forwarded-headers: false
+  mybatis:
+    slow-sql-threshold: 1000           # 测试环境开启慢查询监控（超过 1 秒打 WARN）
+  redis:
+    lock-default-timeout: 10           # 分布式锁默认超时（秒）
+    rate-limit-default-window: 60      # 限流默认时间窗口（秒）
+    repeat-submit-interval: 3          # 防重复提交间隔（秒）
+  security:
+    jwt-secret: your-jwt-secret-key-at-least-32-chars-long  # JWT 签名密钥（⚠️ 至少 32 字符，修改为随机字符串）
+    sm2-key-rotation-interval-minutes: 1440  # SM2 密钥轮换间隔（分钟），默认 24 小时
+    sm2-key-grace-period-minutes: 120        # SM2 历史密钥保留宽限期（分钟），默认 2 小时
+    sm2-key-max-history: 1                   # SM2 历史密钥最大保留数（不含当前）
+  rustfs:
+    endpoint: http://localhost:9000      # S3 兼容服务地址（修改为你的 RustFS/S3 地址）
+    region: us-east-1
+    access-key: your-access-key          # S3 访问密钥（⚠️ 修改为真实值）
+    secret-key: your-secret-key          # S3 秘密密钥（⚠️ 修改为真实值）
+    default-bucket: sxwl-files
+    presigned-url-expire: 3600           # 预签名 URL 有效期（秒）
+    temp-path-prefix: tmp/
+

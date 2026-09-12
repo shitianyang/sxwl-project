@@ -39,11 +39,11 @@
 
     <insert id="insertNotice" parameterType="com.sxwl.notice.model.entity.SysNoticeInfo">
         INSERT INTO sys_notice_info (
-            id, title, content, notice_type, level, status,
+            id, title, content, notice_type, level, status, delete_flag,
             publish_time, expire_time,
             create_by, create_org, create_time, update_by, update_time
         ) VALUES (
-            #{id}, #{title}, #{content}, #{noticeType}, #{level}, #{status},
+            #{id}, #{title}, #{content}, #{noticeType}, #{level}, #{status}, COALESCE(#{deleteFlag}, 0),
             #{publishTime}, #{expireTime},
             #{createBy}, #{createOrg}, #{createTime}, #{createBy}, #{createTime}
         )

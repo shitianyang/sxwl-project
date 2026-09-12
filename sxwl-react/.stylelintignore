@@ -1,0 +1,7 @@
+# 忽略 node_modules、构建产物和第三方库
+node_modules/
+dist/
+build/
+public/
+*.min.css
+*.min.scss

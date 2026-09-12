@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sxwl.auth.mapper.SysAuthUserMapper">
+
+    <!-- ==================== 认证专用查询（仅查 sys_user_info，不做 CRUD） ==================== -->
+    <!--
+        作者：shitianyang
+        日期：2026/9/12
+        说明：此 XML 映射文件包含所有认证相关的 SQL 查询，统一在此维护便于审计和安全检查。
+              原 @Select 注解 SQL 已迁移至此处，保证代码可维护性和安全性。
+    -->
+
+    <!-- 根据用户名查询用户（仅查认证必需字段） -->
+    <select id="selectByUsername" resultType="java.util.Map">
+        SELECT id, username, password, nickname, status, create_org
+        FROM sys_user_info
+        WHERE username = #{username}
+          AND delete_flag = 0
+    </select>
+
+    <!-- 查询用户角色列表（含数据权限） -->
+    <select id="selectRolesByUserId" resultType="java.util.Map">
+        SELECT r.id, r.role_code, r.data_scope
+        FROM sys_role_info r
+        INNER JOIN sys_user_role_info ur ON ur.role_id = r.id AND ur.delete_flag = 0
+        WHERE ur.user_id = #{userId}
+          AND r.status = 1
+          AND r.delete_flag = 0
+    </select>
+
+    <!-- 查询用户权限编码集合（按钮级权限） -->
+    <select id="selectPermissionsByUserId" resultType="java.lang.String">
+        SELECT DISTINCT m.perms
+        FROM sys_menu_info m
+        INNER JOIN sys_role_menu_info rm ON rm.menu_id = m.id AND rm.delete_flag = 0
+        INNER JOIN sys_user_role_info ur ON ur.role_id = rm.role_id AND ur.delete_flag = 0
+        INNER JOIN sys_role_info r ON r.id = ur.role_id AND r.status = 1 AND r.delete_flag = 0
+        WHERE ur.user_id = #{userId}
+          AND m.status = 1
+          AND m.delete_flag = 0
+          AND m.perms IS NOT NULL
+          AND m.perms &lt;&gt; ''
+    </select>
+
+    <!-- 查询组织和子组织 ID 列表（用于数据范围过滤） -->
+    <select id="selectSelfAndChildOrgIds" resultType="java.lang.Long">
+        SELECT id
+        FROM sys_organization_info
+        WHERE delete_flag = 0
+          AND (id = #{orgId} OR CONCAT(',', ancestors, ',') LIKE CONCAT('%,', #{orgId}, ',%'))
+    </select>
+
+    <!-- 查询自定义数据权限关联的组织 ID 列表 -->
+    <select id="selectCustomDataScopeOrgIds" resultType="java.lang.Long">
+        SELECT DISTINCT ds.org_id
+        FROM sys_role_data_scope_info ds
+        WHERE ds.role_id = #{roleId}
+          AND ds.delete_flag = 0
+    </select>
+
+    <!-- 根据手机号查询用户（仅查认证必需字段） -->
+    <select id="findByPhone" resultType="java.util.Map">
+        SELECT id, username, password, nickname, status, create_org, phone
+        FROM sys_user_info
+        WHERE phone = #{phone}
+          AND delete_flag = 0
+    </select>
+
+</mapper>

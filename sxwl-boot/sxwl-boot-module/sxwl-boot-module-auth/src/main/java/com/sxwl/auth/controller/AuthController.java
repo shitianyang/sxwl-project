@@ -55,6 +55,9 @@ public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
+    /** 同一账号+IP 最大允许失败次数，超过则临时锁定 */
+    private static final int MAX_LOGIN_FAILS = 5;
+
     private final SxwlAuthenticationHandler handler;
     private final SxwlRedisHelper redisHelper;
     private final SxwlSecurityProperties properties;
@@ -151,6 +154,17 @@ public class AuthController {
         String userAgent = httpRequest.getHeader("User-Agent");
         String location = ipLocationService.map(svc -> svc.getLocation(ip)).orElse(null);
         String failKey = SxwlRedisKeyUtils.loginFailAccountIpKey(username != null ? username : "unknown", ip);
+
+        // 0. 失败次数过多则直接拒绝（账号锁定），counter 由下方登录失败分支累加
+        String failCountStr = redisHelper.get(failKey).orElse("0");
+        long failCount = 0;
+        try {
+            failCount = Long.parseLong(failCountStr);
+        } catch (NumberFormatException ignored) {
+        }
+        if (failCount >= MAX_LOGIN_FAILS) {
+            throw new SxwlBusinessException(429, "登录失败次数过多，账号已临时锁定，请稍后再试");
+        }
 
         // 1. 校验图形验证码（每次登录必填）
         captchaValidator.validateImageCaptcha(request.getCaptchaUuid(), request.getCaptchaCode());

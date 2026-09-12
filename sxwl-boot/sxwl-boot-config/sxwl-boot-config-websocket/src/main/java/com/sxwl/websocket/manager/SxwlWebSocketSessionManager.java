@@ -45,13 +45,11 @@ public class SxwlWebSocketSessionManager {
      * @param session WebSocket Session
      */
     public void removeSession(Long userId, WebSocketSession session) {
-        Set<WebSocketSession> sessions = userSessions.get(userId);
-        if (sessions != null) {
+        // 原子更新：移除会话并在集合为空时删除整个 key，避免并发 TOCTOU（L33）
+        userSessions.computeIfPresent(userId, (k, sessions) -> {
             sessions.remove(session);
-            if (sessions.isEmpty()) {
-                userSessions.remove(userId);
-            }
-        }
+            return sessions.isEmpty() ? null : sessions;
+        });
         log.debug("WebSocket 连接移除: userId={}, sessionId={}", userId, session.getId());
     }
 

@@ -65,10 +65,10 @@ export interface UploadCompleteDTO {
 /**
  * 简单上传（小文件不分片）
  */
-export function simpleUpload(file: File) {
+export function simpleUpload(file: File, signal?: AbortSignal) {
   const formData = new FormData();
   formData.append('file', file);
-  return http.upload<SysFileDTO>('/rustfs/file/simple', formData);
+  return http.upload<SysFileDTO>('/rustfs/file/simple', formData, signal);
 }
 
 /**
@@ -81,13 +81,13 @@ export function initUpload(data: UploadInitDTO) {
 /**
  * 上传分片
  */
-export function uploadChunk(uploadId: number, chunkIndex: number, chunkMd5: string, blob: Blob) {
+export function uploadChunk(uploadId: number, chunkIndex: number, chunkMd5: string, blob: Blob, signal?: AbortSignal) {
   const formData = new FormData();
   formData.append('uploadId', String(uploadId));
   formData.append('chunkIndex', String(chunkIndex));
   formData.append('chunkMd5', chunkMd5);
   formData.append('file', blob);
-  return http.upload<UploadChunkDTO>('/rustfs/file/upload/chunk', formData);
+  return http.upload<UploadChunkDTO>('/rustfs/file/upload/chunk', formData, signal);
 }
 
 /**
@@ -137,4 +137,11 @@ export function getFilePageByParams(params: SysFilePageParams) {
  */
 export function deleteFile(id: number) {
   return http.deleteReq(`/rustfs/file/${id}`);
+}
+
+/**
+ * 批量删除文件
+ */
+export function batchDeleteFiles(ids: number[]) {
+  return http.deleteReq('/rustfs/file/batch', { ids } as unknown as Record<string, unknown>);
 }

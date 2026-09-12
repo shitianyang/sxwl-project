@@ -53,4 +53,10 @@
         WHERE upload_id = #{uploadId} AND status = 1 AND delete_flag = 0
     </select>
 
+    <!-- 判断指定分片是否已上传（L21 幂等） -->
+    <select id="countChunkUploaded" resultType="int">
+        SELECT COUNT(*) FROM sys_file_chunk_info
+        WHERE upload_id = #{uploadId} AND chunk_index = #{chunkIndex} AND status = 1 AND delete_flag = 0
+    </select>
+
 </mapper>

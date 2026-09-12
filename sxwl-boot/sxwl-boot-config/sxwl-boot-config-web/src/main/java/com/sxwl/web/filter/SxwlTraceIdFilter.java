@@ -7,6 +7,7 @@ import org.slf4j.MDC;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * TraceId 过滤器
@@ -31,6 +32,11 @@ public class SxwlTraceIdFilter implements Filter {
 
     public static final String TRACE_ID_HEADER = "X-Request-Id";
     private static final String MDC_KEY = "traceId";
+    private static final Pattern TRACE_ID_PATTERN = Pattern.compile("^[A-Za-z0-9._\\-]{1,64}$");
+
+    private static boolean isValidTraceId(String traceId) {
+        return traceId != null && !traceId.isEmpty() && TRACE_ID_PATTERN.matcher(traceId).matches();
+    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -39,8 +45,9 @@ public class SxwlTraceIdFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         // 优先使用客户端传入的 TraceId（透传），否则自动生成
+        // 清洗：仅允许安全字符且长度受限，防止日志注入（换行/控制字符）与超长污染（L36）
         String traceId = httpRequest.getHeader(TRACE_ID_HEADER);
-        if (traceId == null || traceId.isEmpty()) {
+        if (!isValidTraceId(traceId)) {
             traceId = UUID.randomUUID().toString().replace("-", "");
         }
 

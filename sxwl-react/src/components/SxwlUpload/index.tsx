@@ -9,7 +9,7 @@
 // ============================================
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Upload, message } from 'antd';
+import { Upload, message, Progress } from 'antd';
 import type { UploadProps, UploadFile } from 'antd';
 import type { SxwlResult } from '@/api/http';
 import { useChunkedUpload } from '@/hooks/useChunkedUpload';
@@ -31,6 +31,8 @@ export interface SxwlUploadProps extends UploadProps {
   maxSize?: number;
   /** 分片上传阈值（MB），超过此大小的文件自动分片上传，默认 100（设为 0 禁用分片） */
   chunkThreshold?: number;
+  /** 是否显示进度条，默认 true */
+  showProgressBar?: boolean;
 }
 
 const DEFAULT_MAX_SIZE = 100;
@@ -44,6 +46,7 @@ const SxwlUpload: React.FC<SxwlUploadProps> = ({
   fileList: controlledFileList,
   onChange,
   beforeUpload,
+  showProgressBar = true,
   ...rest
 }) => {
   const [internalFileList, setInternalFileList] = useState<UploadFile[]>([]);
@@ -51,11 +54,21 @@ const SxwlUpload: React.FC<SxwlUploadProps> = ({
   const fileList = controlledFileList ?? internalFileList;
   const { start, progress, status } = useChunkedUpload();
   const progressFileRef = useRef<UploadFile | null>(null);
+  const [progressVisibleFiles, setProgressVisibleFiles] = useState<Map<string, { progress: number; status: string }>>(new Map());
 
   // 通过 useEffect 同步分片上传进度到 fileList
   useEffect(() => {
     const pf = progressFileRef.current;
     if (!pf) return;
+    
+    // 更新进度状态映射
+    const newMap = new Map(progressVisibleFiles);
+    newMap.set(pf.uid, {
+      progress: Math.round(progress),
+      status: status === 'success' ? 'done' : (status === 'error' || status === 'canceled') ? 'error' : 'uploading',
+    });
+    setProgressVisibleFiles(newMap);
+    
     const newStatus = status === 'success' ? 'done' : (status === 'error' || status === 'canceled') ? 'error' : 'uploading';
     if (pf.percent === Math.round(progress) && pf.status === newStatus) return;
     pf.percent = Math.round(progress);
@@ -164,6 +177,10 @@ const SxwlUpload: React.FC<SxwlUploadProps> = ({
       if (response?.data?.presignedUrl) {
         file.url = response.data.presignedUrl;
       }
+      // 上传完成后清除进度信息
+      const newMap = new Map(progressVisibleFiles);
+      newMap.delete(file.uid);
+      setProgressVisibleFiles(newMap);
     }
 
     if (!controlledFileList) {
@@ -172,15 +189,50 @@ const SxwlUpload: React.FC<SxwlUploadProps> = ({
     onChange?.(info);
   };
 
+  // 渲染进度条
+  const renderProgressBars = () => {
+    if (!showProgressBar) return null;
+    
+    const uploadingFiles: Array<{ uid: string; progress: number; status: string }> = [];
+    progressVisibleFiles.forEach((value, uid) => {
+      if (value.status === 'uploading') {
+        uploadingFiles.push({ uid, ...value });
+      }
+    });
+    
+    if (uploadingFiles.length === 0) return null;
+    
+    return (
+      <div style={{ marginTop: 16 }}>
+        {uploadingFiles.map(item => (
+          <div key={item.uid} style={{ marginBottom: 12 }}>
+            <Progress
+              percent={item.progress}
+              status={item.status === 'error' ? 'exception' : 'active'}
+              strokeColor={{
+                '0%': '#DE5F0E',
+                '100%': '#F0972D',
+              }}
+              format={(percent) => `${percent}%`}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
-    <Upload
-      action={action}
-      name={name}
-      fileList={fileList}
-      onChange={handleChange}
-      beforeUpload={handleBeforeUpload}
-      {...rest}
-    />
+    <div>
+      <Upload
+        action={action}
+        name={name}
+        fileList={fileList}
+        onChange={handleChange}
+        beforeUpload={handleBeforeUpload}
+        {...rest}
+      />
+      {renderProgressBars()}
+    </div>
   );
 };
 

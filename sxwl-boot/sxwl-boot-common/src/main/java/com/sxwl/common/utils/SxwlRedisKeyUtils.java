@@ -164,6 +164,20 @@ public final class SxwlRedisKeyUtils {
     }
 
     /**
+     * 构建 IP 黑名单 Key
+     */
+    public static String ipBlacklistKey(String ip) {
+        return SxwlRedisKeyConstants.IP_BLACKLIST_PREFIX + ip;
+    }
+
+    /**
+     * 构建 IP 白名单 Key
+     */
+    public static String ipWhitelistKey(String ip) {
+        return SxwlRedisKeyConstants.IP_WHITELIST_PREFIX + ip;
+    }
+
+    /**
      * 构建字典缓存 Key
      */
     public static String dictCacheKey(String dictType) {

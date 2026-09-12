@@ -29,7 +29,7 @@ public interface SysNoticeReadMapper {
     /**
      * 标记单条公告为已读
      */
-    int insertRead(@Param("id") Long id, @Param("noticeId") Long noticeId, @Param("userId") Long userId);
+    int insertRead(@Param("noticeId") Long noticeId, @Param("userId") Long userId);
 
     /**
      * 标记所有已发布公告为已读（跳过已存在的）

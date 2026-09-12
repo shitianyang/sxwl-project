@@ -1,5 +1,6 @@
 package com.sxwl.notice.service.impl;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.common.utils.SxwlDiffUtils;
@@ -54,6 +55,7 @@ public class SysNoticeInfoServiceImpl implements SysNoticeInfoService {
 
     @Override
     public PageInfo<SysNoticeDTO> getNoticePageByParams(SysNoticePageParams params) {
+        PageHelper.startPage(params.getCurrent(), params.getPageSize());
         List<SysNoticeDTO> rows = sysNoticeInfoMapper.getNoticePageByParams(params);
         return new PageInfo<>(rows);
     }
@@ -151,8 +153,7 @@ public class SysNoticeInfoServiceImpl implements SysNoticeInfoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void markAsRead(Long noticeId, Long userId) {
-        Long id = System.currentTimeMillis();
-        sysNoticeReadMapper.insertRead(id, noticeId, userId);
+        sysNoticeReadMapper.insertRead(noticeId, userId);
     }
 
     @Override

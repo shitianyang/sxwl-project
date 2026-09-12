@@ -3,6 +3,7 @@ package com.sxwl.security.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sxwl.redis.helper.SxwlRedisHelper;
 import com.sxwl.security.captcha.SxwlCaptchaValidator;
+import com.sxwl.security.filter.SxwlIpListFilter;
 import com.sxwl.security.handler.SxwlAccessDeniedHandler;
 import com.sxwl.security.handler.SxwlAuthenticationEntryPoint;
 import com.sxwl.security.handler.SxwlAuthenticationHandler;
@@ -53,7 +54,8 @@ public class SxwlSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
                                                    JwtAuthenticationFilter jwtAuthenticationFilter,
                                                    SxwlAuthenticationEntryPoint entryPoint,
-                                                   SxwlAccessDeniedHandler accessDeniedHandler) throws Exception {
+                                                   SxwlAccessDeniedHandler accessDeniedHandler,
+                                                   SxwlIpListFilter ipListFilter) throws Exception {
         httpSecurity
                 // 禁用 CSRF（前后端分离，Token 鉴权不需要 CSRF）
                 .csrf(AbstractHttpConfigurer::disable)
@@ -74,7 +76,9 @@ public class SxwlSecurityConfig {
                                 "/sse/connect",
                                 "/ws/connect",
                                 "/public/**",
-                                "/actuator/**"
+                                // 仅放行必要的 actuator 端点，禁止暴露 env/heapdump 等敏感端点
+                                "/actuator/health",
+                                "/actuator/info"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -84,6 +88,7 @@ public class SxwlSecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler)
                 )
                 // JWT Filter
+                .addFilterBefore(ipListFilter, JwtAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
@@ -127,5 +132,10 @@ public class SxwlSecurityConfig {
     @Bean
     public SxwlCaptchaValidator sxwlCaptchaValidator(SxwlRedisHelper redisHelper) {
         return new SxwlCaptchaValidator(redisHelper);
+    }
+
+    @Bean
+    public SxwlIpListFilter sxwlIpListFilter(ObjectMapper objectMapper, SxwlRedisHelper redisHelper, SxwlSecurityProperties properties) {
+        return new SxwlIpListFilter(objectMapper, redisHelper, properties);
     }
 }

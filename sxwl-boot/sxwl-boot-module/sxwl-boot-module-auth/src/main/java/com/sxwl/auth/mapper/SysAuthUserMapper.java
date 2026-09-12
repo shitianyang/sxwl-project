@@ -1,7 +1,6 @@
 package com.sxwl.auth.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 import java.util.Map;
@@ -18,48 +17,49 @@ public interface SysAuthUserMapper {
 
     /**
      * 根据用户名查询用户（仅查认证必需字段）
+     * <p>
+     * SQL 实现：resources/mappers/SysAuthUserMapper.xml#selectByUsername
+     * </p>
      */
-    @Select("SELECT id, username, password, nickname, status, create_org " +
-            "FROM sys_user_info WHERE username = #{username} AND delete_flag = 0")
     Map<String, Object> selectByUsername(String username);
 
-    @Select("""
-            SELECT r.id, r.role_code, r.data_scope
-            FROM sys_role_info r
-            INNER JOIN sys_user_role_info ur ON ur.role_id = r.id AND ur.delete_flag = 0
-            WHERE ur.user_id = #{userId}
-              AND r.status = 1
-              AND r.delete_flag = 0
-            """)
+    /**
+     * 查询用户角色列表（含数据权限）
+     * <p>
+     * SQL 实现：resources/mappers/SysAuthUserMapper.xml#selectRolesByUserId
+     * </p>
+     */
     List<Map<String, Object>> selectRolesByUserId(Long userId);
 
-    @Select("""
-            SELECT DISTINCT m.perms
-            FROM sys_menu_info m
-            INNER JOIN sys_role_menu_info rm ON rm.menu_id = m.id AND rm.delete_flag = 0
-            INNER JOIN sys_user_role_info ur ON ur.role_id = rm.role_id AND ur.delete_flag = 0
-            INNER JOIN sys_role_info r ON r.id = ur.role_id AND r.status = 1 AND r.delete_flag = 0
-            WHERE ur.user_id = #{userId}
-              AND m.status = 1
-              AND m.delete_flag = 0
-              AND m.perms IS NOT NULL
-              AND m.perms <> ''
-            """)
+    /**
+     * 查询用户权限编码集合（按钮级权限）
+     * <p>
+     * SQL 实现：resources/mappers/SysAuthUserMapper.xml#selectPermissionsByUserId
+     * </p>
+     */
     List<String> selectPermissionsByUserId(Long userId);
 
-    @Select("""
-            SELECT id
-            FROM sys_organization_info
-            WHERE delete_flag = 0
-              AND (id = #{orgId} OR CONCAT(',', ancestors, ',') LIKE CONCAT('%,', #{orgId}, ',%'))
-            """)
+    /**
+     * 查询组织和子组织 ID 列表（用于数据范围过滤）
+     * <p>
+     * SQL 实现：resources/mappers/SysAuthUserMapper.xml#selectSelfAndChildOrgIds
+     * </p>
+     */
     List<Long> selectSelfAndChildOrgIds(Long orgId);
 
-    @Select("""
-            SELECT DISTINCT ds.org_id
-            FROM sys_role_data_scope_info ds
-            WHERE ds.role_id = #{roleId}
-              AND ds.delete_flag = 0
-            """)
+    /**
+     * 查询自定义数据权限关联的组织 ID 列表
+     * <p>
+     * SQL 实现：resources/mappers/SysAuthUserMapper.xml#selectCustomDataScopeOrgIds
+     * </p>
+     */
     List<Long> selectCustomDataScopeOrgIds(Long roleId);
+
+    /**
+     * 根据手机号查询用户（仅查认证必需字段）
+     * <p>
+     * SQL 实现：resources/mappers/SysAuthUserMapper.xml#findByPhone
+     * </p>
+     */
+    Map<String, Object> findByPhone(String phone);
 }

@@ -4,7 +4,75 @@
 
 import { http } from '@/api/http';
 
-/** PageInfo 分页响应（与后端 com.github.pagehelper.PageInfo 对齐） */
+/** 日志列表项 */
+export interface LogItem {
+  /** 日志 ID */
+  id: number;
+  /** 日志类型：1=登录 2=操作 3=异常 4=安全 */
+  logType: number;
+  /** 模块标题，如：用户管理 */
+  title: string;
+  /** 操作描述，如：删除用户[zhangsan] */
+  description: string;
+  /** 调用方法，如 SysUserController.delete() */
+  method: string;
+  /** 请求URL，如 /sxwl-api/sys/user/1 */
+  requestUrl: string;
+  /** HTTP方法：GET/POST/PUT/DELETE */
+  requestMethod: string;
+  /** 请求参数（JSON） */
+  requestParam: string;
+  /** 响应结果（JSON） */
+  responseResult: string;
+  /** 操作人IP */
+  operateIp: string;
+  /** 操作地点（IP反查） */
+  operateLocation: string;
+  /** 操作人ID */
+  userId: number;
+  /** 操作人账号（冗余） */
+  userName: string;
+  /** 执行耗时（毫秒） */
+  executeTime: number;
+  /** 错误信息（异常日志用） */
+  errorMsg: string;
+  /** 操作状态：0=失败 1=成功 */
+  status: number;
+  /** 链路追踪ID */
+  traceId: string;
+  /** 用户代理（原始 User-Agent） */
+  userAgent: string;
+  /** 操作系统 */
+  browser: string;
+  /** 浏览器 */
+  os: string;
+  /** 字段级变更差异 JSON */
+  diff: string;
+  /** 创建时间（仅列表返回时填充） */
+  createTime: string;
+}
+
+/** 日志查询参数 */
+export interface LogQuery {
+  /** 日志类型：1=登录 2=操作 3=异常 4=安全 */
+  logType?: number;
+  /** 模块标题（模糊匹配） */
+  title?: string;
+  /** 操作人账号（精确匹配） */
+  userName?: string;
+  /** 操作状态：0=失败 1=成功 */
+  status?: number;
+  /** 开始时间（yyyy-MM-dd HH:mm:ss） */
+  startTime?: string;
+  /** 结束时间（yyyy-MM-dd HH:mm:ss） */
+  endTime?: string;
+  /** 当前页码 */
+  current: number;
+  /** 每页条数 */
+  pageSize: number;
+}
+
+/** 分页响应 */
 export interface PageInfo<T> {
   list: T[];
   total: number;
@@ -13,44 +81,7 @@ export interface PageInfo<T> {
   pages: number;
 }
 
-/** 日志列表项 */
-export interface SysLogItem {
-  id: number;
-  logType: number;   // 1=登录 2=操作 3=异常 4=安全
-  title: string;
-  description: string;
-  method: string;
-  requestUrl: string;
-  requestMethod: string;
-  requestParam: string;
-  responseResult: string;
-  operateIp: string;
-  operateLocation: string;
-  userId: number;
-  userName: string;
-  executeTime: number;   // 毫秒
-  errorMsg: string;
-  status: number;        // 0=失败 1=成功
-  traceId: string;
-  userAgent: string;
-  browser: string;
-  os: string;
-  createTime: string;
-}
-
-/** 日志查询参数 */
-export interface SysLogPageParams {
-  logType: number;       // 必传
-  title?: string;
-  userName?: string;
-  status?: number;
-  startTime?: string;
-  endTime?: string;
-  current: number;
-  pageSize: number;
-}
-
-/** 分页查询日志列表 */
-export function getLogPageByParams(params: SysLogPageParams) {
-  return http.get<PageInfo<SysLogItem>>('/system/log/page', params as unknown as Record<string, unknown>);
+/** 查询日志列表 */
+export function getLogPageByParams(params: LogQuery) {
+  return http.get<PageInfo<LogItem>>('/system/log/page', params as unknown as Record<string, unknown>);
 }

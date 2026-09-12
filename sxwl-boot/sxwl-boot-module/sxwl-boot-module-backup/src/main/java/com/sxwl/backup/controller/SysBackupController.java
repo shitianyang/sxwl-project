@@ -5,6 +5,7 @@ import com.sxwl.backup.dto.SysBackupDTO;
 import com.sxwl.backup.service.SysBackupService;
 import com.sxwl.common.annotation.SxwlLog;
 import com.sxwl.common.annotation.SxwlRepeatSubmit;
+import com.sxwl.security.model.SxwlLoginUser;
 import com.sxwl.security.utils.SxwlSecurityUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -31,10 +32,12 @@ public class SysBackupController {
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:backup:backup')")
     @SxwlLog(title = "数据备份", description = "执行数据库备份")
     public void backup() {
-        Long userId = SxwlSecurityUtils.getCurrentUser()
-                .map(u -> u.getUserId())
-                .orElse(null);
-        sysBackupService.backup(userId);
+        // 在请求线程（含 SecurityContext）同步取出 userId/orgId，传入异步方法，
+        // 否则异步线程无安全上下文会导致 sys_file_info 审计字段为 NULL 而插入失败。
+        SxwlLoginUser loginUser = SxwlSecurityUtils.getCurrentUser().orElse(null);
+        Long userId = loginUser != null ? loginUser.getUserId() : null;
+        Long orgId = loginUser != null ? loginUser.getOrgId() : null;
+        sysBackupService.backup(userId, orgId);
     }
 
     @GetMapping("/list")

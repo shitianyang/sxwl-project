@@ -2,9 +2,11 @@ package com.sxwl.system.controller;
 
 import com.sxwl.common.annotation.SxwlLog;
 import com.sxwl.common.annotation.SxwlRepeatSubmit;
+import com.sxwl.common.constants.SxwlSystemConstants;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.system.model.dto.SysMenuDTO;
 import com.sxwl.system.service.SysMenuService;
+import com.sxwl.security.model.SxwlLoginUser;
 import com.sxwl.security.utils.SxwlSecurityUtils;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -75,6 +77,12 @@ public class SysMenuController {
     @GetMapping("/user-tree")
     @SxwlLog(title = "菜单管理", description = "查询当前用户菜单树")
     public List<SysMenuDTO> getUserMenuTree() {
+        // 超级管理员绕过角色-菜单关联，直接返回全部菜单（无需在 sys_role_menu_info 逐条关联）
+        SxwlLoginUser loginUser = SxwlSecurityUtils.getCurrentUser().orElse(null);
+        if (loginUser != null && loginUser.getRoles() != null
+                && loginUser.getRoles().contains(SxwlSystemConstants.ADMIN_ROLE_CODE)) {
+            return sysMenuService.getMenuTree();
+        }
         Long userId = SxwlSecurityUtils.getCurrentUserId();
         if (userId == null) {
             throw new SxwlBusinessException(401, "未登录");

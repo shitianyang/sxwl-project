@@ -27,6 +27,12 @@ public class SysJobController {
         this.sysJobInfoService = sysJobInfoService;
     }
 
+    /**
+     * 查询定时任务详情
+     *
+     * @param id 任务 ID
+     * @return 任务 DTO
+     */
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:query')")
     @SxwlLog(title = "定时任务", description = "查询任务详情[id=#{#id}]")
@@ -34,6 +40,12 @@ public class SysJobController {
         return sysJobInfoService.getJobById(id);
     }
 
+    /**
+     * 分页查询定时任务列表
+     *
+     * @param params 分页查询参数
+     * @return 任务分页列表
+     */
     @GetMapping("/page")
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:list')")
     @SxwlLog(title = "定时任务", description = "查询任务列表")
@@ -41,6 +53,11 @@ public class SysJobController {
         return sysJobInfoService.getJobPageByParams(params);
     }
 
+    /**
+     * 新增定时任务
+     *
+     * @param dto 任务 DTO（含 jobName、jobGroup、className、methodName、cronExpression 等）
+     */
     @PostMapping
     @SxwlRepeatSubmit
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:add')")
@@ -49,6 +66,11 @@ public class SysJobController {
         sysJobInfoService.createJob(dto);
     }
 
+    /**
+     * 修改定时任务
+     *
+     * @param dto 任务 DTO（需包含 id）
+     */
     @PutMapping
     @SxwlRepeatSubmit
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:edit')")
@@ -57,6 +79,11 @@ public class SysJobController {
         sysJobInfoService.updateJob(dto);
     }
 
+    /**
+     * 删除定时任务（软删除 + Quartz 调度移除）
+     *
+     * @param id 任务 ID
+     */
     @DeleteMapping("/{id}")
     @SxwlRepeatSubmit
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:delete')")
@@ -65,6 +92,11 @@ public class SysJobController {
         sysJobInfoService.deleteJobById(id);
     }
 
+    /**
+     * 暂停定时任务（Quartz pauseJob）
+     *
+     * @param id 任务 ID
+     */
     @PutMapping("/pause/{id}")
     @SxwlRepeatSubmit
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:pause')")
@@ -73,6 +105,11 @@ public class SysJobController {
         sysJobInfoService.pauseJob(id);
     }
 
+    /**
+     * 恢复定时任务（Quartz resumeJob）
+     *
+     * @param id 任务 ID
+     */
     @PutMapping("/resume/{id}")
     @SxwlRepeatSubmit
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:resume')")
@@ -81,6 +118,11 @@ public class SysJobController {
         sysJobInfoService.resumeJob(id);
     }
 
+    /**
+     * 立即执行一次定时任务（Quartz triggerJob）
+     *
+     * @param id 任务 ID
+     */
     @PutMapping("/run/{id}")
     @SxwlRepeatSubmit
     @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:run')")

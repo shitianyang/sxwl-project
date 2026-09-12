@@ -1,10 +1,13 @@
 package com.sxwl.sse.controller;
 
 import com.sxwl.common.annotation.SxwlNoWrap;
+import com.sxwl.common.entity.SxwlResult;
 import com.sxwl.common.utils.SxwlPrincipalUtils;
 import com.sxwl.security.ticket.SxwlConnectionTicketService;
 import com.sxwl.sse.manager.SxwlSseEmitterManager;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,11 +37,11 @@ public class SxwlSseController {
 
     /** 签发 60 秒内有效的一次性 SSE/WebSocket 连接票据。 */
     @PostMapping("/sse/ticket")
-    public String createTicket() {
+    public SxwlResult<String> createTicket() {
         Long userId = SxwlPrincipalUtils.getCurrentPrincipal()
                 .map(p -> p.getUserId())
                 .orElseThrow(() -> new IllegalStateException("未登录"));
-        return connectionTicketService.issue(userId);
+        return SxwlResult.success(connectionTicketService.issue(userId));
     }
 
     /**
@@ -49,9 +52,10 @@ public class SxwlSseController {
      */
     @SxwlNoWrap
     @GetMapping(value = "/sse/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter connect(@RequestParam String ticket) {
-        Long userId = connectionTicketService.consume(ticket)
-                .orElseThrow(() -> new IllegalStateException("流式连接票据无效或已过期"));
-        return sseEmitterManager.connect(userId);
+    public ResponseEntity<SseEmitter> connect(@RequestParam String ticket) {
+        // 失效/过期的一次性票据返回 401，前端据此判定为致命错误并停止重连（避免重连风暴）。
+        return connectionTicketService.consume(ticket)
+                .map(userId -> ResponseEntity.ok(sseEmitterManager.connect(userId)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 }

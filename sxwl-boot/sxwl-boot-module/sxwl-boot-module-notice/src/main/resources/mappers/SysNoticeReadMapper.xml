@@ -38,7 +38,7 @@
     <!-- 插入已读记录 -->
     <insert id="insertRead">
         INSERT INTO sys_notice_read (id, notice_id, user_id, read_time)
-        VALUES (#{id}, #{noticeId}, #{userId}, CURRENT_TIMESTAMP)
+        VALUES (NEXTVAL('seq_sys_notice_read'), #{noticeId}, #{userId}, CURRENT_TIMESTAMP)
         ON CONFLICT (user_id, notice_id) DO NOTHING
     </insert>
 

@@ -12,6 +12,7 @@ import com.sxwl.codegen.model.params.SysCodegenTablePageParams;
 import com.sxwl.codegen.service.SysCodegenTableService;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.common.utils.SxwlSnowFlakeUtils;
+import com.sxwl.security.utils.SxwlSecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -80,8 +81,8 @@ public class SysCodegenTableServiceImpl implements SysCodegenTableService {
         entity.setAuthor(config.getAuthor());
         entity.setGenType(config.getGenType() != null ? config.getGenType() : "crud");
         entity.setStatus(1);
-        entity.setCreateBy(0L);
-        entity.setCreateOrg(0L);
+        entity.setCreateBy(currentUserId());
+        entity.setCreateOrg(currentUserId());
         entity.setCreateTime(now);
         entity.setDeleteFlag(0);
 
@@ -117,7 +118,7 @@ public class SysCodegenTableServiceImpl implements SysCodegenTableService {
         entity.setAuthor(config.getAuthor());
         entity.setGenType(config.getGenType());
         entity.setStatus(1);
-        entity.setUpdateBy(0L);
+        entity.setUpdateBy(currentUserId());
         entity.setUpdateTime(LocalDateTime.now());
 
         sysCodegenTableMapper.updateTable(entity);
@@ -137,6 +138,14 @@ public class SysCodegenTableServiceImpl implements SysCodegenTableService {
         // 删除表配置
         sysCodegenTableMapper.deleteTableById(tableId);
         log.info("删除表配置：{} ({})", existing.getTableName(), tableId);
+    }
+
+    /**
+     * 取当前登录用户 ID，未登录时回退 0（L20）。
+     */
+    private Long currentUserId() {
+        Long userId = SxwlSecurityUtils.getCurrentUserId();
+        return userId != null ? userId : 0L;
     }
 
     @Override

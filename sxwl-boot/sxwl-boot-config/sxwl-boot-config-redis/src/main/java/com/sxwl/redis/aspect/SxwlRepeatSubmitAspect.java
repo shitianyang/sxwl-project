@@ -85,7 +85,8 @@ public class SxwlRepeatSubmitAspect {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attributes != null) {
                 HttpServletRequest request = attributes.getRequest();
-                return request.getRequestURI();
+                // 防重 key 需包含 HTTP 方法，避免 GET/POST 同 URI 互相误判（L34）
+                return request.getMethod() + ":" + request.getRequestURI();
             }
         } catch (Exception ignored) {
             // ignore
