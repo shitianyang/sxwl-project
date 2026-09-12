@@ -1,8 +1,10 @@
 import { http } from './http';
 
 export interface LoginRequest {
-  username: string;
-  password: string; // SM2 加密后的 Base64 密文
+  username?: string; // 用户名（密码登录时使用）
+  password?: string; // SM2 加密后的 Base64 密文（密码登录时使用）
+  phone?: string; // 手机号（短信登录时使用）
+  smsCode?: string; // 短信验证码（短信登录时使用）
   captchaUuid: string;
   captchaCode: string;
 }
@@ -43,6 +45,16 @@ export function getCaptchaImage() {
 /** 密码登录 */
 export function loginByPassword(data: LoginRequest) {
   return http.post<TokenPair>('/auth/login/password', data);
+}
+
+/** 短信登录 */
+export function loginBySms(data: LoginRequest) {
+  return http.post<TokenPair>('/auth/login/sms', data);
+}
+
+/** 获取短信验证码 */
+export function getSmsCaptcha(phone: string) {
+  return http.post<null>('/captcha/sms', { phone });
 }
 
 /** 刷新 Token */

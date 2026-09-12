@@ -57,6 +57,9 @@ public class SysJobLogServiceImpl implements SysJobLogService {
 
     @Override
     public int cleanLogBefore(int days) {
+        if (days <= 0 || days > 365) {
+            throw new SxwlBusinessException(10001, "清理天数必须在 1-365 之间: " + days);
+        }
         int affected = sysJobLogMapper.cleanLogBefore(days);
         log.info("清理任务日志成功: days={}, affected={}", days, affected);
         return affected;

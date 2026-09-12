@@ -2,6 +2,7 @@ import { SxwlCard, SxwlRow, SxwlCol, SxwlStatistic, SxwlTag, SxwlTable } from '@
 import SxwlLineChart from '@/components/SxwlChart/SxwlLineChart';
 import SxwlChart from '@/components/SxwlChart';
 import { useMonitorSSE } from '@/hooks/useMonitorSSE';
+import { useEffect, useState, useRef } from 'react';
 import './index.scss';
 
 /** 品牌主色（与 variables.scss $sxwl-color-primary 对齐） */
@@ -28,6 +29,16 @@ function formatPercent(value: number | null | undefined): string {
   return value.toFixed(1) + '%';
 }
 
+/**
+ * 计算图表响应式高度
+ * 
+ * <p>基于容器宽度动态调整，最小 200px，最大 300px</p>
+ * <p>在窄屏（span <= 8）时使用 200px，宽屏时使用 250px</p>
+ */
+function getChartHeight(span: number = 12): number {
+  return span <= 8 ? 200 : 250;
+}
+
 export default function ServerMonitorPage() {
   const { data, connected, history } = useMonitorSSE();
 
@@ -37,6 +48,9 @@ export default function ServerMonitorPage() {
   const dbInfo = data?.db;
 
   const loading = !data;
+
+  /** 响应式图表高度 */
+  const [chartHeight] = useState(() => getChartHeight(12));
 
   const gcColumns = [
     { title: 'GC 名称', dataIndex: 'name', key: 'name', width: 200 },
@@ -84,7 +98,7 @@ export default function ServerMonitorPage() {
               data={history.server.map(d => ({ time: d.time, cpuLoad: d.cpuLoad }))}
               xField="time"
               yField="cpuLoad"
-              height={200}
+              height={chartHeight}
               markStyle={LINE_STYLE}
               tooltip={{ channel: 'y', valueFormatter: (v: number) => formatPercent(v) }}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: 'CPU 负载 (%)' } }}
@@ -100,7 +114,7 @@ export default function ServerMonitorPage() {
               }))}
               xField="time"
               yField="memUsedMB"
-              height={200}
+              height={chartHeight}
               markStyle={AREA_STYLE}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '内存使用 (MB)' } }}
               tooltip={{ channel: 'y', valueFormatter: (v: number) => formatBytes(v * 1024 * 1024) }}
@@ -151,7 +165,7 @@ export default function ServerMonitorPage() {
               xField="time"
               yField="value"
               colorField="type"
-              height={200}
+              height={chartHeight}
               scale={{ color: { range: DUAL_RANGE } }}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '堆内存 (MB)' } }}
               tooltip={{ channel: 'y', valueFormatter: (v: number) => `${v} MB` }}
@@ -162,7 +176,7 @@ export default function ServerMonitorPage() {
               data={history.jvm.map(d => ({ time: d.time, threadCount: d.threadCount }))}
               xField="time"
               yField="threadCount"
-              height={200}
+              height={chartHeight}
               markStyle={LINE_STYLE}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '线程数' } }}
             />
@@ -203,7 +217,7 @@ export default function ServerMonitorPage() {
               data={history.redis.map(d => ({ time: d.time, hitRate: d.hitRate }))}
               xField="time"
               yField="hitRate"
-              height={200}
+              height={chartHeight}
               markStyle={LINE_STYLE}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '命中率 (%)' } }}
               scale={{ y: { min: 0, max: 100 } }}
@@ -219,7 +233,7 @@ export default function ServerMonitorPage() {
               }))}
               xField="time"
               yField="usedMemoryMB"
-              height={200}
+              height={chartHeight}
               markStyle={AREA_STYLE}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '内存使用 (MB)' } }}
               tooltip={{ channel: 'y', valueFormatter: (v: number) => formatBytes(v * 1024 * 1024) }}
@@ -242,7 +256,7 @@ export default function ServerMonitorPage() {
               data={history.db.map(d => ({ time: d.time, activeConnections: d.activeConnections }))}
               xField="time"
               yField="activeConnections"
-              height={200}
+              height={chartHeight}
               markStyle={LINE_STYLE}
               axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '活跃连接数' } }}
             />

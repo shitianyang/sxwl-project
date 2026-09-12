@@ -64,6 +64,15 @@ public interface SysUserMapper {
     /** 查询角色下已关联的用户数，作为超级管理员唯一性二次校验。 */
     int countUsersByRoleId(@Param("roleId") Long roleId);
 
+    /** 查询角色 ID（不加锁，用于快速判断是否为超级管理员角色）。 */
+    Long selectRoleIdByCode(@Param("roleCode") String roleCode);
+
+    /** 逻辑删除指定用户的角色关联（删除用户时清理孤儿数据）。 */
+    int deleteUserRoleByUserId(@Param("userId") Long userId);
+
+    /** 批量逻辑删除指定用户的角色关联。 */
+    int deleteUserRoleByUserIds(@Param("ids") List<Long> ids);
+
     /**
      * 新增用户
      *

@@ -1,0 +1,19 @@
+/*
+ * Copyright (c) 2026 Sxwl Technologies, Inc. All rights reserved.
+ */
+
+package com.sxwl.system.model.params;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+@DisplayName("SysLogPageParams 测试")
+class SysLogPageParamsTest {
+    @Test
+    void testGettersAndSetters() {
+        SysLogPageParams params = new SysLogPageParams();
+        params.setCurrent(1); params.setPageSize(10);
+        assertEquals(1, params.getCurrent()); assertEquals(10, params.getPageSize());
+    }
+}

@@ -108,7 +108,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             checkAndRenew(token, claims, secret, userId, deviceId, clientType, response);
 
         } catch (Exception e) {
-            log.debug("Token 验证失败: {}", e.getMessage());
+            log.warn("Token 验证失败: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);
@@ -135,7 +135,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         user.setUserId(userId);
         user.setUsername(userInfo.get("username"));
         user.setNickname(userInfo.get("nickname"));
-        user.setStatus(Integer.parseInt(userInfo.getOrDefault("status", "1")));
+        user.setStatus(parseInt(userInfo.getOrDefault("status", "1")));
         user.setCreateOrg(parseLong(userInfo.get("createOrg")));
 
         // 角色集合
@@ -160,7 +160,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String orgIdsStr = userInfo.get("dataScopeOrgIds");
         if (orgIdsStr != null && !orgIdsStr.isEmpty()) {
             user.setDataScopeOrgIds(Arrays.stream(orgIdsStr.split(","))
-                    .map(Long::parseLong).collect(Collectors.toSet()));
+                    .map(this::parseLong)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet()));
         } else if (dataScope != null && dataScope != 1) {
             user.setDataScopeOrgIds(Set.of());
         }

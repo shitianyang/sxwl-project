@@ -53,6 +53,21 @@ public class SysJobManager {
             return;
         }
 
+        // 创建前校验目标方法真实存在，避免创建必然失败的任务（L16）
+        if (className == null || className.isBlank() || methodName == null || methodName.isBlank()) {
+            throw new SchedulerException("className 和 methodName 不能为空");
+        }
+        try {
+            Class<?> clazz = Class.forName(className);
+            if (params != null && !params.isEmpty()) {
+                clazz.getMethod(methodName, String.class);
+            } else {
+                clazz.getMethod(methodName);
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
+            throw new SchedulerException("目标方法不存在: " + className + "#" + methodName, e);
+        }
+
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("className", className);
         jobDataMap.put("methodName", methodName);
@@ -148,6 +163,7 @@ public class SysJobManager {
      * <p>由于 {@link com.sxwl.quartz.factory.SysJobFactory} 会在创建实例时自动注入
      * Spring 依赖，此类的 {@code @Autowired ApplicationContext} 会被自动注入。</p>
      */
+    @DisallowConcurrentExecution
     public static class QuartzJobDelegate implements Job {
 
         private static final Logger log = LoggerFactory.getLogger(QuartzJobDelegate.class);
@@ -162,12 +178,17 @@ public class SysJobManager {
             String methodName = dataMap.getString("methodName");
             String params = dataMap.getString("params");
 
-            if (className == null || methodName == null) {
-                log.error("QuartzJobDelegate 执行失败: className 或 methodName 为空");
-                return;
-            }
+            long startTime = System.currentTimeMillis();
+            boolean success = false;
+            String errorMsg = null;
 
             try {
+                if (className == null || methodName == null) {
+                    errorMsg = "className 或 methodName 为空";
+                    log.error("QuartzJobDelegate 执行失败: {}", errorMsg);
+                    return;
+                }
+
                 // 从 ApplicationContext 获取目标 Bean
                 Class<?> clazz = Class.forName(className);
                 Object bean = applicationContext.getBean(clazz);
@@ -181,18 +202,34 @@ public class SysJobManager {
                     var method = bean.getClass().getMethod(methodName);
                     method.invoke(bean);
                 }
+                success = true;
                 log.info("定时任务执行成功: {}.{}({})", className, methodName, params);
             } catch (BeansException e) {
+                errorMsg = "获取 Bean 失败: " + e.getMessage();
                 log.error("定时任务获取 Bean 失败: className={}", className, e);
+                throw new JobExecutionException("获取 Bean 失败: " + className, e);
             } catch (ClassNotFoundException e) {
+                errorMsg = "类不存在: " + className;
                 log.error("定时任务类不存在: className={}", className, e);
                 throw new JobExecutionException("Class not found: " + className, e);
             } catch (NoSuchMethodException e) {
+                errorMsg = "方法不存在: " + className + "#" + methodName;
                 log.error("定时任务方法不存在: {}.{}", className, methodName, e);
                 throw new JobExecutionException("Method not found: " + className + "#" + methodName, e);
             } catch (Exception e) {
+                errorMsg = e.getMessage();
                 log.error("定时任务反射调用异常: {}.{}", className, methodName, e);
                 throw new JobExecutionException(e);
+            } finally {
+                long durationMs = System.currentTimeMillis() - startTime;
+                // 发布执行事件，由 module-job 的监听器落库（sys_job_log_info），
+                // 使"任务日志"功能生效。事件发布失败不影响任务本身。
+                try {
+                    applicationContext.publishEvent(
+                            new JobExecutionEvent(this, className, methodName, params, success, errorMsg, durationMs));
+                } catch (Exception ex) {
+                    log.warn("发布任务执行事件失败: {}.{}", className, methodName, ex);
+                }
             }
         }
     }

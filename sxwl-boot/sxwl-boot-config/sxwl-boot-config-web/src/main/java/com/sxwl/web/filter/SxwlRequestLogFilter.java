@@ -9,6 +9,9 @@ import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 请求日志过滤器
@@ -89,8 +92,7 @@ public class SxwlRequestLogFilter implements Filter {
         int status = response.getStatus();
         String method = request.getMethod();
         String uri = request.getRequestURI();
-        String query = request.getQueryString();
-        String fullUri = query != null ? uri + "?" + query : uri;
+        String fullUri = buildSafeUri(request, uri);
         String ip = getClientIp(request);
 
         if (status >= 500) {
@@ -100,6 +102,31 @@ public class SxwlRequestLogFilter implements Filter {
         } else {
             log.info("[REQUEST] {} {} | IP={} | {} | {}ms", method, fullUri, ip, status, elapsed);
         }
+    }
+
+    /** 敏感 query 参数名（小写），日志中脱敏，避免凭据泄漏（L32） */
+    private static final Set<String> SENSITIVE_PARAMS = Set.of(
+            "ticket", "token", "accesstoken", "refreshtoken", "password", "secret", "authorization", "jwt");
+    private static final int MAX_URI_LENGTH = 1024;
+
+    /**
+     * 构造安全的日志 URI：脱敏敏感 query 参数并限制总长度。
+     */
+    private String buildSafeUri(HttpServletRequest request, String uri) {
+        String query = request.getQueryString();
+        if (query == null || query.isEmpty()) {
+            return uri.length() > MAX_URI_LENGTH ? uri.substring(0, MAX_URI_LENGTH) : uri;
+        }
+        String safeQuery = Arrays.stream(query.split("&"))
+                .map(p -> {
+                    int idx = p.indexOf('=');
+                    if (idx < 0) return p;
+                    String name = p.substring(0, idx).toLowerCase();
+                    return SENSITIVE_PARAMS.contains(name) ? p.substring(0, idx) + "=***" : p;
+                })
+                .collect(Collectors.joining("&"));
+        String full = uri + "?" + safeQuery;
+        return full.length() > MAX_URI_LENGTH ? full.substring(0, MAX_URI_LENGTH) : full;
     }
 
     private String getClientIp(HttpServletRequest request) {

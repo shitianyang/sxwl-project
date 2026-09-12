@@ -20,7 +20,7 @@
     <update id="updateStatus">
         UPDATE sys_file_session_info
         SET status = #{status}, update_time = NOW()
-        WHERE id = #{id} AND create_by = #{userId}
+        WHERE id = #{id} AND create_by = #{userId} AND status = 0
     </update>
 
     <!-- 根据 MD5 查询未完成的会话 -->
@@ -33,6 +33,23 @@
     <!-- 根据 ID 查询 -->
     <select id="getById" resultType="com.sxwl.rustfs.model.entity.SysFileSessionInfo">
         SELECT * FROM sys_file_session_info WHERE id = #{id} AND delete_flag = 0
+    </select>
+
+    <!-- 清理超过指定小时的未完成会话 -->
+    <delete id="cleanupExpiredSessions">
+        DELETE FROM sys_file_session_info
+        WHERE status = 0
+          AND create_time &lt; NOW() - (#{hours} || ' hours')::INTERVAL
+          AND delete_flag = 0
+    </delete>
+
+    <!-- 查询超过指定小时的未完成会话列表（用于日志） -->
+    <select id="selectExpiredSessions" resultType="com.sxwl.rustfs.model.entity.SysFileSessionInfo">
+        SELECT * FROM sys_file_session_info
+        WHERE status = 0
+          AND create_time &lt; NOW() - (#{hours} || ' hours')::INTERVAL
+          AND delete_flag = 0
+        ORDER BY create_time ASC
     </select>
 
 </mapper>

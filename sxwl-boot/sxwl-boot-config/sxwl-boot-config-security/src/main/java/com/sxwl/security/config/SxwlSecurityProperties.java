@@ -78,6 +78,20 @@ public class SxwlSecurityProperties {
     /** 单用户最大并发设备数（0=不限制） */
     private int maxDevicesPerUser = 0;
 
+    // ==================== IP 黑白名单 ====================
+
+    /** 是否启用 IP 黑白名单拦截 */
+    private boolean ipWhitelistEnabled = false;
+
+    /** 白名单 IP 列表（为空则不启用白名单模式） */
+    private java.util.List<String> ipWhitelist = java.util.Collections.emptyList();
+
+    /** 黑名单 IP 列表（匹配任意一个即拦截） */
+    private java.util.List<String> ipBlacklist = java.util.Collections.emptyList();
+
+    /** 是否忽略内网 IP（127.0.0.1、192.168.x.x、10.x.x.x、172.16.x.x-172.31.x.x） */
+    private boolean ignorePrivateIp = true;
+
     // ==================== getters/setters ====================
 
     public String getJwtSecret() {
@@ -214,5 +228,37 @@ public class SxwlSecurityProperties {
 
     public void setMaxDevicesPerUser(int maxDevicesPerUser) {
         this.maxDevicesPerUser = maxDevicesPerUser;
+    }
+
+    public boolean isIpWhitelistEnabled() {
+        return ipWhitelistEnabled;
+    }
+
+    public void setIpWhitelistEnabled(boolean ipWhitelistEnabled) {
+        this.ipWhitelistEnabled = ipWhitelistEnabled;
+    }
+
+    public java.util.List<String> getIpWhitelist() {
+        return ipWhitelist;
+    }
+
+    public void setIpWhitelist(java.util.List<String> ipWhitelist) {
+        this.ipWhitelist = ipWhitelist;
+    }
+
+    public java.util.List<String> getIpBlacklist() {
+        return ipBlacklist;
+    }
+
+    public void setIpBlacklist(java.util.List<String> ipBlacklist) {
+        this.ipBlacklist = ipBlacklist;
+    }
+
+    public boolean isIgnorePrivateIp() {
+        return ignorePrivateIp;
+    }
+
+    public void setIgnorePrivateIp(boolean ignorePrivateIp) {
+        this.ignorePrivateIp = ignorePrivateIp;
     }
 }

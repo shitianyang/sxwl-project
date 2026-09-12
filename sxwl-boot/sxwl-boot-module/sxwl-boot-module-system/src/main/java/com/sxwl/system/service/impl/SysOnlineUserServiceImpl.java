@@ -62,7 +62,13 @@ public class SysOnlineUserServiceImpl implements SysOnlineUserService {
         // 3. 遍历当前页用户，获取设备级在线详情
         List<SysOnlineUserDTO> list = new ArrayList<>();
         for (String uidStr : pageUserIds) {
-            Long userId = Long.parseLong(uidStr);
+            Long userId;
+            try {
+                userId = Long.parseLong(uidStr);
+            } catch (NumberFormatException e) {
+                log.warn("在线用户 ID 格式非法，跳过: {}", uidStr);
+                continue;
+            }
             Set<String> deviceIds = redisHelper.smembers(
                     SxwlRedisKeyUtils.onlineDevicesSetKey(userId));
             if (deviceIds == null || deviceIds.isEmpty()) {

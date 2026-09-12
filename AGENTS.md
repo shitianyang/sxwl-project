@@ -5,8 +5,8 @@
 本仓库是统一 RBAC 权限管理平台，采用 Java 后端和 React 前端分离架构。
 
 - `sxwl-boot/`：Java 17、Spring Boot 3.5、Maven 聚合工程。
-- `sxwl-react/`：React 19、TypeScript、Vite、Ant Design、Zustand、Sass。
-- API 前缀为 `/sxwl-api`；本地后端端口为 `30101`，Vite 前端端口为 `31001`。
+- `sxwl-react/`：React 19.2、TypeScript 6.0、Vite 8.1、Ant Design 6.5、Zustand、Sass。
+- API 前缀为 `/sxwl-api`；本地后端端口为 `30101`，Vite 前端开发服务器端口为 `31001`。
 
 修改任意模块前，先阅读根目录 `README.md`、对应的 `pom.xml` 或 `package.json`，以及更近层级的 `AGENTS.md`（如存在）。保留与当前任务无关的未提交改动。
 
@@ -16,10 +16,29 @@
 
 - `sxwl-boot-app`：应用启动和环境配置。
 - `sxwl-boot-common`：通用 DTO、实体、异常、常量与工具类。
-- `sxwl-boot-config`：Web、安全、MyBatis、Redis、RustFS、Quartz、SSE、WebSocket、监控和代码生成等基础设施配置。
+- `sxwl-boot-config`：Web、安全、MyBatis、Redis、RustFS、Quartz、SSE、WebSocket、监控、Freemarker 代码生成模板等基础设施配置。
 - `sxwl-boot-module`：认证、系统管理、公告、定时任务、RustFS、系统配置、备份、代码生成等业务模块。
 
 业务模块内沿用既有的分层与命名：`controller`、`service`、`service/impl`、`mapper`，Mapper XML 放在 `src/main/resources/mappers`。
+
+### AI 助手技能插件：`skills`
+
+项目提供多个 AI 助手技能插件，位于根目录 `skills/`，用于提升代码质量和开发效率：
+
+#### 代码质量
+
+- **`bug-hunter/`**：Bug 扫描与漏洞检测技能，自动识别潜在运行时错误、空指针、数组越界等问题。
+- **`code-review-backend/`**：后端代码审查技能，涵盖 Java/Spring Boot 最佳实践、MyBatis 映射规范、事务管理、异常处理。（含 `checklist.md` 和 `sxwl-gotchas.md`）
+- **`code-review-frontend/`**：前端代码审查技能，涵盖 React/TypeScript/Ant Design 规范、Zustand 状态管理、Sass 样式治理、Vite 构建优化。（含 Antd 6.5 API 废弃适配、G2 图表渲染、Zustand 陷阱等）
+
+#### 安全与性能
+
+- **`security-audit/`**：全栈安全架构审计技能，涵盖认证授权（JWT/OAuth2）、国密算法（SM2/SM3/SM4）、数据脱敏、API 安全防护、SQL 注入防护。
+- **`performance-optimize/`**：全栈性能分析与优化技能，涵盖慢 SQL 优化、数据库索引设计、JVM 调优、Bundle 体积优化、Redis 缓存策略、SSE 实时推送优化。
+
+#### 使用方式
+
+AI 助手在接收代码审查、Bug 扫描、安全审计或性能分析任务时会自动加载对应技能。技能插件包含详细的检查清单（`references/checklist.md`）和项目特定经验（`references/sxwl-gotchas.md`），可显著提升审查效率和准确性。
 
 ### 前端：`sxwl-react/src`
 
@@ -30,8 +49,13 @@
 - `stores/`：Zustand 的认证、菜单、权限状态。
 - `styles/`：全局 Sass Token、变量与混入。
 - `config/`、`hooks/`、`types/`、`utils/`：前端公共能力。
+- `assets/`：静态资源（图标、图片）。
 
 前端引用使用 `@/` 指向 `src/`。遵循当前组件和 Sass 写法；除非任务明确要求，不要在当前 Sass 迁移过程中重新引入 CSS-in-JS。
+
+### 图表与可视化
+
+前端使用 G2 (`@antv/g2`) 进行数据可视化，位于 `components/SxwlChart/`，封装柱状图、折线图、饼图等常见图表类型。
 
 ## 常用命令
 
@@ -55,7 +79,54 @@ npm test
 
 优先执行最小相关验证。前端改动至少执行 `npm run build`，有相关测试时一并运行；涉及 ESLint 覆盖范围时运行 `npm run lint`。后端改动应编译受影响的 Maven 模块及其依赖方；跨模块改动时运行聚合构建。
 
-不要为了清理而更新依赖、重写锁文件、全量格式化或执行完整构建。不要提交本地运行文件，例如 `application-dev.yaml`、凭据、日志和生成产物。
+不要为了清理而更新依赖、重写锁文件、全量格式化或执行完整构建。**严格禁止提交以下本地文件：**
+- `application-dev.yaml`、`application-prod.yaml`（后端环境配置）
+- `.env.local`、`.env.*.local`（前端环境配置）
+- 凭据、日志和生成产物
+
+## 环境配置与安全管理
+
+### 后端环境配置
+
+```text
+sxwl-boot/sxwl-boot-app/src/main/resources/
+├── application.yaml                    # ✅ 公共配置（可提交）
+├── application-test.yaml.template      # ✅ 测试环境模板（已提交）
+├── application-test.yaml               # ❌ 测试环境（本地创建）
+├── application-dev.yaml                # ❌ 开发环境（本地创建）
+└── application-prod.yaml               # ❌ 生产环境（本地创建）
+```
+
+**规范：**
+- `application.yaml` 可提交，包含非敏感的默认配置
+- `application-test.yaml.template` 为测试环境模板（✅ 已提交），提供完整配置结构参考
+- 所有 `application-*.yaml` 文件（无 template 后缀）被 `.gitignore` 自动忽略
+- 团队成员需从模板复制并填写本地密码、密钥和连接信息
+- 建议使用加密工具（如 Vault）管理共享凭据
+
+### 前端环境配置
+
+```text
+sxwl-react/
+├── .env                          # ✅ 全局基础配置（可提交）
+├── .env.example                  # ✅ 环境变量模板（已提交）
+├── .env.local                    # ❌ 本地开发配置
+├── .env.development.local        # ❌ 开发环境
+└── .env.production.local         # ❌ 生产环境
+```
+
+**规范：**
+- `.env.example` 作为团队模板，只包含非敏感默认值
+- 所有 `*.local` 文件被 `.gitignore` 自动忽略
+- 不要在 `.env` 文件中硬编码 Token、密钥或 API 地址
+- 如需动态配置，请在运行时通过环境变量或配置中心注入
+
+### 安全红线
+
+- ❌ **严禁提交**：任何含密码、密钥、Token 的配置文件
+- ❌ **严禁硬编码**：代码中不得出现明文密钥、API 地址
+- ✅ **推荐使用**：环境变量、加密 Vault、配置中心
+- ✅ **审查检查**：Code Review 时需重点检查配置泄露
 
 ## 后端改动规则
 

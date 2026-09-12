@@ -83,8 +83,9 @@ public class SxwlPasswordAuthStrategy implements SxwlAuthenticationStrategy {
             throw new SxwlBusinessException(401, "用户名或密码错误");
         }
 
-        // 3. 校验账号状态
-        Integer status = (Integer) userRow.get("status");
+        // 3. 校验账号状态（DB 列可能为 BIGINT→Long，用 Number 安全转换避免 ClassCastException）
+        Number statusNum = (Number) userRow.get("status");
+        Integer status = statusNum != null ? statusNum.intValue() : null;
         if (status == null || status == 0) {
             log.warn("账号已被禁用: username={}", username);
             throw new SxwlBusinessException(403, "账号已被禁用，请联系管理员");

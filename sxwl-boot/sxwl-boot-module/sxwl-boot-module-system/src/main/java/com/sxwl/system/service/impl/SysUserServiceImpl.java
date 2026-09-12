@@ -88,13 +88,17 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int createUser(SysUserDTO dto) {
-        Long superAdminRoleId = sysUserMapper.lockRoleIdByCode(SxwlSystemConstants.ADMIN_ROLE_CODE);
+        // 仅当分配超级管理员角色时才加行锁串行化，避免所有用户创建被串行阻塞（L7）
+        Long superAdminRoleId = sysUserMapper.selectRoleIdByCode(SxwlSystemConstants.ADMIN_ROLE_CODE);
         boolean isSuperAdminRole = superAdminRoleId != null
                 && dto.getRoleIds() != null
                 && dto.getRoleIds().contains(superAdminRoleId);
         boolean isAdminUsername = SxwlSystemConstants.ADMIN_USERNAME.equals(dto.getUsername());
-        if (isSuperAdminRole && sysUserMapper.countUsersByRoleId(superAdminRoleId) > 0) {
-            throw new SxwlBusinessException(10003, "禁止添加超级管理员账号");
+        if (isSuperAdminRole) {
+            superAdminRoleId = sysUserMapper.lockRoleIdByCode(SxwlSystemConstants.ADMIN_ROLE_CODE);
+            if (sysUserMapper.countUsersByRoleId(superAdminRoleId) > 0) {
+                throw new SxwlBusinessException(10003, "禁止添加超级管理员账号");
+            }
         }
         if (isAdminUsername || isSuperAdminRole) {
             throw new SxwlBusinessException(10003,
@@ -196,11 +200,14 @@ public class SysUserServiceImpl implements SysUserService {
      * @throws SxwlBusinessException 用户不存在时抛出
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deleteUserById(Long id) {
         SysUserDTO user = sysUserMapper.getUserById(id);
         if (user != null && isProtectedAdminUser(user)) {
             throw new SxwlBusinessException(10003, "超级管理员账号不允许删除");
         }
+        // 同步逻辑删除用户-角色关联，避免孤儿数据（L5）
+        sysUserMapper.deleteUserRoleByUserId(id);
         int affected = sysUserMapper.deleteUserById(id);
         if (affected == 0) {
             throw new SxwlBusinessException(10004, "用户不存在或已被删除");
@@ -228,6 +235,8 @@ public class SysUserServiceImpl implements SysUserService {
                 throw new SxwlBusinessException(10003, "超级管理员账号不允许删除");
             }
         }
+        // 同步逻辑删除用户-角色关联，避免孤儿数据（L5）
+        sysUserMapper.deleteUserRoleByUserIds(ids);
         int affected = sysUserMapper.batchDeleteByIds(ids);
         if (affected == 0) {
             throw new SxwlBusinessException(10004, "用户不存在或已被删除");

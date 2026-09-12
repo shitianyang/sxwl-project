@@ -259,11 +259,4 @@ public class SxwlRedisHelper {
     public Long unlink(Collection<String> keys) {
         return stringRedisTemplate.unlink(keys);
     }
-
-    /**
-     * KEYS 命令（仅 dev 环境，生产禁用）
-     */
-    public Set<String> keys(String pattern) {
-        return stringRedisTemplate.keys(pattern);
-    }
 }

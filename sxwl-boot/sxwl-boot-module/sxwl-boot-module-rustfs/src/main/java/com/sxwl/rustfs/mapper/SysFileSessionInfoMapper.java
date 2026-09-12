@@ -51,4 +51,20 @@ public interface SysFileSessionInfoMapper {
      */
     @SxwlDataScope
     SysFileSessionInfo getById(@Param("id") Long id);
+
+    /**
+     * 清理超过指定小时的未完成会话
+     *
+     * @param hours 小时数（例如 24）
+     * @return 清理的行数
+     */
+    int cleanupExpiredSessions(@Param("hours") int hours);
+
+    /**
+     * 查询超过指定小时的未完成会话列表（用于日志）
+     *
+     * @param hours 小时数（例如 24）
+     * @return 过期会话列表
+     */
+    List<SysFileSessionInfo> selectExpiredSessions(@Param("hours") int hours);
 }

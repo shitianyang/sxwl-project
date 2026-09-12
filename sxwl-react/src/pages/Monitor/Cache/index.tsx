@@ -99,7 +99,7 @@ export default function CachePage() {
             详情
           </SxwlButton>
           <SxwlPopconfirm title="确定删除该缓存 Key 吗？" onConfirm={() => handleClearKey(record.key)}>
-            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="monitor:cache:delete">
+            <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="monitor:cache:clear">
               删除
             </SxwlPermissionButton>
           </SxwlPopconfirm>

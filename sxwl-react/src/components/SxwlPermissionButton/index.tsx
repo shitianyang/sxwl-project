@@ -33,8 +33,11 @@ const SxwlPermissionButton: React.FC<SxwlPermissionButtonProps> = ({
 }) => {
   const { hasPermission, loaded } = usePermissionStore();
 
-  // 未加载完成前默认显示（开发环境），加载后按权限判断
-  if (loaded && permission && !hasPermission(permission, mode)) {
+  // 权限未加载完成时默认隐藏（fail-closed），避免权限未就绪时越权展示按钮（L40）
+  if (!loaded) {
+    return null;
+  }
+  if (permission && !hasPermission(permission, mode)) {
     return null;
   }
 

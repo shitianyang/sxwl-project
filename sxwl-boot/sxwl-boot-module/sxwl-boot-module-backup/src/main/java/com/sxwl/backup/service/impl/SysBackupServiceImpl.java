@@ -79,8 +79,8 @@ public class SysBackupServiceImpl implements SysBackupService {
     }
 
     @Override
-    @Async
-    public void backup(Long userId) {
+    @Async("backupExecutor")
+    public void backup(Long userId, Long orgId) {
         log.info("开始执行数据备份...");
         sendProgress(userId, 5, "开始备份数据库...");
         Path backupPath = null;
@@ -144,6 +144,9 @@ public class SysBackupServiceImpl implements SysBackupService {
             log.info("备份文件已上传至 S3: bucket={}, key={}", bucket, objectKey);
 
             // 4. 记录到 sys_file_info
+            // 注意：本方法运行在 @Async 独立线程，SecurityContext 不可达，
+            // SxwlAutoFillInterceptor 无法自动填充 create_by/create_org，
+            // 因此必须显式设置，否则会因 NOT NULL 约束导致插入失败（备份失效 + S3 孤儿对象）。
             SysFileInfo fileInfo = new SysFileInfo();
             fileInfo.setFileName(backupFileName);
             fileInfo.setObjectKey(objectKey);
@@ -155,15 +158,19 @@ public class SysBackupServiceImpl implements SysBackupService {
             fileInfo.setBusinessType(BACKUP_BUSINESS_TYPE);
             fileInfo.setStatus(1); // 正常
             fileInfo.setDescription("数据库备份 " + timestamp);
+            fileInfo.setCreateBy(userId);
+            fileInfo.setCreateOrg(orgId);
             sysFileInfoMapper.insertFile(fileInfo);
 
             log.info("数据备份完成: fileName={}, fileId={}", backupFileName, fileInfo.getId());
             sendProgress(userId, 100, "备份完成");
 
         } catch (SxwlBusinessException e) {
+            sendProgress(userId, -1, "备份失败: " + e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("数据备份异常", e);
+            sendProgress(userId, -1, "备份失败: " + e.getMessage());
             throw new SxwlBusinessException(10001, "数据库备份异常: " + e.getMessage());
         } finally {
             deleteTempFile(backupPath);
@@ -183,11 +190,17 @@ public class SysBackupServiceImpl implements SysBackupService {
         List<SysBackupDTO> backupList = fileList.stream()
                 .map(this::toBackupDTO)
                 .toList();
-        return new PageInfo<>(backupList);
+        // 注意：stream().toList() 得到的是普通 List，PageHelper 的分页信息（total/pages）会丢失。
+        // 从运行时实际的 Page 对象回填分页元数据，避免前端分页总数/页数错误。
+        PageInfo<SysBackupDTO> pageInfo = new PageInfo<>(backupList);
+        if (fileList instanceof com.github.pagehelper.Page<?> p) {
+            pageInfo.setTotal(p.getTotal());
+            pageInfo.setPages(p.getPages());
+        }
+        return pageInfo;
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void restore(Long fileId) {
         log.info("开始恢复备份: fileId={}", fileId);
 
@@ -226,7 +239,14 @@ public class SysBackupServiceImpl implements SysBackupService {
             throw new SxwlBusinessException(10004, "备份记录不存在");
         }
 
-        // 1. 删除 S3 对象
+        // 先逻辑删除 DB 记录（事务内，确保可见性先消失），再清理 S3 对象。
+        // 若 S3 删除失败，仅遗留无引用的孤儿存储（无破窗链接），优于 S3 已删而 DB 仍可见（L26）。
+        int affected = sysFileInfoMapper.deleteFileById(id);
+        if (affected == 0) {
+            throw new SxwlBusinessException(10004, "备份记录不存在或已被删除");
+        }
+
+        // 2. 删除 S3 对象（失败仅告警，DB 已不可见，对象可后续清理）
         String bucket = fileInfo.getBucketName() != null ? fileInfo.getBucketName() : rustfsProperties.getDefaultBucket();
         String objectKey = fileInfo.getObjectKey();
         if (objectKey != null && !objectKey.isEmpty()) {
@@ -234,14 +254,8 @@ public class SysBackupServiceImpl implements SysBackupService {
                 rustfsTemplate.delete(bucket, objectKey);
                 log.info("S3 对象已删除: bucket={}, key={}", bucket, objectKey);
             } catch (Exception e) {
-                log.warn("删除 S3 对象失败（已忽略）: bucket={}, key={}", bucket, objectKey, e);
+                log.error("删除 S3 对象失败（DB 记录已删除）: bucket={}, key={}", bucket, objectKey, e);
             }
-        }
-
-        // 2. 软删除数据库记录
-        int affected = sysFileInfoMapper.deleteFileById(id);
-        if (affected == 0) {
-            throw new SxwlBusinessException(10004, "备份记录不存在或已被删除");
         }
 
         log.info("备份文件删除成功: id={}", id);
@@ -336,4 +350,3 @@ public class SysBackupServiceImpl implements SysBackupService {
         return url.substring(colon + 1, slash);
     }
 }
-

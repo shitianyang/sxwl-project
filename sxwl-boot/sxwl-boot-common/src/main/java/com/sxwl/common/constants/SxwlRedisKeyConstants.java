@@ -192,6 +192,24 @@ public final class SxwlRedisKeyConstants {
      */
     public static final String LOGIN_BLOCK_PREFIX = "login:block:";
 
+    // ==================== IP 黑白名单 ====================
+
+    /**
+     * IP 黑名单 Key 前缀
+     * <p>完整 Key：security:ip:blacklist:{ip}
+     * <br>Value：加入原因（如 "恶意爆破"、"手动封禁"）
+     * <br>TTL：永久（除非手动移除）</p>
+     */
+    public static final String IP_BLACKLIST_PREFIX = "security:ip:blacklist:";
+
+    /**
+     * IP 白名单 Key 前缀
+     * <p>完整 Key：security:ip:whitelist:{ip}
+     * <br>Value：加入原因（如 "管理员IP"、"服务器IP"）
+     * <br>TTL：永久（除非手动移除）</p>
+     */
+    public static final String IP_WHITELIST_PREFIX = "security:ip:whitelist:";
+
     // ==================== 缓存 ====================
 
     /**

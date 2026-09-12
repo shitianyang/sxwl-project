@@ -192,6 +192,15 @@ public class SxwlRustfsTemplate {
                         .bucket(bucket)
                         .key(sourceKeys.get(i))
                         .build();
+                // 获取源对象大小，用于流式上传，避免 readAllBytes 占用大量堆内存（L29）
+                HeadObjectResponse head = s3Client.headObject(HeadObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(sourceKeys.get(i))
+                        .build());
+                long partSize = head.contentLength();
+                if (partSize <= 0) {
+                    throw new SxwlBusinessException(500, "S3 源对象大小异常: " + sourceKeys.get(i));
+                }
                 InputStream sourceStream = s3Client.getObject(getRequest);
 
                 UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
@@ -201,11 +210,10 @@ public class SxwlRustfsTemplate {
                         .partNumber(i + 1)
                         .build();
 
-                // 读取源对象全部内容
-                byte[] bytes = sourceStream.readAllBytes();
+                // 流式上传分片，不将整个对象读入堆内存
                 UploadPartResponse uploadPartResponse = s3Client.uploadPart(
                         uploadPartRequest,
-                        RequestBody.fromBytes(bytes));
+                        RequestBody.fromInputStream(sourceStream, partSize));
 
                 completedParts.add(CompletedPart.builder()
                         .partNumber(i + 1)

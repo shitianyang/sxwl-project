@@ -48,7 +48,7 @@
         <include refid="selectUserColumns"/>
         FROM sys_user_info
         WHERE delete_flag = 0
-          AND username <> 'SuperAdmin'
+          AND username != 'SuperAdmin'
         <if test="username != null and username != ''">
             AND username LIKE CONCAT('%', #{username}, '%')
         </if>
@@ -88,6 +88,13 @@
         FOR UPDATE
     </select>
 
+    <select id="selectRoleIdByCode" resultType="long">
+        SELECT id
+        FROM sys_role_info
+        WHERE role_code = #{roleCode}
+          AND delete_flag = 0
+    </select>
+
     <select id="countUsersByRoleId" resultType="int">
         SELECT COUNT(*)
         FROM sys_user_role_info ur
@@ -116,6 +123,24 @@
                 (#{id}, #{userId}, #{roleIds[${idx}]}, #{createBy}, #{createOrg}, #{createTime}, 0)
             </foreach>
         </insert>
+
+    <!-- 逻辑删除用户-角色关联（L5） -->
+    <update id="deleteUserRoleByUserId">
+        UPDATE sys_user_role_info
+        SET delete_flag = 1
+        WHERE user_id = #{userId}
+          AND delete_flag = 0
+    </update>
+
+    <update id="deleteUserRoleByUserIds">
+        UPDATE sys_user_role_info
+        SET delete_flag = 1
+        WHERE user_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+          AND delete_flag = 0
+    </update>
 
     <!-- 修改用户（密码可选） -->
     <update id="updateUser" parameterType="com.sxwl.system.model.entity.SysUser">

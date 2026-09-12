@@ -9,61 +9,74 @@
 .workbuddy
 
 # ============ Java / Maven ============
-# 编译输出
-target/
-test/
+# Maven 本地仓库
+.m2/
+
+# 编译输出（所有模块的 target 目录）
+**/target/
 *.class
 *.jar
 *.war
 *.ear
 
-# Maven 本地仓库（不提交）
-.m2/
-
 # 构建工具
 .gradle/
 build/
 
-# 配置文件（本地开发用，不含敏感信息）
-/sxwl-boot/sxwl-boot-app/src/main/resources/application-test.yaml
+# Spring Boot 打包产物
+**/boot-app.jar
+**/*.jar
+
+# ============ 配置文件（敏感） ============
+# 本地环境配置文件（含密码等敏感信息）
+sxwl-boot/sxwl-boot-app/src/main/resources/application-dev.yaml
+sxwl-boot/sxwl-boot-app/src/main/resources/application-prod.yaml
+sxwl-boot/sxwl-boot-app/src/main/resources/application-test.yaml
+
+# 所有包含敏感信息的环境配置
+**/application-*.yaml
+!**/application.yaml
+!**/application-*.template
 
 # ============ Node / React ============
 # 依赖
 sxwl-react/node_modules/
-sxwl-react/.pnpm-store/
 
 # 构建输出
 sxwl-react/dist/
-sxwl-react/build/
 
-# 缓存
+# Vite 缓存
 sxwl-react/.vite/
-sxwl-react/.eslintcache
-sxwl-react/.stylelintcache
 
-# 环境文件（不含实际密钥）
+# TypeScript 构建信息
+sxwl-react/*.tsbuildinfo
+
+# ESLint 缓存
+sxwl-react/.eslintcache
+
+# 环境变量文件（含密钥）
 sxwl-react/.env.local
 sxwl-react/.env.development.local
 sxwl-react/.env.production.local
-
-# 根目录统一环境变量（含密钥，禁止提交）
-/.env
-
-# TypeScript
-sxwl-react/*.tsbuildinfo
+./env
 
 # ============ 数据库 ============
-# 数据库配置中可能含密码，不提交
+# 数据库文件（可能含密码）
 *.db
 *.sqlite
 *.sql.gz
+*.sql
 
 # ============ 日志 ============
 logs/
-*.log
 sxwl-boot/logs/
 
 # ============ 测试覆盖率 ============
 coverage/
 *.lcov
+**/coverage/
+
+# ============ AI 技能插件生成文件 ============
+skills/**/*.cache
+skills/**/*.tmp
 

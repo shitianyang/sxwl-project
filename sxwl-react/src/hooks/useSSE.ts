@@ -48,6 +48,22 @@ export function useSSE(path: string, options: SSEOptions = {}): { status: SSESta
 
     let cancelled = false;
     let reconnectTimer: number | undefined;
+    let attempt = 0;
+    const MAX_RETRIES = 6;
+
+    // 重连调度：指数退避（1s→2s→4s…≤30s）+ 最大重试上限，
+    // 达到上限即停止，避免一次性 ticket 被无限反复申请（重连风暴）。
+    const scheduleReconnect = () => {
+      if (cancelled) return;
+      attempt += 1;
+      if (attempt > MAX_RETRIES) {
+        setStatus('disconnected');
+        return;
+      }
+      const delay = Math.min(1000 * 2 ** (attempt - 1), 30000);
+      reconnectTimer = window.setTimeout(() => void connect(), delay);
+    };
+
     const connect = async () => {
       try {
         const result = await createConnectionTicket();
@@ -58,6 +74,7 @@ export function useSSE(path: string, options: SSEOptions = {}): { status: SSESta
         esRef.current = es;
         es.onopen = () => {
           if (!mountedRef.current) return;
+          attempt = 0;
           setStatus('connected');
           onOpenRef.current?.();
         };
@@ -69,12 +86,12 @@ export function useSSE(path: string, options: SSEOptions = {}): { status: SSESta
           es.close();
           if (!mountedRef.current || cancelled) return;
           setStatus('disconnected');
-          reconnectTimer = window.setTimeout(() => void connect(), 1000);
+          scheduleReconnect();
         };
       } catch {
         if (!mountedRef.current || cancelled) return;
         setStatus('disconnected');
-        reconnectTimer = window.setTimeout(() => void connect(), 1000);
+        scheduleReconnect();
       }
     };
     void connect();

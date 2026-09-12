@@ -2,6 +2,7 @@ package com.sxwl.sse.manager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -30,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  * @since 0.1.0
  */
 @Component
-public class SxwlSseEmitterManager {
+public class SxwlSseEmitterManager implements DisposableBean {
 
     private static final Logger log = LoggerFactory.getLogger(SxwlSseEmitterManager.class);
 
@@ -103,11 +104,13 @@ public class SxwlSseEmitterManager {
             return;
         }
         for (SseEmitter emitter : emitters) {
+            // 捕获 Exception（含 IllegalStateException）：连接已完成时 send 会抛 IllegalStateException，
+            // 不能只捕获 IOException，否则异常外泄到调用方；单个失败仅移除该连接。
             try {
                 emitter.send(SseEmitter.event()
                         .name(eventName)
                         .data(data));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.debug("SSE 推送失败，移除连接: userId={}", userId);
                 removeEmitter(userId, emitter);
             }
@@ -127,7 +130,7 @@ public class SxwlSseEmitterManager {
                     emitter.send(SseEmitter.event()
                             .name(eventName)
                             .data(data));
-                } catch (IOException e) {
+                } catch (Exception e) {
                     log.debug("SSE 广播失败，移除连接: userId={}", userId);
                     removeEmitter(userId, emitter);
                 }
@@ -136,35 +139,40 @@ public class SxwlSseEmitterManager {
     }
 
     /**
-     * 获取在线用户数（不去重，一个用户多标签算一个）
+     * 获取在线用户数（按 userId 去重，一个用户多标签页算一个）
      *
-     * @return 当前活跃用户数
+     * @return 当前在线用户数
      */
     public int getOnlineCount() {
         return emitterMap.size();
     }
 
     /**
-     * 向所有连接发送心跳事件，同时清理已断开的连接
+     * 向所有连接发送心跳事件，同时清理已断开的连接。
+     * 整体包 try/catch，确保单个连接异常不会冒泡取消心跳调度器。
      */
     private void sendHeartbeat() {
-        if (emitterMap.isEmpty()) {
-            return;
-        }
-        log.trace("SSE 心跳: 在线用户数={}", emitterMap.size());
-
-        emitterMap.forEach((userId, emitters) -> {
-            for (SseEmitter emitter : emitters) {
-                try {
-                    emitter.send(SseEmitter.event()
-                            .name("heartbeat")
-                            .data(""));
-                } catch (IOException e) {
-                    log.debug("SSE 心跳失败，移除连接: userId={}", userId);
-                    removeEmitter(userId, emitter);
-                }
+        try {
+            if (emitterMap.isEmpty()) {
+                return;
             }
-        });
+            log.trace("SSE 心跳: 在线用户数={}", emitterMap.size());
+
+            emitterMap.forEach((userId, emitters) -> {
+                for (SseEmitter emitter : emitters) {
+                    try {
+                        emitter.send(SseEmitter.event()
+                                .name("heartbeat")
+                                .data(""));
+                    } catch (Exception e) {
+                        log.debug("SSE 心跳失败，移除连接: userId={}", userId);
+                        removeEmitter(userId, emitter);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            log.warn("SSE 心跳调度异常（已跳过本轮）: {}", e.getMessage());
+        }
     }
 
     /**
@@ -178,5 +186,10 @@ public class SxwlSseEmitterManager {
                 emitterMap.remove(userId);
             }
         }
+    }
+
+    @Override
+    public void destroy() {
+        heartbeatScheduler.shutdownNow();
     }
 }

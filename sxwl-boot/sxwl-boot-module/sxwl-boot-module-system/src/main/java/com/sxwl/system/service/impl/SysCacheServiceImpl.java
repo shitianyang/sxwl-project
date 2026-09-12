@@ -1,5 +1,6 @@
 package com.sxwl.system.service.impl;
 
+import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.system.model.dto.SysCacheCategoryDTO;
 import com.sxwl.system.model.dto.SysCacheKeyDetailDTO;
 import com.sxwl.system.service.SysCacheService;
@@ -12,6 +13,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -30,8 +32,11 @@ public class SysCacheServiceImpl implements SysCacheService {
 
     private static final Logger log = LoggerFactory.getLogger(SysCacheServiceImpl.class);
 
+    /** 单次删除/扫描的安全上限，避免一次 unlink 过多 key 阻塞 Redis */
+    private static final int MAX_CLEAR_BATCH = 1000;
+
     /**
-     * 硬编码的预定义缓存分类
+     * 硬编码的预定义缓存分类（白名单）
      */
     private static final List<SysCacheCategoryDTO> CATEGORIES = List.of(
             new SysCacheCategoryDTO("Token 白名单", "token:jwt:*"),
@@ -55,6 +60,7 @@ public class SysCacheServiceImpl implements SysCacheService {
 
     @Override
     public List<SysCacheKeyDetailDTO> listKeys(String categoryKeyPrefix) {
+        assertAllowedPrefix(categoryKeyPrefix);
         List<SysCacheKeyDetailDTO> result = new ArrayList<>();
         try (Cursor<String> cursor = stringRedisTemplate.scan(
                 ScanOptions.scanOptions().match(categoryKeyPrefix).count(200).build())) {
@@ -72,13 +78,27 @@ public class SysCacheServiceImpl implements SysCacheService {
 
     @Override
     public SysCacheKeyDetailDTO getKeyDetail(String key) {
+        // 拒绝读取白名单分类之外的 key（避免读取/泄露 token:*、login:* 等敏感数据）
+        assertAllowedKey(key);
         return buildKeyDetail(key);
     }
 
     @Override
     public void clearByName(String categoryKeyPrefix) {
-        Set<String> keys = stringRedisTemplate.keys(categoryKeyPrefix);
-        if (keys != null && !keys.isEmpty()) {
+        // 仅允许白名单分类前缀，杜绝传入 "*" 清空整个 Redis
+        assertAllowedPrefix(categoryKeyPrefix);
+        // 使用 SCAN 迭代（禁止使用阻塞式 KEYS 命令），分批收集后统一 unlink
+        Set<String> keys = new HashSet<>();
+        try (Cursor<String> cursor = stringRedisTemplate.scan(
+                ScanOptions.scanOptions().match(categoryKeyPrefix).count(200).build())) {
+            while (cursor.hasNext() && keys.size() < MAX_CLEAR_BATCH) {
+                keys.add(cursor.next());
+            }
+        } catch (Exception e) {
+            log.warn("SCAN 缓存 Key 异常, prefix={}: {}", categoryKeyPrefix, e.getMessage());
+            return;
+        }
+        if (!keys.isEmpty()) {
             stringRedisTemplate.unlink(keys);
             log.info("清除缓存分类: prefix={}, count={}", categoryKeyPrefix, keys.size());
         }
@@ -86,11 +106,44 @@ public class SysCacheServiceImpl implements SysCacheService {
 
     @Override
     public void clearByKey(String key) {
+        // 仅允许删除白名单分类内的 key（避免删除任意用户的 token:* 等）
+        assertAllowedKey(key);
         stringRedisTemplate.unlink(key);
         log.info("清除缓存 Key: {}", key);
     }
 
     // ==================== 私有方法 ====================
+
+    /**
+     * 断言分类前缀属于白名单，否则拒绝
+     */
+    private void assertAllowedPrefix(String prefix) {
+        if (prefix == null || prefix.isBlank()) {
+            throw new SxwlBusinessException(10001, "缓存分类前缀不能为空");
+        }
+        for (SysCacheCategoryDTO category : CATEGORIES) {
+            if (category.getKeyPrefix().equals(prefix)) {
+                return;
+            }
+        }
+        throw new SxwlBusinessException(10001, "非法的缓存分类前缀: " + prefix);
+    }
+
+    /**
+     * 断言 key 属于白名单分类（去掉模式尾部的 "*" 后做前缀匹配），否则拒绝
+     */
+    private void assertAllowedKey(String key) {
+        if (key == null || key.isBlank()) {
+            throw new SxwlBusinessException(10001, "缓存 Key 不能为空");
+        }
+        for (SysCacheCategoryDTO category : CATEGORIES) {
+            String allowedPrefix = category.getKeyPrefix().replace("*", "");
+            if (key.startsWith(allowedPrefix)) {
+                return;
+            }
+        }
+        throw new SxwlBusinessException(10001, "非法的缓存 Key（不在允许的分类内）: " + key);
+    }
 
     /**
      * 根据 Key 构建详情（包括类型、Value、TTL）

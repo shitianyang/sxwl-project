@@ -16,8 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,6 +53,9 @@ import java.util.stream.Collectors;
 public class SxwlDataScopeInterceptor implements Interceptor {
 
     private static final Logger log = LoggerFactory.getLogger(SxwlDataScopeInterceptor.class);
+
+    /** 数据权限注解解析结果缓存：避免每条 SELECT 都 Class.forName + 反射（M17） */
+    private final Map<String, Optional<SxwlDataScope>> scopeCache = new ConcurrentHashMap<>();
 
     // 匹配 ORDER BY / LIMIT / FOR UPDATE / OFFSET / FETCH / GROUP BY / HAVING
     private static final Pattern CLAUSE_PATTERN = Pattern.compile(
@@ -113,23 +118,25 @@ public class SxwlDataScopeInterceptor implements Interceptor {
     private SxwlDataScope getDataScopeAnnotation(MappedStatement ms) {
         String id = ms.getId();
         // id 格式：com.sxwl.system.mapper.SysUserMapper.getUserPageByParams
-        String className = id.substring(0, id.lastIndexOf('.'));
-        String methodName = id.substring(id.lastIndexOf('.') + 1);
-
-        try {
-            Class<?> mapperClass = Class.forName(className);
-            for (var method : mapperClass.getDeclaredMethods()) {
-                if (method.getName().equals(methodName)) {
-                    SxwlDataScope annotation = method.getAnnotation(SxwlDataScope.class);
-                    if (annotation != null) {
-                        return annotation;
+        // 缓存解析结果（含"无注解"），避免每条 SELECT 都 Class.forName + 反射
+        return scopeCache.computeIfAbsent(id, key -> {
+            String className = key.substring(0, key.lastIndexOf('.'));
+            String methodName = key.substring(key.lastIndexOf('.') + 1);
+            try {
+                Class<?> mapperClass = Class.forName(className);
+                for (var method : mapperClass.getDeclaredMethods()) {
+                    if (method.getName().equals(methodName)) {
+                        SxwlDataScope annotation = method.getAnnotation(SxwlDataScope.class);
+                        if (annotation != null) {
+                            return Optional.of(annotation);
+                        }
                     }
                 }
+            } catch (ClassNotFoundException e) {
+                log.warn("无法获取 Mapper 类: {}", className);
             }
-        } catch (ClassNotFoundException e) {
-            log.warn("无法获取 Mapper 类: {}", className);
-        }
-        return null;
+            return Optional.empty();
+        }).orElse(null);
     }
 
     /**

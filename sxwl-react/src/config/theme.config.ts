@@ -3,6 +3,6 @@
 // ============================================
 
 export const THEME_CONFIG = {
-  /** 品牌主色 */
-  colorPrimary: '#DE5F0E',
+  /** 品牌主色（科技蓝，与 variables.scss 对齐） */
+  colorPrimary: '#1677FF',
 } as const;

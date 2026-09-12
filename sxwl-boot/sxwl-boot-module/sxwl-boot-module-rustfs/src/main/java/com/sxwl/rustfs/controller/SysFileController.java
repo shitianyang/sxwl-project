@@ -160,4 +160,16 @@ public class SysFileController {
     public void deleteFile(@PathVariable("id") Long id) {
         sysFileService.deleteFile(id);
     }
+
+    /**
+     * 批量删除文件（同时删除 S3 存储对象，避免孤儿存储）
+     *
+     * @param ids 文件 ID 列表
+     */
+    @DeleteMapping("/batch")
+    @SxwlLog(title = "文件管理", description = "批量删除文件[count=#{#ids.size()}]")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:delete')")
+    public void batchDeleteFiles(@RequestBody java.util.List<Long> ids) {
+        sysFileService.batchDeleteFiles(ids);
+    }
 }

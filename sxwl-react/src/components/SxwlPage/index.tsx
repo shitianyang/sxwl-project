@@ -82,6 +82,8 @@ export interface SxwlPageProps {
   onReset?: () => void;
   /** 分页切换 */
   onPageChange?: (page: number, pageSize: number) => void;
+  /** 错误态：传入后展示加载失败提示（由页面在请求失败时 setError） */
+  error?: string | null;
 }
 
 // ==================== Component
@@ -105,6 +107,7 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
     onSearch,
     onReset,
     onPageChange,
+    error,
   } = props;
 
   // -------- 面包屑 --------
@@ -143,7 +146,7 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
           {toolbarButtons.map((btn, index) => {
             const btnEl = (
               <SxwlButton
-                key={index}
+                key={btn.permission ?? btn.label ?? index}
                 type={btn.type}
                 danger={btn.danger}
                 icon={btn.icon ? <SxwlIcon name={btn.icon} /> : undefined}
@@ -155,7 +158,7 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
             if (btn.permission) {
               return (
                 <SxwlPermissionButton
-                  key={index}
+                  key={btn.permission ?? btn.label ?? index}
                   type={btn.type}
                   danger={btn.danger}
                   icon={btn.icon ? <SxwlIcon name={btn.icon} /> : undefined}
@@ -191,6 +194,9 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
   }, [scroll, searchFields, toolbarButtons]);
 
   const renderContent = () => {
+    if (error) {
+      return <div className="sxwl-page-error">数据加载失败：{error}</div>;
+    }
     if (mode === 'tree') {
       return (
         <SxwlTable

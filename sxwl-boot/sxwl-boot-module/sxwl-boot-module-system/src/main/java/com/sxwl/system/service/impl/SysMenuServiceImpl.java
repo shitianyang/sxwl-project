@@ -84,7 +84,8 @@ public class SysMenuServiceImpl implements SysMenuService {
             if (parent == null) {
                 throw new SxwlBusinessException(10004, "父菜单不存在");
             }
-            entity.setAncestors(parent.getAncestors() + "," + dto.getParentId());
+            String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "0";
+            entity.setAncestors(parentAncestors + "," + dto.getParentId());
         } else {
             entity.setAncestors("0");
             entity.setParentId(0L);
@@ -128,7 +129,8 @@ public class SysMenuServiceImpl implements SysMenuService {
                 if (parent == null) {
                     throw new SxwlBusinessException(10004, "父菜单不存在");
                 }
-                entity.setAncestors(parent.getAncestors() + "," + dto.getParentId());
+                String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "0";
+                entity.setAncestors(parentAncestors + "," + dto.getParentId());
             } else {
                 entity.setAncestors("0");
                 entity.setParentId(0L);

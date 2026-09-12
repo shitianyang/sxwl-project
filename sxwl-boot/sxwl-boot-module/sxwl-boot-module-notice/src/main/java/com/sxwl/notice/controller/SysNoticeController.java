@@ -92,6 +92,7 @@ public class SysNoticeController {
     // ========== 未读/已读接口 ==========
 
     @GetMapping("/unread/count")
+    @PreAuthorize("isAuthenticated()")
     public Long getUnreadCount() {
         Long userId = SxwlSecurityUtils.getCurrentUserId();
         if (userId == null) return 0L;
@@ -99,6 +100,7 @@ public class SysNoticeController {
     }
 
     @GetMapping("/unread/list")
+    @PreAuthorize("isAuthenticated()")
     public List<SysNoticeUnreadItem> getUnreadList() {
         Long userId = SxwlSecurityUtils.getCurrentUserId();
         if (userId == null) return List.of();
@@ -107,6 +109,7 @@ public class SysNoticeController {
 
     @PostMapping("/read/{noticeId}")
     @SxwlRepeatSubmit
+    @PreAuthorize("isAuthenticated()")
     @SxwlLog(title = "通知公告", description = "标记已读[id=#{#noticeId}]")
     public void markAsRead(@PathVariable("noticeId") Long noticeId) {
         Long userId = SxwlSecurityUtils.getCurrentUserId();
@@ -117,6 +120,7 @@ public class SysNoticeController {
 
     @PostMapping("/read/all")
     @SxwlRepeatSubmit
+    @PreAuthorize("isAuthenticated()")
     @SxwlLog(title = "通知公告", description = "全部标记已读")
     public void markAllAsRead() {
         Long userId = SxwlSecurityUtils.getCurrentUserId();

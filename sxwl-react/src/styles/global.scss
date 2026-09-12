@@ -93,7 +93,7 @@ body {
 // antd Result（Error 404 / 403 / 500 三页自动受益）
 // ============================================
 .ant-result {
-  padding-top: 6vh;
+  padding-top: $sxwl-space-12;  // 48px（使用 Token 替代 6vh）
 
   &-title {
     color: $sxwl-color-text-heading;

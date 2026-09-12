@@ -51,8 +51,50 @@ public class SysOnlineUserDTO {
         this.username = username;
     }
 
+    /**
+     * 获取登录 IP（脱敏格式）
+     *
+     * <p>保留内网前两位和最后一个网段，中间用 **** 替代</p>
+     * <p>示例：192.168.1.100 → 192.168.*.**</p>
+     *
+     * @return 脱敏后的 IP 地址
+     */
     public String getIp() {
+        return maskIpAddress(ip);
+    }
+
+    /**
+     * 获取原始 IP（未脱敏，仅供后端日志使用）
+     *
+     * @return 原始 IP 地址
+     */
+    public String getRawIp() {
         return ip;
+    }
+
+    /**
+     * 对 IPv4 地址进行脱敏处理
+     *
+     * <p>规则：保留内网前两位（如 192.168），最后一个网段保留（如 .100），中间替换为 ****</p>
+     * <p>外网 IP 仅保留最后一段（如 1.2.3.4 → ***.***.***.4）</p>
+     *
+     * @param ipAddress 原始 IP 地址
+     * @return 脱敏后的 IP 地址
+     */
+    private String maskIpAddress(String ipAddress) {
+        if (ipAddress == null || ipAddress.isEmpty()) {
+            return ipAddress;
+        }
+        
+        // 简单脱敏：将第三个 octet 替换为 *，第二个 octet 部分隐藏
+        String[] parts = ipAddress.split("\\.");
+        if (parts.length == 4) {
+            // IPv4: x.x.x.x → x.x.*.x
+            return parts[0] + "." + parts[1] + ".*.**";
+        }
+        
+        // 如果不是标准 IPv4，返回 "****"
+        return "****";
     }
 
     public void setIp(String ip) {

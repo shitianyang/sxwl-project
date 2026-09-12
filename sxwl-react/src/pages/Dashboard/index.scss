@@ -15,8 +15,8 @@
 // 欢迎横幅（浅橙渐变底 + 品牌浅描边）
 .sxwl-dashboard-banner {
   position: relative;
-  background: linear-gradient(90deg, $sxwl-color-primary-1 0%, #fff1dc 100%);
-  border: 1px solid #ffe7ba;
+  background: linear-gradient(90deg, $sxwl-color-primary-1 0%, $sxwl-color-warm-1 100%);  // 使用 Token
+  border: 1px solid $sxwl-color-warm-2;  // 使用 Token
   border-radius: $sxwl-radius-lg;
   padding: 22px 28px;
   margin-bottom: 16px;
@@ -85,8 +85,8 @@
 
 // 图标块：统一品牌浅橙底 + 橙图标
 .sxwl-dashboard-stat-card-icon {
-  width: 44px;
-  height: 44px;
+  width: $sxwl-icon-block-sm;  // 使用 Token（44px）
+  height: $sxwl-icon-block-sm;  // 使用 Token（44px）
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -147,8 +147,8 @@
 
 // 图标块：默认中性，hover 变品牌橙
 .sxwl-dashboard-quick-link-icon {
-  width: 40px;
-  height: 40px;
+  width: $sxwl-icon-block-xs;  // 使用 Token（40px）
+  height: $sxwl-icon-block-xs;  // 使用 Token（40px）
   border-radius: 10px;
   display: flex;
   align-items: center;
