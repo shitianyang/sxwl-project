@@ -1,6 +1,7 @@
 package com.sxwl.security.handler;
 
 import com.sxwl.common.constants.SxwlRedisKeyConstants;
+import com.sxwl.common.constants.SxwlSystemConstants;
 import com.sxwl.common.utils.SxwlJwtUtils;
 import com.sxwl.common.utils.SxwlRedisKeyUtils;
 import com.sxwl.redis.helper.SxwlRedisHelper;
@@ -85,11 +86,11 @@ public class SxwlAuthenticationHandler {
 
         // 确定过期时间
         long accessExpire = "admin".equals(clientType)
-                ? securityProperties.getAccessTokenExpire()
-                : securityProperties.getFrontAccessTokenExpire();
+                ? SxwlSystemConstants.ACCESS_TOKEN_EXPIRE / 1000
+                : SxwlSystemConstants.FRONT_ACCESS_TOKEN_EXPIRE / 1000;
         long refreshExpire = "admin".equals(clientType)
-                ? securityProperties.getRefreshTokenExpire()
-                : securityProperties.getFrontRefreshTokenExpire();
+                ? SxwlSystemConstants.REFRESH_TOKEN_EXPIRE / 1000
+                : SxwlSystemConstants.FRONT_REFRESH_TOKEN_EXPIRE / 1000;
 
         // 生成 JWT
         String accessJti = UUID.randomUUID().toString();
@@ -204,8 +205,8 @@ public class SxwlAuthenticationHandler {
 
         // TTL 与 Refresh Token 一致
         long refreshExpire = "admin".equals(clientType)
-                ? securityProperties.getRefreshTokenExpire()
-                : securityProperties.getFrontRefreshTokenExpire();
+                ? SxwlSystemConstants.REFRESH_TOKEN_EXPIRE / 1000
+                : SxwlSystemConstants.FRONT_REFRESH_TOKEN_EXPIRE / 1000;
         redisHelper.hmset(infoKey, userInfo);
         redisHelper.expire(infoKey, Duration.ofSeconds(refreshExpire));
     }
@@ -232,7 +233,7 @@ public class SxwlAuthenticationHandler {
         userMap.put("loginTime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
         redisHelper.hmset(onlineUserKey, userMap);
-        long refreshExpire = securityProperties.getRefreshTokenExpire();
+        long refreshExpire = SxwlSystemConstants.REFRESH_TOKEN_EXPIRE / 1000;
         redisHelper.expire(onlineUserKey, Duration.ofSeconds(refreshExpire));
 
         log.info("在线用户缓存: userId={}, deviceId={}", loginUser.getUserId(), deviceId);

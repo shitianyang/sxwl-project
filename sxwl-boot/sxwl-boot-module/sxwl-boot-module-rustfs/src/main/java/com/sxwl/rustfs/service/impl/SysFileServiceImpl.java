@@ -2,6 +2,7 @@ package com.sxwl.rustfs.service.impl;
 
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.utils.SxwlFileUtils;
 import com.sxwl.common.utils.SxwlSnowFlakeUtils;
 import com.sxwl.rustfs.client.SxwlRustfsTemplate;
 import com.sxwl.rustfs.config.SxwlRustfsProperties;
@@ -26,12 +27,10 @@ import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -61,6 +60,9 @@ public class SysFileServiceImpl implements SysFileService {
 
     /** 分片状态：已上传 */
     private static final int CHUNK_STATUS_UPLODED = 1;
+
+    /** 过期上传会话默认清理时长（小时） */
+    private static final int DEFAULT_CLEANUP_HOURS = 24;
 
     private static final long MAX_FILE_SIZE = 2L * 1024 * 1024 * 1024;
     private static final int MAX_CHUNK_COUNT = 10_000;
@@ -96,9 +98,9 @@ public class SysFileServiceImpl implements SysFileService {
         // 创建上传会话
         SysFileSessionInfo session = new SysFileSessionInfo();
         session.setFileMd5(dto.getFileMd5());
-        session.setOriginalName(dto.getOriginalName());
+        session.setOriginalName(SxwlFileUtils.sanitizeFilename(dto.getOriginalName()));
         session.setFileSize(dto.getFileSize());
-        session.setContentType(dto.getContentType());
+        session.setContentType(SxwlFileUtils.detectMimeType(dto.getOriginalName()));
         session.setTotalChunks(dto.getTotalChunks());
         session.setChunkSize(dto.getChunkSize());
         session.setStatus(SESSION_STATUS_UPLOADING);
@@ -139,6 +141,12 @@ public class SysFileServiceImpl implements SysFileService {
             throw new IllegalArgumentException("分片大小不合法");
         }
 
+        // 记录原始文件名和大小（用于日志格式化）
+        String originalName = session.getOriginalName();
+        long fileSize = file.getSize();
+        log.info("Uploading chunk {}/{} for file: {} ({})", chunkIndex + 1, session.getTotalChunks(), 
+                originalName, SxwlFileUtils.formatFileSize(fileSize));
+
         // 幂等：分片已上传则直接返回，支持断点续传重试（L21）
         if (sysFileChunkInfoMapper.countChunkUploaded(uploadId, chunkIndex) > 0) {
             return new UploadChunkDTO(uploadId, chunkIndex);
@@ -152,18 +160,17 @@ public class SysFileServiceImpl implements SysFileService {
             throw new SxwlBusinessException(10001, "读取分片数据失败: uploadId=" + uploadId + ", chunkIndex=" + chunkIndex, e);
         }
         if (chunkMd5 != null && !chunkMd5.isEmpty()
-                && !DigestUtils.md5Hex(data).equalsIgnoreCase(chunkMd5)) {
+                && !DigestUtils.md5DigestAsHex(data).equalsIgnoreCase(chunkMd5)) {
             throw new SxwlBusinessException(10001, "分片 MD5 校验失败: chunkIndex=" + chunkIndex);
         }
 
         // 上传分片到 S3 临时目录
-        String objectKey = properties.getTempPathPrefix() + uploadId + "/" + chunkIndex;
+        String objectKey = properties.getTmpPrefix() + uploadId + "/" + chunkIndex;
         try (InputStream inputStream = new ByteArrayInputStream(data)) {
             rustfsTemplate.upload(
                     properties.getDefaultBucket(),
                     objectKey,
                     inputStream,
-                    data.length,
                     file.getContentType());
         } catch (Exception e) {
             throw new SxwlBusinessException(10001, "分片上传到 S3 失败: uploadId=" + uploadId + ", chunkIndex=" + chunkIndex, e);
@@ -199,20 +206,25 @@ public class SysFileServiceImpl implements SysFileService {
             throw new IllegalArgumentException("文件 MD5 与上传会话不一致");
         }
 
-        // 幂等推进：仅当会话仍为上传中时才置为已完成；否则视为重复请求，直接返回已生成文件（L25）
-        int updated = sysFileSessionInfoMapper.updateStatus(uploadId, SESSION_STATUS_COMPLETED, session.getCreateBy());
-        if (updated == 0) {
-            SysFileInfo existing = sysFileInfoMapper.getFileByMd5(fileMd5);
-            if (existing != null) {
-                return buildSysFileDTO(existing);
-            }
-            throw new SxwlBusinessException(10001, "上传会话状态更新失败: uploadId=" + uploadId);
-        }
-
-        // 校验所有分片已上传
+        // 先校验分片齐全，再推进会话状态：否则一次失败会把会话置为已完成而无法重试（L25）
         int uploadedCount = sysFileChunkInfoMapper.countUploadedChunks(uploadId);
         if (uploadedCount != session.getTotalChunks()) {
             throw new IllegalArgumentException("分片未全部上传: " + uploadedCount + "/" + session.getTotalChunks());
+        }
+
+        // 幂等推进：仅当会话仍为上传中时才置为已完成；否则视为重复请求，直接返回已生成文件
+        int updated = sysFileSessionInfoMapper.updateStatus(uploadId, SESSION_STATUS_COMPLETED);
+        if (updated == 0) {
+            // 会话已是 COMPLETED，查找是否已有对应文件
+            SysFileInfo existing = sysFileInfoMapper.getFileByMd5(fileMd5);
+            if (existing != null && existing.getStatus() != null && existing.getStatus() == FILE_STATUS_NORMAL) {
+                // ✅ 文件已存在且正常，直接返回（支持多次点击"完成上传"或网络超时重试）
+                log.info("上传会话已完成且文件已存在，返回已生成文件: uploadId={}, fileId={}, objectKey={}", 
+                        uploadId, existing.getId(), existing.getObjectKey());
+                return buildSysFileDTO(existing);
+            }
+            // 极端情况：会话已完成但还没生成文件（其他线程正在合并），继续执行后续逻辑
+            log.warn("上传会话已是完成状态，继续合并检查: uploadId={}", uploadId);
         }
 
         // 获取所有分片信息
@@ -235,7 +247,7 @@ public class SysFileServiceImpl implements SysFileService {
         // 合并分片 + 写库；临时分片在 finally 中统一清理（无论成功或失败，避免孤儿分片/连接泄漏）
         String bucket = properties.getDefaultBucket();
         try {
-            rustfsTemplate.composeObject(bucket, sourceKeys, finalObjectKey);
+            rustfsTemplate.composeObject(bucket, finalObjectKey, sourceKeys);
 
             // 写入 sys_file_info
             SysFileInfo fileInfo = new SysFileInfo();
@@ -255,7 +267,7 @@ public class SysFileServiceImpl implements SysFileService {
             throw new SxwlBusinessException(10001, "分片合并失败: uploadId=" + uploadId, e);
         } finally {
             try {
-                rustfsTemplate.deleteByPrefix(bucket, properties.getTempPathPrefix() + uploadId + "/");
+                rustfsTemplate.deleteByPrefix(bucket, properties.getTmpPrefix() + uploadId + "/");
             } catch (Exception ex) {
                 log.warn("清理临时分片失败: uploadId={}", uploadId, ex);
             }
@@ -286,7 +298,7 @@ public class SysFileServiceImpl implements SysFileService {
         // 上传到 S3
         String bucket = properties.getDefaultBucket();
         try (InputStream inputStream = file.getInputStream()) {
-            rustfsTemplate.upload(bucket, objectKey, inputStream, file.getSize(), contentType);
+            rustfsTemplate.upload(bucket, objectKey, inputStream, contentType);
         } catch (Exception e) {
             log.error("S3 简单上传失败: bucket={}, objectKey={}, originalName={}", bucket, objectKey, originalName, e);
             throw new SxwlBusinessException(10001, "简单上传到 S3 失败: " + originalName, e);
@@ -304,7 +316,7 @@ public class SysFileServiceImpl implements SysFileService {
         // 生成文件访问 URL
         try {
             String fileUrl = rustfsTemplate.generatePresignedUrl(bucket, objectKey,
-                    Duration.ofSeconds(properties.getPresignedUrlExpire()));
+                    properties.getPresignedUrlExpire());
             fileInfo.setFileUrl(fileUrl);
         } catch (Exception e) {
             log.warn("生成 fileUrl 失败: bucket={}, objectKey={}", bucket, objectKey, e);
@@ -327,7 +339,7 @@ public class SysFileServiceImpl implements SysFileService {
         // 使用 StreamingResponseBody：在响应写出时打开 S3 流，结束时 try-with-resources 自动关闭，
         // 避免 InputStreamResource 不会被关闭导致的 S3 连接池泄漏。
         StreamingResponseBody stream = outputStream -> {
-            try (InputStream in = rustfsTemplate.download(bucket, objectKey)) {
+            try (InputStream in = new ByteArrayInputStream(rustfsTemplate.download(bucket, objectKey))) {
                 in.transferTo(outputStream);
             }
         };
@@ -352,7 +364,7 @@ public class SysFileServiceImpl implements SysFileService {
         return rustfsTemplate.generatePresignedUrl(
                 fileInfo.getBucketName() != null ? fileInfo.getBucketName() : properties.getDefaultBucket(),
                 fileInfo.getObjectKey(),
-                Duration.ofSeconds(properties.getPresignedUrlExpire()));
+                properties.getPresignedUrlExpire());
     }
 
     @Override
@@ -436,25 +448,44 @@ public class SysFileServiceImpl implements SysFileService {
         log.info("批量删除文件完成: count={}", successCount);
     }
 
+    /**
+     * 清理过期的未完成上传会话
+     *
+     * <p>依次释放三类资源：S3 临时分片对象 → 分片记录 → 会话记录。</p>
+     *
+     * <p>方法不加 {@code @Transactional}：S3 属于远程调用，包进事务会产生长事务；
+     * 会话在清理后仍为未完成状态，下一轮任务会重新拾取，因此幂等可重试。</p>
+     *
+     * @param hours 过期时长（小时），小于等于 0 时取 {@link #DEFAULT_CLEANUP_HOURS}
+     * @return 清理的会话数量
+     */
     @Override
     public int cleanupExpiredUploadSessions(int hours) {
         if (hours <= 0) {
-            hours = 24; // 默认 24 小时
+            hours = DEFAULT_CLEANUP_HOURS;
         }
-        
-        // 先查询需要清理的会话数量（用于日志）
+
         List<SysFileSessionInfo> expiredSessions = sysFileSessionInfoMapper.selectExpiredSessions(hours);
-        int count = expiredSessions.size();
-        
-        if (count > 0) {
-            // 执行清理操作
-            int deletedRows = sysFileSessionInfoMapper.cleanupExpiredSessions(hours);
-            log.info("清理过期上传会话完成: hours={}, 清理 {} 个会话, 影响 {} 行", hours, count, deletedRows);
-        } else {
+        if (expiredSessions.isEmpty()) {
             log.info("无过期上传会话需要清理: hours={}", hours);
+            return 0;
         }
-        
-        return count;
+
+        String bucket = properties.getDefaultBucket();
+        for (SysFileSessionInfo session : expiredSessions) {
+            Long uploadId = session.getId();
+            // S3 临时分片清理失败不阻断整体任务（与 completeUpload 的 finally 策略一致）
+            try {
+                rustfsTemplate.deleteByPrefix(bucket, properties.getTmpPrefix() + uploadId + "/");
+            } catch (Exception e) {
+                log.warn("清理过期会话临时分片失败: uploadId={}", uploadId, e);
+            }
+            sysFileChunkInfoMapper.deleteByUploadId(uploadId);
+        }
+
+        int deletedRows = sysFileSessionInfoMapper.cleanupExpiredSessions(hours);
+        log.info("清理过期上传会话完成: hours={}, 会话 {} 个, 影响 {} 行", hours, expiredSessions.size(), deletedRows);
+        return expiredSessions.size();
     }
 
     @Override
@@ -482,7 +513,7 @@ public class SysFileServiceImpl implements SysFileService {
         try {
             String bucket = entity.getBucketName() != null ? entity.getBucketName() : properties.getDefaultBucket();
             dto.setPresignedUrl(rustfsTemplate.generatePresignedUrl(bucket, entity.getObjectKey(),
-                    Duration.ofSeconds(properties.getPresignedUrlExpire())));
+                    properties.getPresignedUrlExpire()));
         } catch (Exception e) {
             log.warn("生成 presignedUrl 失败: id={}, objectKey={}", entity.getId(), entity.getObjectKey(), e);
         }

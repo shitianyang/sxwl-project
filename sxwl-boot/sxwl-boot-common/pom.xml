@@ -12,14 +12,8 @@
     <artifactId>sxwl-boot-common</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <dependencies>
-        <!-- jjwt -->
+        <!-- JWT Token 生成与校验 -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -32,22 +26,22 @@
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
         </dependency>
-        <!-- bcprov(加密) -->
+        <!-- BouncyCastle 国密算法支持（SM2/SM3/SM4） -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
         </dependency>
-        <!-- validation(校验) -->
+        <!-- 参数校验（DTO 校验、异常捕获） -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
-        <!-- spring-security-core（仅 SecurityContextHolder API，供 SxwlPrincipalUtils 使用） -->
+        <!-- Spring Security Context Holder（仅 API 使用，供 SxwlPrincipalUtils 读取认证上下文） -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
         </dependency>
-        <!-- Apache POI（通用 Excel 导入导出工具） -->
+        <!-- Apache POI Excel 导入导出工具（SxwlExcelUtils 依赖） -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>

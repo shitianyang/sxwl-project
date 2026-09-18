@@ -74,6 +74,16 @@
         WHERE id = #{id} AND status = 0 AND delete_flag = 0
     </update>
 
+    <!-- ✅ 查询刚发布的公告详情（用于 SSE 推送） -->
+    <select id="getPublishedNoticeById" resultType="com.sxwl.notice.model.dto.SysNoticeDTO">
+        SELECT id, title, content, notice_type, level, status,
+               publish_time, expire_time,
+               TO_CHAR(create_time, 'YYYY-MM-DD HH24:MI:SS') AS createTime
+        FROM sys_notice_info
+        WHERE id = #{id}
+        AND delete_flag = 0
+    </select>
+
     <update id="revokeNotice">
         UPDATE sys_notice_info
         SET status = 2

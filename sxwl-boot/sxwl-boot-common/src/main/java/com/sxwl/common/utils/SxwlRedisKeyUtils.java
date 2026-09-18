@@ -150,6 +150,17 @@ public final class SxwlRedisKeyUtils {
     }
 
     /**
+     * 构建短信验证码每日发送次数 Key
+     *
+     * @param phone 手机号
+     * @param date  日期标识（yyyyMMdd），按天分片无需手动清零
+     * @return 完整 Redis Key
+     */
+    public static String captchaSmsDailyKey(String phone, String date) {
+        return SxwlRedisKeyConstants.CAPTCHA_SMS_DAILY_PREFIX + phone + ":" + date;
+    }
+
+    /**
      * 构建登录失败计数 Key
      */
     public static String loginFailCountKey(String ip) {

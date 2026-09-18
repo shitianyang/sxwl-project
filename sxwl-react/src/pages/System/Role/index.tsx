@@ -266,11 +266,18 @@ export default function RolePage() {
             <SxwlPopconfirm
               title="确定删除该角色吗？"
               open={deleteTarget?.id === record.id}
-              confirmLoading={deleteLoading}
               onConfirm={handleDeleteConfirm}
               onCancel={() => setDeleteTarget(null)}
             >
-              <SxwlPermissionButton type="link" size="small" danger icon={<SxwlIcon name="DeleteOutlined" />} permission="system:role:delete" onClick={() => handleDeleteClick(record)}>
+              <SxwlPermissionButton 
+                type="link" 
+                size="small" 
+                danger 
+                icon={<SxwlIcon name="DeleteOutlined" />} 
+                permission="system:role:delete" 
+                onClick={() => handleDeleteClick(record)}
+                loading={deleteLoading}
+              >
                 删除
               </SxwlPermissionButton>
             </SxwlPopconfirm>

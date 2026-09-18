@@ -1,5 +1,6 @@
 package com.sxwl.common.utils;
 
+import com.sxwl.common.constants.SxwlSystemConstants;
 import com.sxwl.common.exception.SxwlBusinessException;
 import org.bouncycastle.crypto.engines.SM2Engine;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
@@ -31,11 +32,6 @@ import java.util.Objects;
  * @date 2026/6/13
  */
 public final class SM2Utils {
-
-    /**
-     * SM2 椭圆曲线名称
-     */
-    private static final String SM2_CURVE_NAME = "sm2p256v1";
 
     /**
      * 十六进制编解码工具（小写）
@@ -86,7 +82,7 @@ public final class SM2Utils {
     public static KeyPair generateKeyPair() {
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC", BouncyCastleProvider.PROVIDER_NAME);
-            keyPairGenerator.initialize(new ECGenParameterSpec(SM2_CURVE_NAME), new SecureRandom());
+            keyPairGenerator.initialize(new ECGenParameterSpec(SxwlSystemConstants.SM2_CURVE_NAME), new SecureRandom());
             return keyPairGenerator.generateKeyPair();
         } catch (Exception e) {
             throw new SxwlBusinessException(500, "SM2 密钥对生成失败", e);

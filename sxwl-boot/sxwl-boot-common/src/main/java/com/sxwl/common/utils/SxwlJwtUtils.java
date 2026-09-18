@@ -1,5 +1,6 @@
 package com.sxwl.common.utils;
 
+import com.sxwl.common.constants.SxwlSystemConstants;
 import com.sxwl.common.exception.SxwlBusinessException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -47,7 +48,7 @@ public final class SxwlJwtUtils {
 
     // ==================== 实例字段 ====================
 
-    private static final long DEFAULT_EXPIRE_SECONDS = 7200L;
+    private static final long DEFAULT_EXPIRE_SECONDS = SxwlSystemConstants.ACCESS_TOKEN_EXPIRE / 1000;
 
     private SxwlJwtUtils() {
         throw new UnsupportedOperationException("SxwlJwtUtils 工具类，不允许实例化");

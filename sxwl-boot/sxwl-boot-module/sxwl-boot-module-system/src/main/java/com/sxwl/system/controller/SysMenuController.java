@@ -2,6 +2,7 @@ package com.sxwl.system.controller;
 
 import com.sxwl.common.annotation.SxwlLog;
 import com.sxwl.common.annotation.SxwlRepeatSubmit;
+import com.sxwl.common.constant.SxwlPermConstant;
 import com.sxwl.common.constants.SxwlSystemConstants;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.system.model.dto.SysMenuDTO;
@@ -38,7 +39,7 @@ public class SysMenuController {
      * @return 菜单信息
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:menu:query')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.MENU_QUERY + ")")
     @SxwlLog(title = "菜单管理", description = "查询菜单详情[id=#{#id}]")
     public SysMenuDTO getMenuById(@PathVariable("id") Long id) {
         return sysMenuService.getMenuById(id);
@@ -50,7 +51,7 @@ public class SysMenuController {
      * @return 树形菜单列表
      */
     @GetMapping("/tree")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:menu:list')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.MENU_LIST + ")")
     @SxwlLog(title = "菜单管理", description = "查询菜单树")
     public List<SysMenuDTO> getMenuTree() {
         return sysMenuService.getMenuTree();
@@ -62,7 +63,7 @@ public class SysMenuController {
      * @return 平铺菜单列表
      */
     @GetMapping("/all")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:menu:list')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.MENU_LIST + ")")
     @SxwlLog(title = "菜单管理", description = "查询所有菜单")
     public List<SysMenuDTO> getAllMenuList() {
         return sysMenuService.getAllMenuList();
@@ -97,7 +98,7 @@ public class SysMenuController {
      */
     @PostMapping
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:menu:add')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.MENU_ADD + ")")
     @SxwlLog(title = "菜单管理", description = "新增菜单[#{#dto.menuName}]")
     public void createMenu(@Valid @RequestBody SysMenuDTO dto) {
         sysMenuService.createMenu(dto);
@@ -110,7 +111,7 @@ public class SysMenuController {
      */
     @PutMapping
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:menu:edit')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.MENU_EDIT + ")")
     @SxwlLog(title = "菜单管理", description = "修改菜单[#{#dto.menuName}]")
     public void updateMenu(@Valid @RequestBody SysMenuDTO dto) {
         sysMenuService.updateMenu(dto);
@@ -123,7 +124,7 @@ public class SysMenuController {
      */
     @DeleteMapping("/{id}")
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:menu:delete')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.MENU_DELETE + ")")
     @SxwlLog(title = "菜单管理", description = "删除菜单[id=#{#id}]")
     public void deleteMenuById(@PathVariable("id") Long id) {
         sysMenuService.deleteMenuById(id);

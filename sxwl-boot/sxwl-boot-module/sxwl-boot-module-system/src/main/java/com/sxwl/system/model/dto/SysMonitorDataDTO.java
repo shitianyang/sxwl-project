@@ -1,7 +1,7 @@
 package com.sxwl.system.model.dto;
 
-import com.sxwl.monitor.model.JvmInfoVO;
-import com.sxwl.monitor.model.ServerInfoVO;
+import com.sxwl.monitor.model.VO.JvmInfoVO;
+import com.sxwl.monitor.model.VO.ServerInfoVO;
 
 /**
  * 系统监控 SSE 推送数据 DTO

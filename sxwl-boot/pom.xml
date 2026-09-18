@@ -32,7 +32,7 @@
         <jjwt.version>0.13.0</jjwt.version>
         <bcprov.version>1.84</bcprov.version>
         <flowable.version>7.2.0</flowable.version>
-        <poi.version>5.2.5</poi.version>
+        <poi.version>5.5.1</poi.version>
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
     </properties>
 
@@ -185,11 +185,6 @@
             <dependency>
                 <groupId>com.sxwl</groupId>
                 <artifactId>sxwl-boot-config-freemarker</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sxwl</groupId>
-                <artifactId>sxwl-boot-config-monitor</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

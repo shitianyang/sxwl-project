@@ -1,5 +1,7 @@
 package com.sxwl.common.utils;
 
+import com.sxwl.common.constants.SxwlSystemConstants;
+
 import com.sxwl.common.exception.SxwlBusinessException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -23,11 +25,6 @@ import java.util.Objects;
  * @date 2026/6/13
  */
 public final class SM4Utils {
-
-    /**
-     * SM4 密钥长度（字节）
-     */
-    private static final int SM4_KEY_LENGTH = 16;
 
     /**
      * 十六进制编解码工具（小写）
@@ -75,7 +72,7 @@ public final class SM4Utils {
      * @return 16 字节 IV
      */
     public static byte[] generateIv() {
-        byte[] iv = new byte[SM4_KEY_LENGTH];
+        byte[] iv = new byte[SxwlSystemConstants.SM4_IV_LENGTH];
         new SecureRandom().nextBytes(iv);
         return iv;
     }
@@ -217,7 +214,7 @@ public final class SM4Utils {
      */
     private static void validateKey(byte[] key) {
         Objects.requireNonNull(key, "key 不能为空");
-        if (key.length != SM4_KEY_LENGTH) {
+        if (key.length != SxwlSystemConstants.SM4_KEY_LENGTH) {
             throw new SxwlBusinessException(400, "SM4 key 长度必须为 16 字节");
         }
     }
@@ -227,7 +224,7 @@ public final class SM4Utils {
      */
     private static void validateIv(byte[] iv) {
         Objects.requireNonNull(iv, "iv 不能为空");
-        if (iv.length != SM4_KEY_LENGTH) {
+        if (iv.length != SxwlSystemConstants.SM4_KEY_LENGTH) {
             throw new SxwlBusinessException(400, "SM4 iv 长度必须为 16 字节");
         }
     }

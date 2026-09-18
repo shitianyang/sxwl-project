@@ -1,5 +1,6 @@
 package com.sxwl.backup.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.page.PageMethod;
 import com.sxwl.backup.dto.SysBackupDTO;
@@ -12,6 +13,9 @@ import com.sxwl.rustfs.model.dto.SysFileDTO;
 import com.sxwl.rustfs.model.entity.SysFileInfo;
 import com.sxwl.rustfs.model.params.SysFilePageParams;
 import com.sxwl.websocket.manager.SxwlWebSocketSessionManager;
+import com.sxwl.redis.helper.SxwlRedisHelper;
+import com.sxwl.security.model.SxwlLoginUser;
+import com.sxwl.security.utils.SxwlSecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +23,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.annotation.PostConstruct;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,6 +33,8 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.time.Duration;
 import java.util.UUID;
 import java.util.zip.GZIPOutputStream;
 
@@ -47,11 +54,14 @@ public class SysBackupServiceImpl implements SysBackupService {
     private static final Logger log = LoggerFactory.getLogger(SysBackupServiceImpl.class);
 
     private static final String BACKUP_BUSINESS_TYPE = "db_backup";
+    private static final String AUTO_BACKUP_RUNNING_KEY = "sys:backup:auto_running";  // Redis 标记自动备份是否运行中
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final SysFileInfoMapper sysFileInfoMapper;
     private final SxwlRustfsTemplate rustfsTemplate;
     private final SxwlRustfsProperties rustfsProperties;
     private final SxwlWebSocketSessionManager wsSessionManager;
+    private final SxwlRedisHelper redisHelper;
 
     @Value("${spring.datasource.url:}")
     private String datasourceUrl;
@@ -71,11 +81,43 @@ public class SysBackupServiceImpl implements SysBackupService {
     public SysBackupServiceImpl(SysFileInfoMapper sysFileInfoMapper,
                                 SxwlRustfsTemplate rustfsTemplate,
                                 SxwlRustfsProperties rustfsProperties,
-                                SxwlWebSocketSessionManager wsSessionManager) {
+                                SxwlWebSocketSessionManager wsSessionManager,
+                                SxwlRedisHelper redisHelper) {
         this.sysFileInfoMapper = sysFileInfoMapper;
         this.rustfsTemplate = rustfsTemplate;
         this.rustfsProperties = rustfsProperties;
         this.wsSessionManager = wsSessionManager;
+        this.redisHelper = redisHelper;
+    }
+
+    @PostConstruct
+    public void init() {
+        // 验证 pg_dump 和 psql 路径是否有效
+        try {
+            ProcessBuilder pb1 = new ProcessBuilder(pgDumpPath, "--version");
+            Process p1 = pb1.start();
+            int exitCode1 = p1.waitFor();
+            if (exitCode1 != 0) {
+                log.warn("pg_dump 路径可能无效: {}, 请在 application.yaml 中配置正确的路径 (sxwl.backup.pg-dump-path)", pgDumpPath);
+            } else {
+                log.info("pg_dump 路径验证通过: {}", pgDumpPath);
+            }
+        } catch (Exception e) {
+            log.warn("pg_dump 验证失败: {}. 请确保 {} 在系统 PATH 中，或通过 sxwl.backup.pg-dump-path 配置完整路径", e.getMessage(), pgDumpPath);
+        }
+
+        try {
+            ProcessBuilder pb2 = new ProcessBuilder(psqlPath, "--version");
+            Process p2 = pb2.start();
+            int exitCode2 = p2.waitFor();
+            if (exitCode2 != 0) {
+                log.warn("psql 路径可能无效: {}, 请在 application.yaml 中配置正确的路径 (sxwl.backup.psql-path)", psqlPath);
+            } else {
+                log.info("psql 路径验证通过: {}", psqlPath);
+            }
+        } catch (Exception e) {
+            log.warn("psql 验证失败: {}. 请确保 {} 在系统 PATH 中，或通过 sxwl.backup.psql-path 配置完整路径", e.getMessage(), psqlPath);
+        }
     }
 
     @Override
@@ -138,7 +180,7 @@ public class SysBackupServiceImpl implements SysBackupService {
             String objectKey = "backup/" + timestamp + "/" + UUID.randomUUID().toString().replace("-", "") + ".sql.gz";
 
             try (InputStream backupInput = new BufferedInputStream(Files.newInputStream(backupPath))) {
-                rustfsTemplate.upload(bucket, objectKey, backupInput, backupSize, "application/gzip");
+                rustfsTemplate.upload(bucket, objectKey, backupInput, "application/gzip");
             }
 
             log.info("备份文件已上传至 S3: bucket={}, key={}", bucket, objectKey);
@@ -269,8 +311,16 @@ public class SysBackupServiceImpl implements SysBackupService {
     private void sendProgress(Long userId, int progress, String message) {
         if (userId == null) return;
         try {
-            String payload = "{\"type\":\"backup:progress\",\"data\":{\"progress\":" + progress + ",\"message\":\"" + message + "\"}}";
-            wsSessionManager.sendToUser(userId, payload);
+            Map<String, Object> data = Map.of(
+                    "progress", progress,
+                    "message", message
+            );
+            Map<String, Object> payload = Map.of(
+                    "type", "backup:progress",
+                    "data", data
+            );
+            String json = objectMapper.writeValueAsString(payload);
+            wsSessionManager.sendToUser(userId, json);
         } catch (Exception e) {
             log.warn("WebSocket 进度推送失败: userId={}, progress={}", userId, progress, e);
         }
@@ -322,31 +372,101 @@ public class SysBackupServiceImpl implements SysBackupService {
     }
 
     private String parseDbNameFromUrl(String url) {
-        if (url == null || url.isEmpty()) return null;
-        int lastSlash = url.lastIndexOf('/');
-        if (lastSlash < 0) return null;
-        String dbPart = url.substring(lastSlash + 1);
-        int questionMark = dbPart.indexOf('?');
-        return questionMark > 0 ? dbPart.substring(0, questionMark) : dbPart;
+        try {
+            if (url == null || url.isEmpty()) return null;
+            int lastSlash = url.lastIndexOf('/');
+            if (lastSlash < 0) return null;
+            String dbPart = url.substring(lastSlash + 1);
+            int questionMark = dbPart.indexOf('?');
+            return questionMark > 0 ? dbPart.substring(0, questionMark) : dbPart;
+        } catch (Exception e) {
+            log.error("解析数据库名称失败: url={}, error={}", url, e.getMessage());
+            return null;
+        }
     }
 
     private String parseHostFromUrl(String url) {
-        if (url == null || url.isEmpty()) return "localhost";
-        int start = url.indexOf("://");
-        if (start < 0) return "localhost";
-        int colon = url.indexOf(':', start + 3);
-        if (colon < 0) return "localhost";
-        return url.substring(start + 3, colon);
+        try {
+            if (url == null || url.isEmpty()) return "localhost";
+            // jdbc:postgresql://host:port/db
+            int start = url.indexOf("://");
+            if (start < 0) return "localhost";
+            int colon = url.indexOf(':', start + 3);
+            if (colon < 0) return "localhost";
+            return url.substring(start + 3, colon);
+        } catch (Exception e) {
+            log.error("解析数据库主机失败: url={}, error={}", url, e.getMessage());
+            return "localhost";
+        }
     }
 
     private String parsePortFromUrl(String url) {
-        if (url == null || url.isEmpty()) return "5432";
-        int start = url.indexOf("://");
-        if (start < 0) return "5432";
-        int colon = url.indexOf(':', start + 3);
-        if (colon < 0) return "5432";
-        int slash = url.indexOf('/', colon + 1);
-        if (slash < 0) return "5432";
-        return url.substring(colon + 1, slash);
+        try {
+            if (url == null || url.isEmpty()) return "5432";
+            // jdbc:postgresql://host:port/db
+            int start = url.indexOf("://");
+            if (start < 0) return "5432";
+            int colon = url.indexOf(':', start + 3);
+            if (colon < 0) return "5432";
+            int slash = url.indexOf('/', colon + 1);
+            if (slash < 0) return "5432";
+            return url.substring(colon + 1, slash);
+        } catch (Exception e) {
+            log.error("解析数据库端口失败: url={}, error={}", url, e.getMessage());
+            return "5432";
+        }
+    }
+
+    // ==================== 定时任务管理实现 ====================
+
+    @Override
+    public void autoBackup() {
+        // 检查是否已有自动备份在运行（防止并发执行）
+        if (isAutoBackupRunning()) {
+            log.warn("自动备份已在运行中，跳过本次调度");
+            return;
+        }
+
+        // 设置运行状态
+        setAutoBackupRunning(true);
+        log.info("开始自动备份任务...");
+
+        try {
+            // 尝试从 SecurityContext 获取当前用户（如果是 Quartz 触发，可能为 null）
+            SxwlLoginUser loginUser = SxwlSecurityUtils.getCurrentUser().orElse(null);
+            Long userId = loginUser != null ? loginUser.getUserId() : 0L;  // 0 表示系统自动
+            Long orgId = loginUser != null ? loginUser.getOrgId() : null;
+
+            // 调用异步备份方法
+            backup(userId, orgId);
+
+            log.info("自动备份任务完成");
+        } finally {
+            // 清除运行状态
+            setAutoBackupRunning(false);
+        }
+    }
+
+    @Override
+    public boolean isAutoBackupRunning() {
+        try {
+            return Boolean.TRUE.equals(redisHelper.exists(AUTO_BACKUP_RUNNING_KEY));
+        } catch (Exception e) {
+            log.error("检查自动备份运行状态失败", e);
+            return false;  // 默认返回 false，不影响备份执行
+        }
+    }
+
+    @Override
+    public void setAutoBackupRunning(boolean running) {
+        try {
+            if (running) {
+                redisHelper.set(AUTO_BACKUP_RUNNING_KEY, "1", Duration.ofHours(1));  // TTL 1 小时
+            } else {
+                redisHelper.delete(AUTO_BACKUP_RUNNING_KEY);
+            }
+        } catch (Exception e) {
+            log.error("设置自动备份运行状态失败: running={}", running, e);
+        }
     }
 }

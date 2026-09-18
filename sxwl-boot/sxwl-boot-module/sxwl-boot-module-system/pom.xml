@@ -19,6 +19,19 @@
     </properties>
 
     <dependencies>
+        <!--
+            监控系统业务模块
+            <p>提供服务器运行状态采集、JVM 性能监控、Redis/DB 连接池监控等业务能力。</p>
+        -->
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-module-monitor</artifactId>
+        </dependency>
+        <!-- Spring Boot Starter Data Redis（Redis 监控） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-config-sse</artifactId>
@@ -34,10 +47,6 @@
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-config-mybatis</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.sxwl</groupId>
-            <artifactId>sxwl-boot-config-monitor</artifactId>
         </dependency>
     </dependencies>
 

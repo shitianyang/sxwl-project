@@ -173,6 +173,15 @@ public final class SxwlRedisKeyConstants {
      */
     public static final String CAPTCHA_LIMIT_PREFIX = "captcha:limit:";
 
+    /**
+     * 短信验证码每日发送次数 Key 前缀
+     * <p>完整 Key：captcha:sms:daily:{phone}:{yyyyMMdd}
+     * <br>Value：当日已发送次数（Integer）
+     * <br>TTL：24 小时
+     * <br>用途：同一手机号每日发送次数上限校验（防刷）</p>
+     */
+    public static final String CAPTCHA_SMS_DAILY_PREFIX = "captcha:sms:daily:";
+
     // ==================== 限流与风控 ====================
 
     /**

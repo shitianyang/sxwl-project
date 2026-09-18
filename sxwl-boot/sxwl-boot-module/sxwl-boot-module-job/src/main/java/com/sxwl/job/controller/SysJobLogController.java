@@ -1,6 +1,7 @@
 package com.sxwl.job.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.sxwl.common.constant.SxwlPermConstant;
 import com.sxwl.common.annotation.SxwlLog;
 import com.sxwl.common.annotation.SxwlRepeatSubmit;
 import com.sxwl.job.model.dto.SysJobLogDTO;
@@ -34,7 +35,7 @@ public class SysJobLogController {
      * @return 日志 DTO
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:query')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.JOB_QUERY + ")")
     public SysJobLogDTO getLogById(@PathVariable("id") Long id) {
         return sysJobLogService.getLogById(id);
     }
@@ -46,7 +47,7 @@ public class SysJobLogController {
      * @return 日志分页列表
      */
     @GetMapping("/page")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:list')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.JOB_LIST + ")")
     @SxwlLog(title = "定时任务", description = "查询任务日志列表")
     public PageInfo<SysJobLogDTO> getLogPageByParams(@Valid SysJobLogPageParams params) {
         return sysJobLogService.getLogPageByParams(params);
@@ -59,7 +60,7 @@ public class SysJobLogController {
      */
     @DeleteMapping("/{id}")
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:delete')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.JOB_LOG_DELETE + ")")
     @SxwlLog(title = "定时任务", description = "删除任务日志[id=#{#id}]")
     public void deleteLogById(@PathVariable("id") Long id) {
         sysJobLogService.deleteLogById(id);
@@ -72,7 +73,7 @@ public class SysJobLogController {
      */
     @DeleteMapping("/clean")
     @SxwlRepeatSubmit(message = "清理操作过于频繁")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:clean')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.JOB_LOG_CLEAN + ")")
     @SxwlLog(title = "定时任务", description = "清理任务日志[days=#{#days}]")
     public void cleanLogBefore(@RequestParam(defaultValue = "30") int days) {
         sysJobLogService.cleanLogBefore(days);

@@ -5,10 +5,10 @@ import {
   SxwlPage,
   type SearchFieldConfig,
 } from '@/components';
-import type { SysLogItem } from '@/api/system/logApi';
+import type { LogItem } from '@/api/system/logApi';
 import { getLogPageByParams } from '@/api/system/logApi';
 
-const columns: ColumnsType<SysLogItem> = [
+const columns: ColumnsType<LogItem> = [
   { title: '登录账号', dataIndex: 'userName', key: 'userName', width: 120 },
   { title: '登录IP', dataIndex: 'operateIp', key: 'operateIp', width: 140 },
   { title: '登录地点', dataIndex: 'operateLocation', key: 'operateLocation', width: 160, ellipsis: true },
@@ -42,7 +42,7 @@ const searchFields: SearchFieldConfig[] = [
 ];
 
 export default function LoginLogPage() {
-  const [data, setData] = useState<SysLogItem[]>([]);
+  const [data, setData] = useState<LogItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);

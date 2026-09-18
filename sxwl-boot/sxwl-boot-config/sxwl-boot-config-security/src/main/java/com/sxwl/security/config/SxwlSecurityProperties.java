@@ -92,6 +92,30 @@ public class SxwlSecurityProperties {
     /** 是否忽略内网 IP（127.0.0.1、192.168.x.x、10.x.x.x、172.16.x.x-172.31.x.x） */
     private boolean ignorePrivateIp = true;
 
+    // ==================== 公开路径白名单 ====================
+
+    /**
+     * 无需认证即可访问的路径模式列表
+     * <p>
+     * 默认包含登录、刷新、公开接口、健康检查等必要端点。
+     * 如需自定义（如新增 SSE/WebSocket 连接端点），请通过 YAML 覆盖此列表。
+     * </p>
+     *
+     * @since 0.1.1
+     */
+    private java.util.List<String> allowedPaths = java.util.List.of(
+            "/auth/login/**",
+            "/auth/refresh",
+            "/auth/logout",
+            "/auth/public-key",
+            "/captcha/**",
+            "/sse/connect",
+            "/ws/connect",
+            "/public/**",
+            "/actuator/health",
+            "/actuator/info"
+    );
+
     // ==================== getters/setters ====================
 
     public String getJwtSecret() {
@@ -260,5 +284,13 @@ public class SxwlSecurityProperties {
 
     public void setIgnorePrivateIp(boolean ignorePrivateIp) {
         this.ignorePrivateIp = ignorePrivateIp;
+    }
+
+    public java.util.List<String> getAllowedPaths() {
+        return allowedPaths;
+    }
+
+    public void setAllowedPaths(java.util.List<String> allowedPaths) {
+        this.allowedPaths = allowedPaths;
     }
 }

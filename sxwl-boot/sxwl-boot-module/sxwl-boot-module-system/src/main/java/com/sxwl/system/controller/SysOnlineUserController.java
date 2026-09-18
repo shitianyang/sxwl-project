@@ -1,6 +1,7 @@
 package com.sxwl.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.sxwl.common.constant.SxwlPermConstant;
 import com.sxwl.common.annotation.SxwlLog;
 import com.sxwl.system.model.dto.SysOnlineUserDTO;
 import com.sxwl.system.service.SysOnlineUserService;
@@ -37,7 +38,7 @@ public class SysOnlineUserController {
      * @return 在线用户分页列表
      */
     @GetMapping("/list")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:onlineuser:list')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.ONLINE_USER_VIEW + ")")
     @SxwlLog(title = "在线用户管理", description = "查询在线用户列表")
     public PageInfo<SysOnlineUserDTO> list(
             @RequestParam(value = "pageNum", defaultValue = "1") int pageNum,
@@ -51,7 +52,7 @@ public class SysOnlineUserController {
      * @return 在线人数
      */
     @GetMapping("/count")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:onlineuser:list')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.ONLINE_USER_VIEW + ")")
     public long count() {
         return sysOnlineUserService.count();
     }
@@ -62,7 +63,7 @@ public class SysOnlineUserController {
      * @param userId 用户 ID
      */
     @DeleteMapping("/forceLogout/{userId}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:onlineuser:forceLogout')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.ONLINE_USER_FORCE_LOGOUT + ")")
     @SxwlLog(title = "在线用户管理", description = "强制踢人下线[userId=#{#userId}]")
     public void forceLogout(@PathVariable("userId") Long userId) {
         sysOnlineUserService.forceLogout(userId);

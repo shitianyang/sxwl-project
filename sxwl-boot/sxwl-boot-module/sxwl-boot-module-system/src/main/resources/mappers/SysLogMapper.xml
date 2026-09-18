@@ -58,4 +58,13 @@
         )
     </insert>
 
+    <!-- ✅ 根据用户账号查询用户 ID（用于登录失败日志） -->
+    <select id="getUserIdByAccount" resultType="java.lang.Long">
+        SELECT user_id
+        FROM pla_user_info
+        WHERE (username = #{account} OR phone = #{account})
+        AND delete_flag = 0
+        LIMIT 1
+    </select>
+
 </mapper>

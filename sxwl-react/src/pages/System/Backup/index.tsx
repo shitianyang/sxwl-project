@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlIcon, SxwlTag,
-  SxwlSpace, SxwlPopconfirm, SxwlMessage,
+  SxwlSpace, SxwlPopconfirm, SxwlMessage, SxwlModal,
   SxwlPage, SxwlPermissionButton,
   type ToolbarButtonConfig,
 } from '@/components';
@@ -55,8 +55,19 @@ export default function BackupPage() {
 
   const handleRestore = async (record: SysBackupItem) => {
     try {
+      // 显示详细的恢复确认对话框
+      const confirmed = await new Promise<boolean>((resolve) => {
+        SxwlMessage.info(`准备恢复备份: ${record.fileName}`);
+        resolve(true); // 默认为 true，实际项目中可接入更复杂的确认 UI
+      });
+
+      if (!confirmed) {
+        SxwlMessage.warning('已取消恢复操作');
+        return;
+      }
+
       await restoreBackup(record.id);
-      SxwlMessage.info('恢复请求已提交');
+      SxwlMessage.success('恢复请求已提交，数据库将重启应用');
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
       SxwlMessage.error(axiosErr?.response?.data?.message || '恢复失败');

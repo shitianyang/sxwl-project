@@ -1,7 +1,6 @@
 package com.sxwl.security.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 /**
  * 短信验证码服务商配置
@@ -10,11 +9,18 @@ import org.springframework.stereotype.Component;
  * 当前为占位配置，实际部署时需要配置真实的 AccessKey 和模板 Code。
  * </p>
  *
+ * <h3>安全提示</h3>
+ * <p><b>严禁在 YAML 文件中硬编码密钥！</b> 以下敏感配置应通过环境变量注入：</p>
+ * <ul>
+ *   <li>阿里云 AccessKey Secret</li>
+ *   <li>腾讯云 Secret ID / Secret Key</li>
+ *   <li>华为云 AK / SK</li>
+ * </ul>
+ *
  * @author shitianyang
  * @date 2026/9/12
  * @since 0.1.0
  */
-@Component
 @ConfigurationProperties(prefix = "sxwl.sms")
 public class SxwlSmsProperties {
 

@@ -190,7 +190,7 @@ sxwl-react/src/layouts/SxwlLayout/
 
 // ❌ 错误：硬编码色值/圆角/阴影
 .my-component {
-  color: #1677FF;           // ❌ 应使用 $sxwl-color-primary
+  color: #DE5F0E;           // ❌ 应使用 $sxwl-color-primary
   border-radius: 12px;      // ❌ 应使用 $sxwl-radius-lg
   box-shadow: 0 1px 2px rgba(...);  // ❌ 应使用 $sxwl-shadow-card
 }
@@ -277,7 +277,7 @@ input:focus { outline: none; }
 
 ```bash
 # 检查是否硬编码了颜色
-grep -r "#1677FF" src/components/ --exclude="*.token.ts"
+grep -r "#DE5F0E" src/components/ --exclude="*.token.ts"
 # ✅ 应提示："禁止硬编码品牌色，请使用 $sxwl-color-primary"
 ```
 
@@ -376,7 +376,7 @@ rm src/components/SxwlComponent/index.style.ts
 
 | 类别 | 变量名 | 示例值 | 适用场景 |
 |------|--------|--------|---------|
-| **品牌色** | `$sxwl-color-primary` | `#1677FF` | 主按钮、链接 |
+| **品牌色** | `$sxwl-color-primary` | `#DE5F0E` (暖橙色) | 主按钮、链接 |
 | **成功色** | `$sxwl-color-success` | `#52C41A` | 成功提示 |
 | **警告色** | `$sxwl-color-warning` | `#FAAD14` | 警告提示 |
 | **危险色** | `$sxwl-color-danger` | `#FF4D4F` | 删除按钮 |

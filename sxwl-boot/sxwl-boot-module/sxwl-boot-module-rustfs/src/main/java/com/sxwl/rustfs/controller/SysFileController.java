@@ -1,8 +1,10 @@
 package com.sxwl.rustfs.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.sxwl.common.constant.SxwlPermConstant;
 import com.sxwl.common.entity.SxwlResult;
 import com.sxwl.common.annotation.SxwlLog;
+import com.sxwl.common.annotation.SxwlRepeatSubmit;
 import com.sxwl.rustfs.model.dto.*;
 import com.sxwl.rustfs.model.params.SysFilePageParams;
 import com.sxwl.rustfs.service.SysFileService;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 /**
  * 系统文件 Controller
@@ -38,8 +41,9 @@ public class SysFileController {
      * @return 文件信息
      */
     @PostMapping("/simple")
+    @SxwlRepeatSubmit(interval = 10, message = "文件上传中，请稍候")
     @SxwlLog(title = "文件管理", description = "简单上传文件")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:upload')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.FILE_UPLOAD + ")")
     public SysFileDTO simpleUpload(@RequestParam("file") MultipartFile file) {
         return sysFileService.simpleUpload(file);
     }
@@ -51,8 +55,9 @@ public class SysFileController {
      * @return 上传会话 ID
      */
     @PostMapping("/upload/init")
+    @SxwlRepeatSubmit(interval = 5, message = "分片上传初始化中，请稍候")
     @SxwlLog(title = "文件管理", description = "初始化分片上传")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:upload')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.FILE_UPLOAD + ")")
     public Long initUpload(@RequestBody @Valid UploadInitDTO dto) {
         return sysFileService.initUpload(dto);
     }
@@ -68,7 +73,7 @@ public class SysFileController {
      */
     @PostMapping("/upload/chunk")
     @SxwlLog(title = "文件管理", description = "上传文件分片")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:upload')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.FILE_UPLOAD + ")")
     public UploadChunkDTO uploadChunk(@RequestParam("uploadId") Long uploadId,
                                       @RequestParam("chunkIndex") Integer chunkIndex,
                                       @RequestParam(value = "chunkMd5", required = false) String chunkMd5,
@@ -83,7 +88,7 @@ public class SysFileController {
      * @return 续传信息
      */
     @GetMapping("/upload/{md5}/chunks")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:upload')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.FILE_UPLOAD + ")")
     public ChunkCheckDTO getUploadedChunks(@PathVariable("md5") String md5) {
         return sysFileService.getUploadedChunks(md5);
     }
@@ -95,8 +100,9 @@ public class SysFileController {
      * @return 文件信息
      */
     @PostMapping("/upload/complete")
+    @SxwlRepeatSubmit(interval = 10, message = "文件合并中，请稍候")
     @SxwlLog(title = "文件管理", description = "完成分片上传")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:upload')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.FILE_UPLOAD + ")")
     public SysFileDTO completeUpload(@RequestBody @Valid UploadCompleteDTO dto) {
         return sysFileService.completeUpload(dto);
     }
@@ -108,7 +114,7 @@ public class SysFileController {
      * @return 已存在的文件信息，不存在返回 null
      */
     @GetMapping("/check-md5")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:upload')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.FILE_UPLOAD + ")")
     public SysFileDTO checkMd5(@RequestParam("md5") String md5) {
         return sysFileService.checkMd5(md5);
     }
@@ -120,8 +126,8 @@ public class SysFileController {
      * @return 文件流
      */
     @GetMapping("/download/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:download')")
-    public ResponseEntity<Resource> downloadFile(@PathVariable("id") Long id) {
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.FILE_DOWNLOAD + ")")
+    public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("id") Long id) {
         return sysFileService.downloadFile(id);
     }
 
@@ -132,7 +138,7 @@ public class SysFileController {
      * @return 预签名 URL
      */
     @GetMapping("/presigned-url/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:download')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.FILE_DOWNLOAD + ")")
     public SxwlResult<String> getPresignedUrl(@PathVariable("id") Long id) {
         return SxwlResult.success(sysFileService.getPresignedUrl(id));
     }
@@ -144,7 +150,7 @@ public class SysFileController {
      * @return 分页文件列表
      */
     @GetMapping("/page")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:list')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.FILE_VIEW + ")")
     public PageInfo<SysFileDTO> getFilePageByParams(@Valid SysFilePageParams params) {
         return sysFileService.getFilePageByParams(params);
     }
@@ -156,7 +162,7 @@ public class SysFileController {
      */
     @DeleteMapping("/{id}")
     @SxwlLog(title = "文件管理", description = "删除文件[id=#{#id}]")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:delete')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.FILE_DELETE + ")")
     public void deleteFile(@PathVariable("id") Long id) {
         sysFileService.deleteFile(id);
     }
@@ -168,7 +174,7 @@ public class SysFileController {
      */
     @DeleteMapping("/batch")
     @SxwlLog(title = "文件管理", description = "批量删除文件[count=#{#ids.size()}]")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:file:delete')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.FILE_DELETE + ")")
     public void batchDeleteFiles(@RequestBody java.util.List<Long> ids) {
         sysFileService.batchDeleteFiles(ids);
     }

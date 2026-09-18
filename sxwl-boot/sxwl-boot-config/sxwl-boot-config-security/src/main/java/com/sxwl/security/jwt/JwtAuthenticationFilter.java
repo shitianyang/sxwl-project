@@ -62,12 +62,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        String tokenType = null;
+        String jti = null;
+        Long userId = null;
+
         try {
             String secret = securityProperties.getJwtSecret();
             Claims claims = SxwlJwtUtils.parseClaims(token, secret);
-            Long userId = SxwlJwtUtils.resolveUserId(claims);
-            String jti = SxwlJwtUtils.resolveJwtId(claims);
-            String tokenType = SxwlJwtUtils.resolveTokenType(claims);
+            userId = SxwlJwtUtils.resolveUserId(claims);
+            jti = SxwlJwtUtils.resolveJwtId(claims);
+            tokenType = SxwlJwtUtils.resolveTokenType(claims);
             String deviceId = SxwlJwtUtils.resolveDeviceId(claims);
             String clientType = SxwlClientTypeUtils.normalize(SxwlJwtUtils.resolveClientType(claims));
 
@@ -108,7 +112,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             checkAndRenew(token, claims, secret, userId, deviceId, clientType, response);
 
         } catch (Exception e) {
-            log.warn("Token 验证失败: {}", e.getMessage());
+            log.warn("Token 验证失败: type={}, jti={}, userId={}, error={}",
+                    tokenType, jti, userId, e.getMessage());
+            // Token 无效，不写入 SecurityContext，直接放行（后续请求将被视为未认证）
         }
 
         filterChain.doFilter(request, response);

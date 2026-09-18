@@ -21,6 +21,8 @@
         <module>sxwl-boot-module-notice</module>
         <module>sxwl-boot-module-job</module>
         <module>sxwl-boot-module-backup</module>
+        <module>sxwl-boot-module-monitor</module>
+        <module>sxwl-boot-module-sse</module>
     </modules>
 
     <properties>
@@ -28,5 +30,24 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!--
+                监控系统业务模块
+                <p>所有 module 内部依赖都需在此声明版本号，由根 POM 统一管理。</p>
+            -->
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-module-monitor</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-module-sse</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>

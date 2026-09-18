@@ -1,6 +1,6 @@
 // ============================================
 // sxwl-react 自定义品牌 Token
-// 对齐 docs/UI设计规范.md v2.0（Web 端 · Pro 骨架 + 品牌科技蓝）
+// 对齐 docs/UI设计规范.md v2.0（Web 端 · Pro 骨架 + 品牌暖橙 #DE5F0E）
 // 仅保留被实际引用的字段（App.tsx ConfigProvider 使用），已按"无冗余"原则清理
 // 自定义样式层变量见 variables.scss（编译期），两处值必须保持一致
 // ============================================
@@ -39,8 +39,8 @@ export const SXWL_TOKENS = {
   /** 阴影：L2 悬浮 */
   shadowPopup: '0 4px 12px rgba(16,24,40,.08), 0 2px 6px rgba(16,24,40,.05)',
 
-  /** 品牌色 hover（科技蓝 400 亮） */
-  colorPrimaryHover: '#3A8BFF',
-  /** 品牌色 active（科技蓝 700 深） */
-  colorPrimaryActive: '#0E5FD8',
+  /** 品牌色 hover（暖橙色 400 亮） */
+  colorPrimaryHover: '#E8752A',
+  /** 品牌色 active（暖橙色 700 深） */
+  colorPrimaryActive: '#B84D00',
 } as const;

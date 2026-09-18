@@ -8,10 +8,10 @@
     <property name="APP_NAME" value="sxwl-boot"/>
     <!-- 日志输出路径（由 application.yaml 的 logging.file.path 控制，默认 ./logs） -->
     <springProperty scope="context" name="LOG_PATH" source="logging.file.path" defaultValue="./logs"/>
-    <!-- 日志格式 -->
-    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"/>
+    <!-- 日志格式（包含类名和行号，便于调试定位） -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}:%L - %msg%n"/>
     <!-- 控制台彩色日志格式 -->
-    <property name="CONSOLE_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %magenta([%thread]) %cyan(%logger{50}) - %msg%n"/>
+    <property name="CONSOLE_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %magenta([%thread]) %cyan(%logger{50}:%L) - %msg%n"/>
 
     <!-- ==================== 控制台输出（彩色） ==================== -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -36,6 +36,8 @@
             <maxHistory>30</maxHistory>
             <!-- 总大小上限 2GB -->
             <totalSizeCap>2GB</totalSizeCap>
+            <!-- 启动时清理过期日志（节省磁盘空间） -->
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
@@ -43,7 +45,28 @@
         </encoder>
     </appender>
 
-    <!-- 错误日志单独文件 -->
+    <!-- 警告日志单独文件（便于排查潜在问题） -->
+    <appender name="FILE_WARN" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-warn.log</file>
+        <!-- 只记录 WARN 级别 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-warn.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>30MB</maxFileSize>
+            <maxHistory>15</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 错误日志单独文件（便于快速定位异常） -->
     <appender name="FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/${APP_NAME}-error.log</file>
         <!-- 只记录 ERROR 级别 -->
@@ -66,8 +89,10 @@
 
     <!-- ==================== 开发环境配置 ==================== -->
     <springProfile name="dev">
-        <!-- 项目代码：DEBUG -->
-        <logger name="com.sxwl" level="DEBUG"/>
+        <!-- 项目代码：DEBUG（详细日志，便于开发调试） -->
+        <logger name="com.sxwl" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
         <!-- MyBatis SQL 日志 -->
         <logger name="org.mybatis" level="DEBUG"/>
         <!-- Spring Web -->
@@ -82,8 +107,12 @@
 
     <!-- ==================== 测试环境配置 ==================== -->
     <springProfile name="test">
-        <!-- 项目代码：DEBUG -->
-        <logger name="com.sxwl" level="DEBUG"/>
+        <!-- 项目代码：DEBUG（详细日志，便于测试追踪） -->
+        <logger name="com.sxwl" level="DEBUG" additivity="false">
+            <appender-ref ref="FILE_ALL"/>
+            <appender-ref ref="FILE_ERROR"/>
+            <appender-ref ref="FILE_WARN"/>
+        </logger>
         <!-- MyBatis SQL 日志 -->
         <logger name="org.mybatis" level="DEBUG"/>
         <!-- Spring Web -->
@@ -95,14 +124,19 @@
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE_ALL"/>
             <appender-ref ref="FILE_ERROR"/>
+            <appender-ref ref="FILE_WARN"/>
         </root>
     </springProfile>
 
     <!-- ==================== 生产环境配置 ==================== -->
     <springProfile name="prod">
-        <!-- 项目代码：INFO -->
-        <logger name="com.sxwl" level="INFO"/>
-        <!-- MyBatis -->
+        <!-- 项目代码：INFO（精简日志，减少 IO 开销） -->
+        <logger name="com.sxwl" level="INFO" additivity="false">
+            <appender-ref ref="FILE_ALL"/>
+            <appender-ref ref="FILE_ERROR"/>
+            <appender-ref ref="FILE_WARN"/>
+        </logger>
+        <!-- MyBatis SQL 日志（仅 WARN，避免大量 SQL 输出影响性能） -->
         <logger name="org.mybatis" level="WARN"/>
         <!-- Spring Web -->
         <logger name="org.springframework.web" level="WARN"/>
@@ -110,9 +144,9 @@
         <logger name="com.zaxxer.hikari" level="WARN"/>
         <!-- 根日志级别 -->
         <root level="WARN">
-            <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE_ALL"/>
             <appender-ref ref="FILE_ERROR"/>
+            <appender-ref ref="FILE_WARN"/>
         </root>
     </springProfile>
 

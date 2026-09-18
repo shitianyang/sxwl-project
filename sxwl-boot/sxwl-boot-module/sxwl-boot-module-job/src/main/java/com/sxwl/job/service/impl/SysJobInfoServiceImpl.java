@@ -2,6 +2,7 @@ package com.sxwl.job.service.impl;
 
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.exception.SxwlBusinessException;
+import com.sxwl.common.utils.SxwlDateUtils;
 import com.sxwl.common.utils.SxwlDiffUtils;
 import com.sxwl.job.mapper.SysJobInfoMapper;
 import com.sxwl.job.model.dto.SysJobDTO;
@@ -9,9 +10,10 @@ import com.sxwl.job.model.entity.SysJobInfo;
 import com.sxwl.job.model.params.SysJobPageParams;
 import com.sxwl.job.service.SysJobInfoService;
 import com.sxwl.quartz.manager.SysJobManager;
+import org.quartz.CronScheduleBuilder;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.quartz.SchedulerException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.PostConstruct;
@@ -95,6 +97,16 @@ public class SysJobInfoServiceImpl implements SysJobInfoService {
         // 唯一性校验（排除自身）
         if (sysJobInfoMapper.checkJobUnique(dto.getJobName(), dto.getJobGroup(), dto.getId()) > 0) {
             throw new SxwlBusinessException(10002, "任务名称+分组已存在");
+        }
+
+        // ✅ 提前校验新的 Cron 表达式是否合法（防止 deleteJob 后 createJob 失败导致任务丢失）
+        if (dto.getStatus() != null && dto.getStatus() == 1 && dto.getCronExpression() != null) {
+            try {
+                CronScheduleBuilder.cronSchedule(dto.getCronExpression());
+            } catch (Exception e) {
+                log.error("定时任务 Cron 表达式校验失败: id={}, cron={}", dto.getId(), dto.getCronExpression(), e);
+                throw new SxwlBusinessException(10001, "定时任务修改失败：Cron 表达式非法" + dto.getCronExpression());
+            }
         }
 
         // 查询旧数据并计算字段级变更差异
@@ -197,15 +209,24 @@ public class SysJobInfoServiceImpl implements SysJobInfoService {
      * 应用启动后，将数据库中的激活任务同步到 Quartz Scheduler
      *
      * <p>使用 @PostConstruct 确保 Spring 容器完全初始化后再执行同步逻辑</p>
-     * <p>采用幂等设计：重复调用不会产生副作用（Quartz.checkExists 会跳过已存在任务）</p>
+     * <p>采用幂等设计：通过 checkExists 判断，避免重复创建导致无效操作</p>
      */
     @PostConstruct
     public void syncActiveJobsToQuartz() {
         List<SysJobDTO> activeJobs = sysJobInfoMapper.getAllActiveJobs();
         int success = 0;
+        int skipped = 0;
         List<String> failures = new java.util.ArrayList<>();
+        
         for (SysJobDTO job : activeJobs) {
             try {
+                // 检查任务是否已存在（避免重复调度）
+                if (sysJobManager.checkExists(job.getJobName(), job.getJobGroup())) {
+                    log.debug("任务已存在，跳过同步: jobName={}, jobGroup={}", job.getJobName(), job.getJobGroup());
+                    skipped++;
+                    continue;
+                }
+                
                 sysJobManager.createJob(job.getJobName(), job.getJobGroup(),
                         job.getClassName(), job.getMethodName(),
                         job.getCronExpression(), job.getMethodParams());
@@ -215,11 +236,12 @@ public class SysJobInfoServiceImpl implements SysJobInfoService {
                 log.error("同步任务到 Quartz 失败: jobName={}, error={}", job.getJobName(), e.getMessage());
             }
         }
+        
         if (!failures.isEmpty()) {
-            log.error("启动时同步定时任务存在失败: 共 {} 个, 成功 {} 个, 失败 {} 个: {}",
-                    activeJobs.size(), success, failures.size(), failures);
+            log.error("启动时同步定时任务存在失败: 共 {} 个, 成功 {} 个, 跳过 {} 个, 失败 {} 个: {}",
+                    activeJobs.size(), success, skipped, failures.size(), failures);
         } else {
-            log.info("启动时同步定时任务完成: 共 {} 个, 成功 {} 个", activeJobs.size(), success);
+            log.info("启动时同步定时任务完成: 共 {} 个, 成功 {} 个, 跳过 {} 个", activeJobs.size(), success, skipped);
         }
     }
 

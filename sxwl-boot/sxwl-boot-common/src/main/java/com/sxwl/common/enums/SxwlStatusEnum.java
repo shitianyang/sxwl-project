@@ -3,15 +3,32 @@ package com.sxwl.common.enums;
 /**
  * 通用状态码枚举
  *
+ * <p>用于 HTTP 状态码和系统业务状态码的统一管理。
+ *
  * @author shitianyang
  * @date 2026/6/28
  * @since 0.1.0
  */
 public enum SxwlStatusEnum {
 
+    /**
+     * 操作成功
+     */
     SUCCESS(200, "操作成功"),
+
+    /**
+     * 未认证（Token 无效或过期）
+     */
     UNAUTHORIZED(401, "未认证"),
+
+    /**
+     * 无权限（已认证但无权访问）
+     */
     FORBIDDEN(403, "无权限"),
+
+    /**
+     * 业务校验失败
+     */
     FAIL(10001, "业务校验失败");
 
     /**
@@ -62,5 +79,23 @@ public enum SxwlStatusEnum {
             }
         }
         return null;
+    }
+
+    /**
+     * 判断是否为成功状态
+     *
+     * @return true 如果状态码为 200
+     */
+    public boolean isSuccess() {
+        return this == SUCCESS;
+    }
+
+    /**
+     * 判断是否为错误状态（非 200）
+     *
+     * @return true 如果状态码非 200
+     */
+    public boolean isError() {
+        return this != SUCCESS;
     }
 }

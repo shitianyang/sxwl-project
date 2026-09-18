@@ -40,13 +40,43 @@
     margin-bottom: 16px;
     display: flex;
     align-items: center;
+    justify-content: space-between;  /* 两端对齐 */
     gap: 12px;
-    color: $sxwl-color-text-secondary;
     font-size: 14px;
     animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  // 统计数字强调
+  // 面包屑文字
+  .sxwl-monitor-breadcrumb {
+    color: $sxwl-color-text-secondary;
+    font-size: 14px;
+  }
+
+  // 右侧状态区域
+  .sxwl-monitor-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  // 最后更新时间
+  .sxwl-monitor-last-update {
+    color: $sxwl-color-text-tertiary;  // #8C8C8C 辅助文字色
+    font-size: 12px;
+  }
+
+  // 手动刷新按钮
+  .sxwl-monitor-refresh-btn {
+    color: $sxwl-color-text-secondary;  // #595959 辅助文字色
+    transition: all 0.2s;
+
+    &:hover {
+      color: $sxwl-color-primary;  // #DE5F0E 品牌色
+      background: rgba(222, 95, 14, 0.06);  // 品牌色浅底
+    }
+  }
+
+  // 统计数字强调（异常阈值颜色分级）
   .ant-statistic-content {
     color: $sxwl-color-text-heading;
     font-weight: 600;

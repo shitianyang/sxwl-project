@@ -1,5 +1,6 @@
 package com.sxwl.common.utils;
 
+import com.sxwl.common.constants.SxwlSystemConstants;
 import com.sxwl.common.exception.SxwlBusinessException;
 
 import java.security.SecureRandom;
@@ -22,7 +23,7 @@ public final class SxwlJwtSecretManager {
     /**
      * secret 生成时使用的随机字节长度
      */
-    private static final int SECRET_RANDOM_BYTE_LENGTH = 32;
+    private static final int SECRET_RANDOM_BYTE_LENGTH = SxwlSystemConstants.JWT_SECRET_RANDOM_BYTE_LENGTH;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 

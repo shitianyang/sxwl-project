@@ -52,7 +52,6 @@ public class SxwlPageField implements Serializable {
     }
 
     public SxwlPageField() {
-
     }
 
     public SxwlPageField(Integer current, Integer pageSize) {

@@ -35,4 +35,12 @@ public interface SysLogMapper {
      * @return 影响行数
      */
     int insertLog(SysLog entity);
+
+    /**
+     * 根据用户账号查询用户 ID（用于登录失败日志）
+     *
+     * @param account 用户账号（用户名或手机号）
+     * @return 用户 ID，如果用户不存在则返回 null
+     */
+    Long getUserIdByAccount(String account);
 }

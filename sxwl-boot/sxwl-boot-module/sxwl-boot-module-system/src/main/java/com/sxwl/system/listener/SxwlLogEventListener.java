@@ -48,6 +48,19 @@ public class SxwlLogEventListener {
             entity.setOperateIp(event.getOperateIp());
             entity.setUserId(event.getUserId());
             entity.setUserName(event.getUserName());
+            // createBy / createOrg 兜底（事件未显式设置时从 SecurityContext 获取）
+            if (event.getCreateBy() != null) {
+                entity.setCreateBy(event.getCreateBy());
+            } else {
+                com.sxwl.common.utils.SxwlPrincipalUtils.getCurrentPrincipal().ifPresent(
+                        principal -> { entity.setCreateBy(principal.getUserId()); });
+            }
+            if (event.getCreateOrg() != null) {
+                entity.setCreateOrg(event.getCreateOrg());
+            } else {
+                com.sxwl.common.utils.SxwlPrincipalUtils.getCurrentPrincipal().ifPresent(
+                        principal -> { entity.setCreateOrg(principal.getOrgId()); });
+            }
             entity.setExecuteTime(event.getExecuteTime());
             entity.setErrorMsg(event.getErrorMsg());
             entity.setUserAgent(event.getUserAgent());

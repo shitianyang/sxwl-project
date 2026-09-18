@@ -77,4 +77,12 @@ public interface SysFileChunkInfoMapper {
      * @return 已上传计数（0 或 1）
      */
     int countChunkUploaded(@Param("uploadId") Long uploadId, @Param("chunkIndex") Integer chunkIndex);
+
+    /**
+     * 删除指定会话的全部分片记录（会话过期清理时使用，物理删除）
+     *
+     * @param uploadId 会话 ID
+     * @return 影响行数
+     */
+    int deleteByUploadId(@Param("uploadId") Long uploadId);
 }

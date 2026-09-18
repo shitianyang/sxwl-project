@@ -1,8 +1,16 @@
+/**
+ * ServerMonitor 服务器监控页面
+ * 
+ * <p>核心功能：实时监控 CPU、内存、磁盘、JVM、Redis、数据库连接池</p>
+ * <p>设计规范：品牌色暖橙 #DE5F0E + Token 化设计 + Ant Design 6</p>
+ */
 import { SxwlCard, SxwlRow, SxwlCol, SxwlStatistic, SxwlTag, SxwlTable } from '@/components';
+import { Button } from 'antd';
+import ReloadOutlined from '@ant-design/icons';
 import SxwlLineChart from '@/components/SxwlChart/SxwlLineChart';
 import SxwlChart from '@/components/SxwlChart';
 import { useMonitorSSE } from '@/hooks/useMonitorSSE';
-import { useEffect, useState, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import './index.scss';
 
 /** 品牌主色（与 variables.scss $sxwl-color-primary 对齐） */
@@ -30,6 +38,46 @@ function formatPercent(value: number | null | undefined): string {
 }
 
 /**
+ * 获取 CPU 负载颜色（异常阈值视觉提示）
+ * 
+ * <p>> 95% 红色危险，> 80% 橙色警告，≤ 80% 默认文字色</p>
+ * <p>符合监控页面规范：快速识别异常</p>
+ */
+function getCpuLoadColor(cpuLoad: number): string {
+  if (cpuLoad > 95) return '#FF4D4F';  // 红色危险
+  if (cpuLoad > 80) return BRAND;      // 橙色警告
+  return '';                           // 默认文字色
+}
+
+/**
+ * 获取内存使用率颜色（异常阈值视觉提示）
+ * 
+ * <p>> 90% 红色危险，> 75% 橙色警告，≤ 75% 默认文字色</p>
+ */
+function getMemUsageColor(memUsed: number, memTotal: number): string {
+  if (memTotal === 0) return '';
+  const usagePercent = (memUsed / memTotal) * 100;
+  if (usagePercent > 90) return '#FF4D4F';  // 红色危险
+  if (usagePercent > 75) return BRAND;       // 橙色警告
+  return '';                                 // 默认文字色
+}
+
+/**
+ * 刷新时间格式为友好显示
+ * 
+ * <p>例如：14:30:25、刚刚</p>
+ */
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  
+  if (diffSec < 60) return '刚刚';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)} 分钟前`;
+  return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+}
+
+/**
  * 计算图表响应式高度
  * 
  * <p>基于容器宽度动态调整，最小 200px，最大 300px</p>
@@ -41,6 +89,7 @@ function getChartHeight(span: number = 12): number {
 
 export default function ServerMonitorPage() {
   const { data, connected, history } = useMonitorSSE();
+  const [lastUpdateTime, setLastUpdateTime] = useState<Date>(new Date());
 
   const serverInfo = data?.server;
   const jvmInfo = data?.jvm;
@@ -52,6 +101,13 @@ export default function ServerMonitorPage() {
   /** 响应式图表高度 */
   const [chartHeight] = useState(() => getChartHeight(12));
 
+  /** 手动刷新处理 */
+  const handleRefresh = useCallback(() => {
+    setLastUpdateTime(new Date());
+    // 触发重新获取数据（根据实际项目需求调整）
+    window.dispatchEvent(new CustomEvent('monitor:refresh'));
+  }, []);
+
   const gcColumns = [
     { title: 'GC 名称', dataIndex: 'name', key: 'name', width: 200 },
     { title: '次数', dataIndex: 'count', key: 'count', width: 100 },
@@ -61,26 +117,48 @@ export default function ServerMonitorPage() {
   return (
     <div className="sxwl-monitor-page">
       <div className="sxwl-monitor-head">
-        <span>监控运维 / 系统监控</span>
-        <SxwlTag color={connected ? BRAND : 'red'}>
-          {connected ? '实时' : '连接断开'}
-        </SxwlTag>
+        <span className="sxwl-monitor-breadcrumb">监控运维 / 系统监控</span>
+        <div className="sxwl-monitor-status">
+          <SxwlTag color={connected ? BRAND : 'red'}>
+            {connected ? '实时' : '连接断开'}
+          </SxwlTag>
+          <span className="sxwl-monitor-last-update">
+            最后更新：{formatRelativeTime(lastUpdateTime)}
+          </span>
+          <Button 
+            type="text" 
+            icon={<ReloadOutlined />}
+            onClick={handleRefresh}
+            className="sxwl-monitor-refresh-btn"
+            title="手动刷新"
+          >
+            刷新
+          </Button>
+        </div>
       </div>
 
       {/* 服务器信息 */}
       <SxwlCard title="服务器状态" style={{ marginBottom: 16 }} loading={loading}>
         <SxwlRow gutter={[16, 16]}>
           <SxwlCol span={6}>
-            <SxwlStatistic title="CPU 核心数" value={serverInfo?.cpuCores ?? '-'} suffix="核" />
-          </SxwlCol>
-          <SxwlCol span={6}>
-            <SxwlStatistic title="CPU 负载" value={serverInfo ? formatPercent(serverInfo.cpuLoad) : '-'} />
+            <SxwlStatistic 
+              title="CPU 负载" 
+              value={serverInfo ? formatPercent(serverInfo.cpuLoad) : '-'}
+              style={{ 
+                color: serverInfo?.cpuLoad && serverInfo.cpuLoad > 80 ? getCpuLoadColor(serverInfo.cpuLoad) : undefined,
+                fontWeight: serverInfo?.cpuLoad && serverInfo.cpuLoad > 80 ? 600 : 400
+              }}
+            />
           </SxwlCol>
           <SxwlCol span={6}>
             <SxwlStatistic
               title="内存"
               value={serverInfo ? formatBytes(serverInfo.memUsed) : '-'}
               suffix={`/ ${serverInfo ? formatBytes(serverInfo.memTotal) : ''}`}
+              style={{ 
+                color: serverInfo?.memUsed && serverInfo.memTotal ? getMemUsageColor(serverInfo.memUsed, serverInfo.memTotal) : undefined,
+                fontWeight: serverInfo?.memUsed && serverInfo.memTotal && ((serverInfo.memUsed / serverInfo.memTotal) * 100) > 75 ? 600 : 400
+              }}
             />
           </SxwlCol>
           <SxwlCol span={6}>
@@ -131,6 +209,10 @@ export default function ServerMonitorPage() {
               title="堆内存已用"
               value={jvmInfo ? formatBytes(jvmInfo.heapUsed) : '-'}
               suffix={`/ ${jvmInfo ? formatBytes(jvmInfo.heapMax) : ''}`}
+              style={{ 
+                color: jvmInfo?.heapUsed && jvmInfo.heapMax ? getMemUsageColor(jvmInfo.heapUsed, jvmInfo.heapMax) : undefined,
+                fontWeight: jvmInfo?.heapUsed && jvmInfo.heapMax && ((jvmInfo.heapUsed / jvmInfo.heapMax) * 100) > 90 ? 600 : 400
+              }}
             />
           </SxwlCol>
           <SxwlCol span={6}>
@@ -140,10 +222,14 @@ export default function ServerMonitorPage() {
             />
           </SxwlCol>
           <SxwlCol span={6}>
-            <SxwlStatistic
-              title="线程数"
+            <SxwlStatistic 
+              title="线程数" 
               value={jvmInfo?.threadCount ?? '-'}
               suffix={`/ 峰值 ${jvmInfo?.peakThreadCount ?? ''}`}
+              style={{ 
+                color: jvmInfo?.threadCount && jvmInfo?.peakThreadCount && (jvmInfo.threadCount / jvmInfo.peakThreadCount) > 0.85 ? BRAND : undefined,
+                fontWeight: jvmInfo?.threadCount && jvmInfo?.peakThreadCount && (jvmInfo.threadCount / jvmInfo.peakThreadCount) > 0.85 ? 600 : 400
+              }}
             />
           </SxwlCol>
           <SxwlCol span={6}>
@@ -204,7 +290,14 @@ export default function ServerMonitorPage() {
             <SxwlStatistic title="内存使用" value={redisInfo ? formatBytes(redisInfo.usedMemory) : '-'} />
           </SxwlCol>
           <SxwlCol span={6}>
-            <SxwlStatistic title="缓存命中率" value={redisInfo ? formatPercent(redisInfo.hitRate) : '-'} />
+            <SxwlStatistic 
+              title="缓存命中率" 
+              value={redisInfo ? formatPercent(redisInfo.hitRate) : '-'}
+              style={{ 
+                color: redisInfo?.hitRate !== undefined && redisInfo.hitRate < 90 ? '#FF4D4F' : undefined,
+                fontWeight: redisInfo?.hitRate !== undefined && redisInfo.hitRate < 90 ? 600 : 400
+              }}
+            />
           </SxwlCol>
           <SxwlCol span={6}>
             <SxwlStatistic title="Key 总数" value={redisInfo?.totalKeys ?? '-'} />

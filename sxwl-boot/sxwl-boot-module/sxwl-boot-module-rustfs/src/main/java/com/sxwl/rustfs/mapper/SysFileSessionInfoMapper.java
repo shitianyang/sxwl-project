@@ -5,6 +5,8 @@ import com.sxwl.rustfs.model.entity.SysFileSessionInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * 系统文件上传会话 Mapper
  *
@@ -25,14 +27,13 @@ public interface SysFileSessionInfoMapper {
     int insertUpload(SysFileSessionInfo entity);
 
     /**
-     * 更新会话状态
+     * 更新会话状态（仅未完成的会话）
      *
      * @param id     会话 ID
      * @param status 新状态
      * @return 影响行数
      */
-    int updateStatus(@Param("id") Long id, @Param("status") Integer status,
-                     @Param("userId") Long userId);
+    int updateStatus(@Param("id") Long id, @Param("status") Integer status);
 
     /**
      * 根据 MD5 查询未完成的会话

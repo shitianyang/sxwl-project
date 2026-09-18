@@ -1,6 +1,7 @@
 package com.sxwl.job.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.sxwl.common.constant.SxwlPermConstant;
 import com.sxwl.common.annotation.SxwlLog;
 import com.sxwl.common.annotation.SxwlRepeatSubmit;
 import com.sxwl.job.model.dto.SysJobDTO;
@@ -34,7 +35,7 @@ public class SysJobController {
      * @return 任务 DTO
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:query')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.JOB_QUERY + ")")
     @SxwlLog(title = "定时任务", description = "查询任务详情[id=#{#id}]")
     public SysJobDTO getJobById(@PathVariable("id") Long id) {
         return sysJobInfoService.getJobById(id);
@@ -47,7 +48,7 @@ public class SysJobController {
      * @return 任务分页列表
      */
     @GetMapping("/page")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:list')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.JOB_LIST + ")")
     @SxwlLog(title = "定时任务", description = "查询任务列表")
     public PageInfo<SysJobDTO> getJobPageByParams(@Valid SysJobPageParams params) {
         return sysJobInfoService.getJobPageByParams(params);
@@ -60,7 +61,7 @@ public class SysJobController {
      */
     @PostMapping
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:add')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.JOB_ADD + ")")
     @SxwlLog(title = "定时任务", description = "新增任务[#{#dto.jobName}]")
     public void createJob(@Valid @RequestBody SysJobDTO dto) {
         sysJobInfoService.createJob(dto);
@@ -73,7 +74,7 @@ public class SysJobController {
      */
     @PutMapping
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:edit')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.JOB_EDIT + ")")
     @SxwlLog(title = "定时任务", description = "修改任务[#{#dto.jobName}]")
     public void updateJob(@Valid @RequestBody SysJobDTO dto) {
         sysJobInfoService.updateJob(dto);
@@ -86,7 +87,7 @@ public class SysJobController {
      */
     @DeleteMapping("/{id}")
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:delete')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.JOB_DELETE + ")")
     @SxwlLog(title = "定时任务", description = "删除任务[id=#{#id}]")
     public void deleteJobById(@PathVariable("id") Long id) {
         sysJobInfoService.deleteJobById(id);
@@ -99,7 +100,7 @@ public class SysJobController {
      */
     @PutMapping("/pause/{id}")
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:pause')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.JOB_PAUSE + ")")
     @SxwlLog(title = "定时任务", description = "暂停任务[id=#{#id}]")
     public void pauseJob(@PathVariable("id") Long id) {
         sysJobInfoService.pauseJob(id);
@@ -112,7 +113,7 @@ public class SysJobController {
      */
     @PutMapping("/resume/{id}")
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:resume')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.JOB_RESUME + ")")
     @SxwlLog(title = "定时任务", description = "恢复任务[id=#{#id}]")
     public void resumeJob(@PathVariable("id") Long id) {
         sysJobInfoService.resumeJob(id);
@@ -125,7 +126,7 @@ public class SysJobController {
      */
     @PutMapping("/run/{id}")
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('monitor:job:run')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.JOB_RUN + ")")
     @SxwlLog(title = "定时任务", description = "立即执行[id=#{#id}]")
     public void runOnce(@PathVariable("id") Long id) {
         sysJobInfoService.runOnce(id);
