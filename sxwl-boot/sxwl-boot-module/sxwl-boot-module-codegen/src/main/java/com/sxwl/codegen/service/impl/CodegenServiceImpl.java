@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -164,7 +165,7 @@ public class CodegenServiceImpl implements CodegenService {
         String basePath = "生成的代码/main/java/" + basePkg;
         String frontendPath = "生成的代码/frontend/src";
 
-        return switch (templateName) {
+        String filePath = switch (templateName) {
             case "Entity.java.ftl" -> basePath + "/model/entity/" + name + ".java";
             case "DTO.java.ftl" -> basePath + "/model/dto/" + name + "DTO.java";
             case "PageParams.java.ftl" -> basePath + "/model/params/" + name + "PageParams.java";

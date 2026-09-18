@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sxwl.common.annotation.SxwlLog;
 import com.sxwl.common.event.SxwlOperationLogEvent;
+import com.sxwl.common.utils.SxwlDateUtils;
 import com.sxwl.common.utils.SxwlDiffUtils;
 import com.sxwl.common.utils.SxwlIpLocationService;
 import com.sxwl.common.utils.SxwlPrincipalUtils;
@@ -67,14 +68,13 @@ public class SxwlLogAspect {
     /** 描述字段最大长度（字符，对应 sys_log_info.description varchar(500)） */
     private static final int MAX_DESC_LENGTH = 500;
 
-    /** 需要脱敏的参数名关键词（含 PII：手机号/邮箱/用户名等） */
+    /** 需要脱敏的参数名关键词（含 PII：手机号/邮箱等） */
     private static final Set<String> SENSITIVE_KEYS = Set.of(
             "password", "pwd", "passwd",
             "secret", "token", "accessToken", "refreshToken",
             "idCard", "id_card",
             "oldPassword", "newPassword", "confirmPassword",
-            "phone", "mobile", "tel", "email", "mail",
-            "username", "userName", "loginName", "account", "nickname"
+            "phone", "mobile", "tel", "email", "mail"
     );
 
     /** JSON 中敏感字段值替换后的占位 */

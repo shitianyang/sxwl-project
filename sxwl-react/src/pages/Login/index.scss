@@ -1,5 +1,5 @@
 // ============================================
-// Login — 登录页样式（sass, 玻璃拟态 · 科技蓝 #1677FF）
+// Login — 登录页样式（sass, 玻璃拟态 · 暖橙 #DE5F0E）
 // 左侧蓝色品牌玻璃侧栏 + 右侧浅色表单卡片，对齐 D 概念图
 // 仅调整布局与样式，登录逻辑（SM2 / onFinish / 验证码 / token）保持不变
 // ============================================
@@ -7,7 +7,7 @@
 @use "../../styles/variables" as *;
 @use "../../styles/mixins" as *;
 
-// 页面容器：浅蓝调玻璃背景（克制柔光，无硬斑）
+// 页面容器：浅暖调玻璃背景（克制柔光，无硬斑）
 .sxwl-login-container {
   position: relative;
   display: flex;
@@ -17,9 +17,9 @@
   padding: 24px;
   overflow: auto;
   background:
-    radial-gradient(120% 90% at 12% 8%, rgba(22, 119, 255, 0.10), transparent 60%),
-    radial-gradient(110% 80% at 92% 96%, rgba(58, 139, 255, 0.08), transparent 55%),
-    linear-gradient(135deg, #EAF1FF 0%, #F4F8FF 48%, #EEF3FF 100%);
+    radial-gradient(120% 90% at 12% 8%, rgba(222, 95, 14, 0.10), transparent 60%),
+    radial-gradient(110% 80% at 92% 96%, rgba(232, 117, 42, 0.08), transparent 55%),
+    linear-gradient(135deg, #FFF1E8 0%, #FDE8D5 48%, #FFEAD9 100%);
 }
 
 // 登录玻璃卡片（左右分栏容器）
@@ -54,7 +54,7 @@
   }
 }
 
-// ---------- 左侧蓝色品牌玻璃侧栏 ----------
+// ---------- 左侧暖橙品牌玻璃侧栏 ----------
 .sxwl-login-brand {
   flex: 0 0 43%;
   position: relative;
@@ -63,7 +63,7 @@
   flex-direction: column;
   overflow: hidden;
   color: #fff;
-  background: linear-gradient(158deg, #1677FF 0%, #0E5FD8 100%);
+  background: linear-gradient(158deg, #DE5F0E 0%, #B84D00 100%);
   border-right: 1px solid $sxwl-glass-border;
 
   // 右上细白圈
@@ -176,7 +176,7 @@
   letter-spacing: 0.5px;
 
   em {
-    color: #E8F1FF;
+    color: #FFE8D5;
     font-style: normal;
   }
 }
@@ -279,7 +279,7 @@
   min-width: 0;
 }
 
-// 登录按钮（品牌蓝渐变，全宽）
+// 登录按钮（暖橙渐变，全宽）
 .sxwl-login-button {
   width: 100%;
   height: 48px;
@@ -289,16 +289,16 @@
   border-radius: $sxwl-radius;
   background: $sxwl-gradient-brand;
   border-color: transparent;
-  box-shadow: 0 10px 22px -8px rgba(22, 119, 255, 0.55);
+  box-shadow: 0 10px 22px -8px rgba(222, 95, 14, 0.55);
   transition: all $sxwl-dur-fast;
   margin-top: 4px;
 
   &:hover:not(:disabled) {
     background: $sxwl-gradient-brand;
-    box-shadow: 0 14px 28px -8px rgba(22, 119, 255, 0.65);
+    box-shadow: 0 14px 28px -8px rgba(222, 95, 14, 0.65);
   }
 
   &:active:not(:disabled) {
-    background: linear-gradient(135deg, $sxwl-color-primary-active 0%, #0E5FD8 100%);
+    background: linear-gradient(135deg, $sxwl-color-primary-active 0%, #B84D00 100%);
   }
 }

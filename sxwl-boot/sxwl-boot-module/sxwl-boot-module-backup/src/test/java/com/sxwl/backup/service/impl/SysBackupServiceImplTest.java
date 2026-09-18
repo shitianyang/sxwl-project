@@ -114,7 +114,7 @@ class SysBackupServiceImplTest {
     @Test
     @DisplayName("restore 备份记录不存在时应抛出异常")
     void restore_notFound_shouldThrow() {
-        when(sysFileInfoMapper.getFileById(999L)).thenReturn(null);
+        when(sysFileInfoMapper.getVisibleFileById(999L)).thenReturn(null);
 
         SxwlBusinessException ex = assertThrows(SxwlBusinessException.class,
                 () -> service.restore(999L));
@@ -127,7 +127,7 @@ class SysBackupServiceImplTest {
         SysFileInfo fileInfo = new SysFileInfo();
         fileInfo.setBusinessType("avatar");
 
-        when(sysFileInfoMapper.getFileById(1L)).thenReturn(fileInfo);
+        when(sysFileInfoMapper.getVisibleFileById(1L)).thenReturn(fileInfo);
 
         SxwlBusinessException ex = assertThrows(SxwlBusinessException.class,
                 () -> service.restore(1L));
@@ -141,7 +141,7 @@ class SysBackupServiceImplTest {
         fileInfo.setBusinessType("db_backup");
         fileInfo.setObjectKey(null);
 
-        when(sysFileInfoMapper.getFileById(1L)).thenReturn(fileInfo);
+        when(sysFileInfoMapper.getVisibleFileById(1L)).thenReturn(fileInfo);
 
         SxwlBusinessException ex = assertThrows(SxwlBusinessException.class,
                 () -> service.restore(1L));
@@ -156,7 +156,7 @@ class SysBackupServiceImplTest {
         fileInfo.setObjectKey("backup/20260705/file.sql.gz");
         fileInfo.setFileName("test.sql.gz");
 
-        when(sysFileInfoMapper.getFileById(1L)).thenReturn(fileInfo);
+        when(sysFileInfoMapper.getVisibleFileById(1L)).thenReturn(fileInfo);
 
         SxwlBusinessException ex = assertThrows(SxwlBusinessException.class,
                 () -> service.restore(1L));
@@ -166,7 +166,7 @@ class SysBackupServiceImplTest {
     @Test
     @DisplayName("delete 备份记录不存在时应抛出异常")
     void delete_notFound_shouldThrow() {
-        when(sysFileInfoMapper.getFileById(999L)).thenReturn(null);
+        when(sysFileInfoMapper.getVisibleFileById(999L)).thenReturn(null);
 
         SxwlBusinessException ex = assertThrows(SxwlBusinessException.class,
                 () -> service.delete(999L));
@@ -180,7 +180,7 @@ class SysBackupServiceImplTest {
         fileInfo.setBucketName("sxwl-files");
         fileInfo.setObjectKey("backup/20260705/file.sql.gz");
 
-        when(sysFileInfoMapper.getFileById(1L)).thenReturn(fileInfo);
+        when(sysFileInfoMapper.getVisibleFileById(1L)).thenReturn(fileInfo);
         when(sysFileInfoMapper.deleteFileById(1L)).thenReturn(1);
 
         service.delete(1L);
@@ -196,7 +196,7 @@ class SysBackupServiceImplTest {
         fileInfo.setBucketName(null);
         fileInfo.setObjectKey("backup/20260705/file.sql.gz");
 
-        when(sysFileInfoMapper.getFileById(1L)).thenReturn(fileInfo);
+        when(sysFileInfoMapper.getVisibleFileById(1L)).thenReturn(fileInfo);
         doThrow(new RuntimeException("S3 error")).when(rustfsTemplate)
                 .delete(eq("sxwl-files"), eq("backup/20260705/file.sql.gz"));
         when(sysFileInfoMapper.deleteFileById(1L)).thenReturn(1);
@@ -213,7 +213,7 @@ class SysBackupServiceImplTest {
         SysFileInfo fileInfo = new SysFileInfo();
         fileInfo.setObjectKey("backup/20260705/file.sql.gz");
 
-        when(sysFileInfoMapper.getFileById(1L)).thenReturn(fileInfo);
+        when(sysFileInfoMapper.getVisibleFileById(1L)).thenReturn(fileInfo);
         when(sysFileInfoMapper.deleteFileById(1L)).thenReturn(0);
 
         SxwlBusinessException ex = assertThrows(SxwlBusinessException.class,
@@ -236,7 +236,7 @@ class SysBackupServiceImplTest {
                     when(mock.start()).thenReturn(mockProcess);
                 })) {
 
-            service.backup(userId);
+            service.backup(userId, 100L);
 
             ArgumentCaptor<SysFileInfo> captor = ArgumentCaptor.forClass(SysFileInfo.class);
             verify(sysFileInfoMapper).insertFile(captor.capture());
@@ -245,6 +245,8 @@ class SysBackupServiceImplTest {
             assertEquals("db_backup", saved.getBusinessType());
             assertEquals("application/gzip", saved.getFileType());
             assertEquals(1, saved.getStatus());
+            // 组织 ID 必须由调用方同步传入并落入文件记录，否则数据权限无法过滤备份件
+            assertEquals(100L, saved.getCreateOrg());
             assertNotNull(saved.getFileName());
             assertTrue(saved.getFileName().startsWith("backup_mydb_"));
             assertNotNull(saved.getObjectKey());
@@ -259,7 +261,7 @@ class SysBackupServiceImplTest {
         Long userId = 1L;
 
         SxwlBusinessException ex = assertThrows(SxwlBusinessException.class,
-                () -> service.backup(userId));
+                () -> service.backup(userId, null));
         assertEquals(10001, ex.getCode());
     }
 }

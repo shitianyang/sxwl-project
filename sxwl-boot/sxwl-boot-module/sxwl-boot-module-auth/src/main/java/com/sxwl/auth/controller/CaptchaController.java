@@ -1,5 +1,6 @@
 package com.sxwl.auth.controller;
 
+import com.sxwl.common.constants.SxwlSystemConstants;
 import com.sxwl.common.utils.SxwlCaptchaUtils;
 import com.sxwl.common.utils.SxwlRedisKeyUtils;
 import com.sxwl.redis.helper.SxwlRedisHelper;
@@ -13,9 +14,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.security.SecureRandom;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * 验证码接口控制器
@@ -34,22 +38,31 @@ public class CaptchaController {
     private static final Logger log = LoggerFactory.getLogger(CaptchaController.class);
 
     /** 图形验证码 Redis TTL（120 秒） */
-    private static final Duration CAPTCHA_TTL = Duration.ofSeconds(120);
+    private static final Duration CAPTCHA_TTL = Duration.ofSeconds(SxwlSystemConstants.CAPTCHA_IMAGE_TTL);
 
     /** 短信验证码 Redis TTL（5 分钟） */
-    private static final Duration SMS_CODE_TTL = Duration.ofMinutes(5);
+    private static final Duration SMS_CODE_TTL = Duration.ofSeconds(SxwlSystemConstants.CAPTCHA_SMS_TTL);
 
     /** 短信验证码长度 */
     private static final int SMS_CODE_LENGTH = 6;
 
     /** 短信验证码发送间隔（60 秒） */
-    private static final Duration SMS_SEND_INTERVAL = Duration.ofSeconds(60);
+    private static final Duration SMS_SEND_INTERVAL = Duration.ofSeconds(SxwlSystemConstants.CAPTCHA_SEND_INTERVAL);
 
     /** 短信验证码每日最大发送次数 */
     private static final int SMS_MAX_PER_DAY = 10;
 
     /** 短信验证码每日统计 Redis TTL（24 小时） */
     private static final Duration SMS_DAILY_TTL = Duration.ofHours(24);
+
+    /** 手机号格式校验正则（与前端登录页规则保持一致） */
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
+
+    /** 每日计数 Key 的日期标识格式（yyyyMMdd） */
+    private static final DateTimeFormatter DAILY_KEY_DATE_FORMAT = DateTimeFormatter.BASIC_ISO_DATE;
+
+    /** 验证码生成用安全随机源（验证码属于安全凭据，不得使用可预测的 Random） */
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final SxwlRedisHelper redisHelper;
     private final SxwlSmsProperties smsProperties;
@@ -106,39 +119,40 @@ public class CaptchaController {
         }
 
         // 2. 验证手机号格式
-        if (!phone.matches(/^1[3-9]\d{9}$/)) {
+        if (!PHONE_PATTERN.matcher(phone).matches()) {
             throw new IllegalArgumentException("请输入正确的手机号");
         }
 
         // 3. 检查发送间隔（60 秒内不得重复发送）
         String sendTimeKey = SxwlRedisKeyUtils.captchaLimitKey(phone);
-        if (redisHelper.exists(sendTimeKey)) {
-            long remainingSeconds = redisHelper.getTtl(sendTimeKey).getSeconds();
-            throw new IllegalArgumentException(String.format("请等待 %d 秒后重新获取", (int) remainingSeconds));
+        if (Boolean.TRUE.equals(redisHelper.exists(sendTimeKey))) {
+            Long remainingSeconds = redisHelper.getExpire(sendTimeKey);
+            long waitSeconds = remainingSeconds == null || remainingSeconds < 0
+                    ? SMS_SEND_INTERVAL.toSeconds() : remainingSeconds;
+            throw new IllegalArgumentException(String.format("请等待 %d 秒后重新获取", waitSeconds));
         }
 
         // 4. 检查每日发送次数限制（防刷机制）
         String dailyCountKey = buildDailySmsCountKey(phone);
-        int todayCount = redisHelper.get(dailyCountKey, Integer.class, 0);
+        int todayCount = redisHelper.get(dailyCountKey).map(Integer::parseInt).orElse(0);
         if (todayCount >= SMS_MAX_PER_DAY) {
             throw new IllegalArgumentException(String.format("今日验证码已发送 %d 次，已达上限，请明天再试", SMS_MAX_PER_DAY));
         }
 
-        // 4. 生成 6 位短信验证码
+        // 5. 生成 6 位短信验证码
         String code = generateSmsCode();
 
-        // 5. 存入 Redis
+        // 6. 存入 Redis
         String captchaKey = SxwlRedisKeyUtils.captchaSmsKey(phone);
         redisHelper.set(captchaKey, code, SMS_CODE_TTL);
 
-        // 6. 记录发送时间（用于控制发送间隔）
+        // 7. 记录发送时间（用于控制发送间隔）
         redisHelper.set(sendTimeKey, "1", SMS_SEND_INTERVAL);
 
-        // 7. 增加每日发送次数统计
-        int newCount = todayCount + 1;
-        redisHelper.set(dailyCountKey, String.valueOf(newCount), SMS_DAILY_TTL);
+        // 8. 每日发送次数原子自增（首次自增时设置 24 小时 TTL）
+        redisHelper.increment(dailyCountKey, SMS_DAILY_TTL);
 
-        // 7. 调用短信服务发送（如果启用）
+        // 9. 调用短信服务发送（如果启用）
         if (smsProperties.isEnabled()) {
             sendSmsByProvider(phone, code);
         } else {
@@ -150,12 +164,14 @@ public class CaptchaController {
     }
 
     /**
-     * 生成 6 位随机数字验证码
+     * 生成 {@link #SMS_CODE_LENGTH} 位数字短信验证码
+     * <p>取值范围 [10^(n-1), 10^n)，保证位数固定且无前导零</p>
+     *
+     * @return 数字验证码
      */
     private String generateSmsCode() {
-        Random random = new Random();
-        int code = random.nextInt(900000) + 100000; // 100000 ~ 999999
-        return String.valueOf(code);
+        int lower = (int) Math.pow(10, SMS_CODE_LENGTH - 1);
+        return String.valueOf(SECURE_RANDOM.nextInt(9 * lower) + lower);
     }
 
     /**
@@ -195,13 +211,12 @@ public class CaptchaController {
 
     /**
      * 构建每日短信发送次数统计 Key
-     * <p>格式：sms:daily:{phone}:{yyyy-MM-dd}</p>
+     * <p>完整 Key：captcha:sms:daily:{phone}:{yyyyMMdd}，按天分片，无需手动清零</p>
      *
      * @param phone 手机号
      * @return Redis Key
      */
     private String buildDailySmsCountKey(String phone) {
-        String date = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
-        return "sms:daily:" + phone + ":" + date;
+        return SxwlRedisKeyUtils.captchaSmsDailyKey(phone, LocalDate.now().format(DAILY_KEY_DATE_FORMAT));
     }
 }

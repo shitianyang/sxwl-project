@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <parent>
+        <groupId>com.sxwl</groupId>
+        <artifactId>sxwl-boot-module</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>sxwl-boot-module-sse</artifactId>
+    <packaging>jar</packaging>
+
+    <name>sxwl-boot-module-sse</name>
+    <description>SSE Real-time Push Business Module</description>
+
+    <dependencies>
+        <!-- SSE AutoConfiguration Module (Infrastructure) -->
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-config-sse</artifactId>
+        </dependency>
+        
+        <!-- Security Module (for user authentication and ticket validation) -->
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-config-security</artifactId>
+        </dependency>
+
+        <!-- Spring Web (Controller + RESTful API) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Common DTO, Entity, Exception, Utility Classes -->
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-common</artifactId>
+        </dependency>
+    </dependencies>
+</project>

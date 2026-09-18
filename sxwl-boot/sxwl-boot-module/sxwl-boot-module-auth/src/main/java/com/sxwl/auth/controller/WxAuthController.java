@@ -1,5 +1,6 @@
 package com.sxwl.auth.controller;
 
+import com.sxwl.common.annotation.SxwlRepeatSubmit;
 import com.sxwl.auth.model.request.SxwlWechatLoginRequest;
 import com.sxwl.auth.strategy.SxwlWechatAuthStrategy;
 import com.sxwl.common.entity.SxwlResult;
@@ -67,6 +68,7 @@ public class WxAuthController {
      * @return { token, refreshToken, userInfo }
      */
     @PostMapping("/wechat")
+    @SxwlRepeatSubmit(interval = 5, message = "微信登录处理中，请稍候")
     public SxwlResult<Map<String, Object>> wxLogin(@Valid @RequestBody SxwlWechatLoginRequest request,
                                                    HttpServletRequest httpRequest) {
         String ip = getClientIp(httpRequest);

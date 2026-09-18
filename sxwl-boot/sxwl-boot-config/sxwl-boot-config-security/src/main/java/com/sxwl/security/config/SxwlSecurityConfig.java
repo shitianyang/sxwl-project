@@ -10,7 +10,6 @@ import com.sxwl.security.handler.SxwlAuthenticationHandler;
 import com.sxwl.security.jwt.JwtAuthenticationFilter;
 import com.sxwl.security.password.SxwlPasswordEncoder;
 import com.sxwl.security.password.SxwlPasswordValidator;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +33,7 @@ import java.util.List;
  *   <li>JWT Filter 注册在 UsernamePasswordAuthenticationFilter 之前</li>
  *   <li>放行登录/验证码/公开接口，其余均需认证</li>
  *   <li>401/403 处理器返回统一 JSON 格式</li>
+ *   <li>放行路径通过 {@code SxwlSecurityProperties.allowedPaths} 配置化管理</li>
  * </ul>
  * </p>
  *
@@ -44,7 +44,6 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@EnableScheduling
 public class SxwlSecurityConfig {
 
     /**
@@ -55,7 +54,8 @@ public class SxwlSecurityConfig {
                                                    JwtAuthenticationFilter jwtAuthenticationFilter,
                                                    SxwlAuthenticationEntryPoint entryPoint,
                                                    SxwlAccessDeniedHandler accessDeniedHandler,
-                                                   SxwlIpListFilter ipListFilter) throws Exception {
+                                                   SxwlIpListFilter ipListFilter,
+                                                   SxwlSecurityProperties properties) throws Exception {
         httpSecurity
                 // 禁用 CSRF（前后端分离，Token 鉴权不需要 CSRF）
                 .csrf(AbstractHttpConfigurer::disable)
@@ -65,21 +65,9 @@ public class SxwlSecurityConfig {
                 .cors(cors -> {})
                 // 无状态会话
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // 放行规则
+                // 放行规则（从配置类读取）
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/auth/login/**",
-                                "/auth/refresh",
-                                "/auth/logout",
-                                "/auth/public-key",
-                                "/captcha/**",
-                                "/sse/connect",
-                                "/ws/connect",
-                                "/public/**",
-                                // 仅放行必要的 actuator 端点，禁止暴露 env/heapdump 等敏感端点
-                                "/actuator/health",
-                                "/actuator/info"
-                        ).permitAll()
+                        .requestMatchers(properties.getAllowedPaths().toArray(new String[0])).permitAll()
                         .anyRequest().authenticated()
                 )
                 // 401 未认证
@@ -87,9 +75,11 @@ public class SxwlSecurityConfig {
                         .authenticationEntryPoint(entryPoint)
                         .accessDeniedHandler(accessDeniedHandler)
                 )
-                // JWT Filter
-                .addFilterBefore(ipListFilter, JwtAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                // JWT Filter：必须先把 JwtAuthenticationFilter 加入链，才能拿它作为
+                // addFilterBefore 的锚点；否则 FilterComparator 中尚无它的 order，
+                // 构建 SecurityFilterChain 时会抛 "does not have a registered order"。
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(ipListFilter, JwtAuthenticationFilter.class);
 
         return httpSecurity.build();
     }

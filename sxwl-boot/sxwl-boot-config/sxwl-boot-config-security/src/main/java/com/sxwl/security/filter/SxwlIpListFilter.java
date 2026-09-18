@@ -32,7 +32,6 @@ import java.util.Map;
  * @date 2026/9/12
  * @since 0.1.0
  */
-@Component
 public class SxwlIpListFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(SxwlIpListFilter.class);
@@ -124,7 +123,7 @@ public class SxwlIpListFilter extends OncePerRequestFilter {
         
         // Redis 动态白名单
         String redisKey = SxwlRedisKeyUtils.ipWhitelistKey(ip);
-        if (redisHelper.exists(redisKey)) {
+        if (Boolean.TRUE.equals(redisHelper.exists(redisKey))) {
             log.info("IP 在白名单中（Redis）: ip={}", maskIp(ip));
             return true;
         }
@@ -144,7 +143,7 @@ public class SxwlIpListFilter extends OncePerRequestFilter {
     private boolean isInBlacklist(String ip) {
         // 1. 检查 Redis 动态黑名单
         String redisKey = SxwlRedisKeyUtils.ipBlacklistKey(ip);
-        if (redisHelper.exists(redisKey)) {
+        if (Boolean.TRUE.equals(redisHelper.exists(redisKey))) {
             log.warn("IP 在 Redis 黑名单中: ip={}, reason={}", maskIp(ip), getBlacklistReason(ip));
             return true;
         }
@@ -164,8 +163,7 @@ public class SxwlIpListFilter extends OncePerRequestFilter {
      */
     private String getBlacklistReason(String ip) {
         String redisKey = SxwlRedisKeyUtils.ipBlacklistKey(ip);
-        String reason = redisHelper.get(redisKey, String.class);
-        return reason != null ? reason : "静态配置";
+        return redisHelper.get(redisKey).orElse("静态配置");
     }
 
     /**

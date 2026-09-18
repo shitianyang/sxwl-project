@@ -1,5 +1,6 @@
 package com.sxwl.common.utils;
 
+import com.sxwl.common.constants.SxwlSystemConstants;
 import com.sxwl.common.exception.SxwlBusinessException;
 
 import java.lang.management.ManagementFactory;
@@ -33,17 +34,17 @@ public final class SxwlSnowFlakeUtils {
     /**
      * 数据中心位数
      */
-    private static final long DATA_CENTER_ID_BITS = 5L;
+    private static final long DATA_CENTER_ID_BITS = SxwlSystemConstants.SNOWFLAKE_DATA_CENTER_ID_BITS;
 
     /**
      * 机器节点位数
      */
-    private static final long WORKER_ID_BITS = 5L;
+    private static final long WORKER_ID_BITS = SxwlSystemConstants.SNOWFLAKE_WORKER_ID_BITS;
 
     /**
      * 序列号位数
      */
-    private static final long SEQUENCE_BITS = 12L;
+    private static final long SEQUENCE_BITS = SxwlSystemConstants.SNOWFLAKE_SEQUENCE_BITS;
 
     /**
      * 数据中心最大值（31）
@@ -78,7 +79,7 @@ public final class SxwlSnowFlakeUtils {
     /**
      * 允许的最大回拨毫秒数
      */
-    private static final long MAX_BACKWARD_MS = 5L;
+    private static final long MAX_BACKWARD_MS = SxwlSystemConstants.SNOWFLAKE_MAX_BACKWARD_MS;
 
     /**
      * 默认数据中心 ID（可通过 -Dsxwl.snowflake.datacenter-id 覆盖）

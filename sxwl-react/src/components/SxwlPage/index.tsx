@@ -144,9 +144,11 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
       <div className="sxwl-page-toolbar">
         <SxwlSpace>
           {toolbarButtons.map((btn, index) => {
+            const btnKey = btn.permission ?? btn.label ?? index;
+            const key = Array.isArray(btnKey) ? btnKey[0] ?? index : btnKey;
             const btnEl = (
               <SxwlButton
-                key={btn.permission ?? btn.label ?? index}
+                key={key}
                 type={btn.type}
                 danger={btn.danger}
                 icon={btn.icon ? <SxwlIcon name={btn.icon} /> : undefined}
@@ -158,7 +160,7 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
             if (btn.permission) {
               return (
                 <SxwlPermissionButton
-                  key={btn.permission ?? btn.label ?? index}
+                  key={key}
                   type={btn.type}
                   danger={btn.danger}
                   icon={btn.icon ? <SxwlIcon name={btn.icon} /> : undefined}

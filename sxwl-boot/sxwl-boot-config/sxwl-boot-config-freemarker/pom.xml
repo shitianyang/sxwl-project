@@ -12,13 +12,16 @@
     <artifactId>sxwl-boot-config-freemarker</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    <!--
+        FreeMarker 模板引擎自动配置
+        <p>为代码生成器提供模板渲染能力，使用 Spring Boot 3.x 自动配置机制。</p>
+    -->
 
     <dependencies>
+        <!--
+            Spring Boot Freemarker Starter
+            <p>提供 FreeMarker 模板引擎支持，无需手动配置 Configuration Bean。</p>
+        -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-freemarker</artifactId>

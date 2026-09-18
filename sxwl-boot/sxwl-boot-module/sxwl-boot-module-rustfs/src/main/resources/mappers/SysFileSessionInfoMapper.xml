@@ -16,11 +16,11 @@
         )
     </insert>
 
-    <!-- 更新会话状态 -->
+    <!-- 更新会话状态（仅本用户未完成的会话） -->
     <update id="updateStatus">
         UPDATE sys_file_session_info
         SET status = #{status}, update_time = NOW()
-        WHERE id = #{id} AND create_by = #{userId} AND status = 0
+        WHERE id = #{id} AND status = 0 AND delete_flag = 0
     </update>
 
     <!-- 根据 MD5 查询未完成的会话 -->

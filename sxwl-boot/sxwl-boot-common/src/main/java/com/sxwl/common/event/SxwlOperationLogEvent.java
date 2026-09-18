@@ -1,18 +1,57 @@
 package com.sxwl.common.event;
 
+import com.sxwl.common.constants.SxwlSystemConstants;
+
+import java.io.Serializable;
+
 /**
  * 操作日志事件
  *
  * <p>由 web 模块的 {@code SxwlLogAspect} 切面在方法执行后发布，
  * 由 module-system 的 {@code SxwlLogEventListener} 异步消费并写入 {@code sys_log_info} 表。</p>
  *
- * <p>字段与 {@code sys_log_info} 表一一对应（见 base.sql 第 351-403 行）。</p>
+ * <h3>字段映射关系</h3>
+ * <ul>
+ *   <li>{@code title}, {@code logType}, {@code description} → 日志标题、类型、描述</li>
+ *   <li>{@code method}, {@code requestUrl}, {@code requestMethod}, {@code requestParam} → 请求信息</li>
+ *   <li>{@code userId}, {@code userName}, {@code operateIp}, {@code browser}, {@code os} → 用户信息</li>
+ *   <li>{@code status}, {@code errorMsg}, {@code executeTime} → 执行状态</li>
+ *   <li>{@code diff} → 字段级变更差异（JSON 数组格式）</li>
+ *   <li>{@code traceId}, {@code userAgent} → 链路追踪与客户端信息</li>
+ * </ul>
+ *
+ * <h3>使用示例</h3>
+ * <pre>{@code
+ * // AOP 切面自动发布
+ * new SxwlOperationLogEvent()
+ *     .title("用户管理")
+ *     .logType(SxwlSystemConstants.LOG_TYPE_OPERATION)
+ *     .description("删除用户[#{#id}]")
+ *     .userId(loginUser.getUserId())
+ *     .userName(loginUser.getUsername())
+ *     .executeTime(endTime - startTime)
+ *     .status(1)
+ *     .traceId(MDC.get("traceId"))
+ *     .publish();
+ * }</pre>
+ *
+ * <h3>注意事项</h3>
+ * <ul>
+ *   <li>请求参数会自动脱敏（如 password 字段），截断至 2000 字符</li>
+ *   <li>错误信息仅在实际异常时填充，正常成功路径为空</li>
+ *   <li>{@code createBy}, {@code createOrg} 从 SecurityContext 自动获取</li>
+ *   <li>事件通过 Spring ApplicationEventPublisher 异步发布，不会阻塞主流程</li>
+ * </ul>
  *
  * @author shitianyang
  * @date 2026/7/6
  * @since 0.1.0
+ * @see SxwlLogAspect
+ * @see SxwlLogEventListener
+ * @see com.sxwl.common.constants.SxwlSystemConstants#LOG_TYPE_OPERATION
+ * @see sys_log_info
  */
-public class SxwlOperationLogEvent {
+public class SxwlOperationLogEvent implements Serializable {
 
     /** 模块标题 */
     private String title;
@@ -73,6 +112,16 @@ public class SxwlOperationLogEvent {
 
     /** 字段级变更差异 JSON（如：[{"field":"角色","oldValue":"admin","newValue":"user"}]） */
     private String diff;
+
+    /** 创建者 ID（从 Principal 获取，用于写入 sys_log_info.create_by） */
+    private Long createBy;
+
+    /** 创建者组织 ID（从 Principal 获取，用于写入 sys_log_info.create_org） */
+    private Long createOrg;
+
+    // ==================== 序列化支持 ====================
+
+    private static final long serialVersionUID = SxwlSystemConstants.SERIAL_VERSION_UID;
 
     // ==================== 构造器 ====================
 
@@ -248,4 +297,8 @@ public class SxwlOperationLogEvent {
     public String getOs() { return os; }
     public String getOperateLocation() { return operateLocation; }
     public String getDiff() { return diff; }
+    public Long getCreateBy() { return createBy; }
+    public SxwlOperationLogEvent createBy(Long createBy) { this.createBy = createBy; return this; }
+    public Long getCreateOrg() { return createOrg; }
+    public SxwlOperationLogEvent createOrg(Long createOrg) { this.createOrg = createOrg; return this; }
 }

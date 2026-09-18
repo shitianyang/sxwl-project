@@ -1,17 +1,17 @@
 # sxwl Design System
 ## 御权 RBAC 权限管理平台 UI 设计规范
 
-> 📅 版本：v2.0 | 👤 更新日期：2026-09-12 | 🎨 设计语言：Pro 极简科技风
+> 📅 版本:v2.1 | 👤 更新日期:2026-09-15 | 🎨 设计语言:Pro 极简科技风 (暖橙色 #DE5F0E)
 
 ---
 
 ## 一、设计哲学
 
 ### 核心理念
-- **中性 Pro 观感**：页面以中性色为主（灰/白），品牌色仅用于点缀（链接、按钮高亮）
-- **极简克制**：减少装饰性元素，用间距和阴影营造层次
-- **零原生引用**：所有业务组件使用 `Sxwl*` 封装组件，禁止直接引用 Ant Design 基础组件
-- **Token 驱动**：颜色、圆角、阴影、间距全部通过变量管理，禁止硬编码
+- **中性 Pro 观感**:页面以中性色为主(灰/白),品牌色仅用于点缀(链接、按钮高亮 - 暖橙色 #DE5F0E)
+- **极简克制**:减少装饰性元素,用间距和阴影营造层次
+- **零原生引用**:所有业务组件使用 `Sxwl*` 封装组件,禁止直接引用 Ant Design 基础组件
+- **Token 驱动**:颜色、圆角、阴影、间距全部通过变量管理,禁止硬编码
 
 ---
 
@@ -23,11 +23,11 @@
 
 | 级别 | 变量名 | 色值 | 用途 |
 |------|--------|------|------|
-| Base | `$sxwl-color-primary` | `#1677FF` | 主按钮、链接、选中态 |
-| Hover | `$sxwl-color-primary-hover` | `#3A8BFF` | 悬停态 |
-| Active | `$sxwl-color-primary-active` | `#0E5FD8` | 点击态 |
-| Light 1 | `$sxwl-color-primary-1` | `#E8F1FF` | 选中背景、图标底 |
-| Gradient | `$sxwl-gradient-brand` | `linear-gradient(135deg, #1677FF 0%, #0E5FD8 100%)` | 登录页背景、渐变按钮 |
+| Base | `$sxwl-color-primary` | `#DE5F0E` | 主按钮、链接、选中态 |
+| Hover | `$sxwl-color-primary-hover` | `#E8752A` | 悬停态 |
+| Active | `$sxwl-color-primary-active` | `#B84D00` | 点击态 |
+| Light 1 | `$sxwl-color-primary-1` | `#FFF1E8` | 选中背景、图标底 |
+| Gradient | `$sxwl-gradient-brand` | `linear-gradient(135deg, #DE5F0E 0%, #B84D00 100%)` | 登录页背景、渐变按钮 |
 
 #### 成功色（Success Palette）
 
@@ -208,7 +208,7 @@
 #### 聚焦光晕（Focus Ring）
 
 ```scss
-$sxwl-focus-ring: 0 0 0 3px rgba(22, 119, 255, 0.12);
+$sxwl-focus-ring: 0 0 0 3px rgba(222, 95, 14, 0.12);
 ```
 
 ```scss
@@ -224,8 +224,8 @@ input:focus {
 ```scss
 $sxwl-glass-light: rgba(255, 255, 255, 0.55);         // 半透明白
 $sxwl-glass-light-strong: rgba(255, 255, 255, 0.72);  // 更强不透明度
-$sxwl-glass-blue: rgba(22, 119, 255, 0.16);           // 品牌色半透明
-$sxwl-glass-blue-strong: rgba(22, 119, 255, 0.32);    // 更强品牌色
+$sxwl-glass-blue: rgba(222, 95, 14, 0.16);            // 品牌色半透明
+$sxwl-glass-blue-strong: rgba(222, 95, 14, 0.32);    // 更强品牌色
 $sxwl-glass-border: rgba(255, 255, 255, 0.65);        // 白色半透明边框
 $sxwl-glass-blur: 22px;                                // 毛玻璃模糊
 ```
@@ -270,7 +270,7 @@ $sxwl-glass-blur: 22px;                                // 毛玻璃模糊
 }
 
 .custom-scrollbar {
-  @include scrollbar-thin(#1677FF, #3A8BFF); // 品牌色
+  @include scrollbar-thin(#DE5F0E, #E8752A); // 品牌色
 }
 ```
 
@@ -554,7 +554,7 @@ reserve += 52px (有工具栏)
    
    // ❌ 错误
    .my-button {
-     color: #1677FF;
+     color: #DE5F0E;
      border-radius: 6px;
    }
    ```

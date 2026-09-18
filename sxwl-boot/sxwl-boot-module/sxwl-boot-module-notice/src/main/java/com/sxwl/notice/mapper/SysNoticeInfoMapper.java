@@ -36,6 +36,11 @@ public interface SysNoticeInfoMapper {
     int publishNotice(@Param("id") Long id, @Param("publishTime") java.time.LocalDateTime publishTime);
 
     /**
+     * 查询公告详情（用于 SSE 推送）
+     */
+    SysNoticeDTO getPublishedNoticeById(@Param("id") Long id);
+
+    /**
      * 撤回公告
      */
     int revokeNotice(@Param("id") Long id);

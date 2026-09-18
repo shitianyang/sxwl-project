@@ -21,7 +21,7 @@ public class SxwlUserPermissionVO {
 
     public SxwlUserPermissionVO() {
     }
-
+    
     public SxwlUserPermissionVO(Set<String> permissions, Set<String> roles) {
         this.permissions = permissions;
         this.roles = roles;

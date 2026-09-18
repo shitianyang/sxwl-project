@@ -38,12 +38,17 @@ public class LoginFailLogEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public void handleLoginFailure(SxwlLoginFailureEvent event) {
         try {
+            // ✅ 尝试查询目标用户的真实 userId（如果用户存在于系统中）
+            Long targetUserId = sysLogMapper.getUserIdByAccount(event.getTargetAccount());
+
             SysLog entity = new SysLog();
             entity.setLogType(1);
             entity.setTitle("登录日志");
             entity.setDescription("用户登录失败");
             entity.setOperateIp(event.getIp());
             entity.setUserName(event.getTargetAccount());
+            entity.setUserId(targetUserId);  // ✅ 设置真实 userId（可能为 null，表示该账号不存在）
+            entity.setCreateBy(targetUserId); // ✅ 同步 setCreateBy
             entity.setErrorMsg(event.getFailReason());
             entity.setStatus(0);
             entity.setExecuteTime(0L);
@@ -57,7 +62,8 @@ public class LoginFailLogEventListener {
             entity.setDeleteFlag(0);
 
             sysLogMapper.insertLog(entity);
-            log.debug("登录失败日志写入成功: targetAccount={}, reason={}", event.getTargetAccount(), event.getFailReason());
+            log.debug("登录失败日志写入成功: targetAccount={}, userId={}, reason={}", 
+                    event.getTargetAccount(), targetUserId, event.getFailReason());
         } catch (Exception e) {
             log.error("登录失败日志写入失败: targetAccount={}, error={}", event.getTargetAccount(), e.getMessage(), e);
         }

@@ -2,6 +2,7 @@ package com.sxwl.auth.controller;
 
 import com.sxwl.auth.strategy.SxwlPasswordAuthStrategy;
 import com.sxwl.auth.strategy.SxwlSmsAuthStrategy;
+import com.sxwl.common.annotation.SxwlRepeatSubmit;
 import com.sxwl.common.entity.SxwlPublicKeyVO;
 import com.sxwl.common.entity.SxwlResult;
 import com.sxwl.common.entity.SxwlUserPermissionVO;
@@ -128,6 +129,7 @@ public class AuthController {
      * @return Token 对
      */
     @PostMapping("/login/password")
+    @SxwlRepeatSubmit(interval = 3, message = "登录处理中，请稍候")
     public SxwlResult<SxwlTokenPair> loginByPassword(@Valid @RequestBody SxwlLoginRequest request,
                                                       HttpServletRequest httpRequest) {
         return doLogin(request, httpRequest, "password", passwordAuthStrategy);
@@ -137,6 +139,7 @@ public class AuthController {
      * 短信登录
      */
     @PostMapping("/login/sms")
+    @SxwlRepeatSubmit(interval = 3, message = "短信登录处理中，请稍候")
     public SxwlResult<SxwlTokenPair> loginBySms(@Valid @RequestBody SxwlLoginRequest request,
                                                  HttpServletRequest httpRequest) {
         return doLogin(request, httpRequest, "sms", smsAuthStrategy);

@@ -29,6 +29,10 @@
         </dependency>
         <dependency>
             <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-config-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-config-mybatis</artifactId>
         </dependency>
     </dependencies>

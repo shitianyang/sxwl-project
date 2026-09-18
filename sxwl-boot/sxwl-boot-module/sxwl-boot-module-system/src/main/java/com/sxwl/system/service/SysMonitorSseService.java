@@ -1,7 +1,7 @@
 package com.sxwl.system.service;
 
-import com.sxwl.monitor.model.JvmInfoVO;
-import com.sxwl.monitor.model.ServerInfoVO;
+import com.sxwl.monitor.model.VO.JvmInfoVO;
+import com.sxwl.monitor.model.VO.ServerInfoVO;
 import com.sxwl.monitor.service.JvmInfoService;
 import com.sxwl.monitor.service.ServerInfoService;
 import com.sxwl.sse.manager.SxwlSseEmitterManager;

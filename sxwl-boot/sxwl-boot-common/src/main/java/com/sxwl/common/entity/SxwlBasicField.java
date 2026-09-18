@@ -116,7 +116,6 @@ public class SxwlBasicField implements Serializable {
     }
 
     public SxwlBasicField() {
-
     }
 
     public SxwlBasicField(Long id, Long createBy, Long createOrg, LocalDateTime createTime, Long updateBy, LocalDateTime updateTime, Integer deleteFlag) {

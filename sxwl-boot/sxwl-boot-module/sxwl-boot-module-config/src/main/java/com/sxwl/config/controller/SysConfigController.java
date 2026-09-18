@@ -2,6 +2,8 @@ package com.sxwl.config.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.sxwl.common.annotation.SxwlLog;
+import com.sxwl.common.annotation.SxwlRepeatSubmit;
+import com.sxwl.common.constant.SxwlPermConstant;
 import com.sxwl.config.model.dto.SysConfigDTO;
 import com.sxwl.config.model.params.SysConfigPageParams;
 import com.sxwl.config.service.SysConfigInfoService;
@@ -30,7 +32,7 @@ public class SysConfigController {
      * 根据 ID 查询配置（编辑回显）
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:config:query')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.CONFIG_QUERY + ")")
     @SxwlLog(title = "参数配置", description = "查询配置详情[id=#{#id}]")
     public SysConfigDTO getConfigById(@PathVariable("id") Long id) {
         return sysConfigInfoService.getConfigById(id);
@@ -40,7 +42,7 @@ public class SysConfigController {
      * 根据键名查询配置
      */
     @GetMapping("/key/{configKey}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:config:query')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.CONFIG_QUERY + ")")
     public SysConfigDTO getConfigByKey(@PathVariable("configKey") String configKey) {
         return sysConfigInfoService.getConfigByKey(configKey);
     }
@@ -49,7 +51,7 @@ public class SysConfigController {
      * 分页查询配置列表
      */
     @GetMapping("/page")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:config:list')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.CONFIG_LIST + ")")
     @SxwlLog(title = "参数配置", description = "查询配置列表")
     public PageInfo<SysConfigDTO> getConfigPageByParams(@Valid SysConfigPageParams params) {
         return sysConfigInfoService.getConfigPageByParams(params);
@@ -59,7 +61,8 @@ public class SysConfigController {
      * 新增配置
      */
     @PostMapping
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:config:add')")
+    @SxwlRepeatSubmit(interval = 3, message = "参数配置创建中，请稍候")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.CONFIG_ADD + ")")
     @SxwlLog(title = "参数配置", description = "新增配置[#{#dto.configKey}]")
     public void createConfig(@Valid @RequestBody SysConfigDTO dto) {
         sysConfigInfoService.createConfig(dto);
@@ -69,7 +72,8 @@ public class SysConfigController {
      * 修改配置
      */
     @PutMapping
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:config:edit')")
+    @SxwlRepeatSubmit(interval = 3, message = "参数配置修改中，请稍候")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.CONFIG_EDIT + ")")
     @SxwlLog(title = "参数配置", description = "修改配置[#{#dto.configKey}]")
     public void updateConfig(@Valid @RequestBody SysConfigDTO dto) {
         sysConfigInfoService.updateConfig(dto);
@@ -79,7 +83,8 @@ public class SysConfigController {
      * 删除配置
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:config:delete')")
+    @SxwlRepeatSubmit(interval = 3, message = "参数配置删除中，请稍候")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.CONFIG_DELETE + ")")
     @SxwlLog(title = "参数配置", description = "删除配置[id=#{#id}]")
     public void deleteConfigById(@PathVariable("id") Long id) {
         sysConfigInfoService.deleteConfigById(id);

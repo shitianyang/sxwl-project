@@ -37,36 +37,21 @@ sxwl:
     sign-name: 御权平台                    # 阿里云签名名称
     template-code: SMS_xxx                 # 阿里云短信模板 Code（示例：SMS_123456789）
     template-param-name: code             # 模板参数名，默认为 "code"
-    
-    # --- 腾讯云 SMS ---
-    sdk-app-id:                          # 腾讯云 SDK App ID
-    secret-id:                           # 腾讯云 Secret ID
-    secret-key:                          # 腾讯云 Secret Key
-    sign-name:                           # 腾讯云签名名称
-    template-id:                         # 腾讯云模板 ID
-    
-    # --- 华为云 SMS ---
-    region-name: cn-north-1              # 华为项目名（如：cn-north-1）
-    access-key:                          # 华为 AK
-    secret-key:                          # 华为 SK
-    sign-name:                           # 华为签名名称
-    template-id:                         # 华为模板 ID
 
-# ==================== IP 黑白名单配置 ====================
-sxwl:
+  # ==================== IP 黑白名单配置 ====================
   security:
     ip-whitelist-enabled: false          # 是否启用白名单模式（true=仅允许白名单 IP，false=正常访问）
-    
+
     # 白名单 IP 列表（为空则不启用白名单，仅黑名单生效）
     ip-whitelist:
       - "127.0.0.1"                      # 本地开发
       # - "192.168.1.100"                # 管理员电脑
       # - "10.0.0.50"                    # 服务器 IP
-    
+
     # 黑名单 IP 列表（匹配任意一个即拦截）
     ip-blacklist:
       # - "203.0.113.1"                  # 已知恶意 IP
       # - "198.51.100.50"                # 爆破来源
-    
+
     # 是否忽略内网 IP（127.0.0.1、192.168.x.x、10.x.x.x、172.16.x.x-172.31.x.x）
     ignore-private-ip: true

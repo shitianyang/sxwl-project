@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.sxwl</groupId>
+        <artifactId>sxwl-boot-module</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <artifactId>sxwl-boot-module-monitor</artifactId>
+    <packaging>jar</packaging>
+
+    <!--
+        监控系统业务模块
+        <p>提供服务器运行状态采集、JVM 性能监控、Redis/DB 连接池监控等业务能力，
+        支撑前端实时监控页面和 SSE 实时推送功能。</p>
+    -->
+
+    <dependencies>
+        <!--
+            监控系统业务模块
+            <p>提供服务器运行状态采集、JVM 性能监控、Redis/DB 连接池监控等业务能力。</p>
+        -->
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-common</artifactId>
+        </dependency>
+        <!--
+            OSHI：操作系统级系统信息（CPU/内存/磁盘）
+            <p>跨平台支持 Windows/Linux/macOS，用于服务器硬件监控。
+            提供进程、网络、显示器等详细信息。</p>
+        -->
+        <dependency>
+            <groupId>com.github.oshi</groupId>
+            <artifactId>oshi-core</artifactId>
+            <version>6.10.0</version>
+        </dependency>
+        <!-- Spring Boot Starter Web（Controller + RESTful API） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!-- Spring Boot Starter Data Redis（Redis 监控） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <!-- Spring Boot Starter Jdbc（数据库连接池监控） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <!-- HikariCP（数据库连接池监控） -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+    </dependencies>
+</project>

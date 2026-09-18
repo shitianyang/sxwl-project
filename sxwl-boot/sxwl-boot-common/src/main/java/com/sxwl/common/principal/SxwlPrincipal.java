@@ -1,5 +1,6 @@
 package com.sxwl.common.principal;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -14,11 +15,40 @@ import java.util.Set;
  *   <li>{@code SxwlLoginUser}（security 模块）实现本接口，附加完整的认证授权信息</li>
  * </ul>
  *
+ * <h3>使用场景</h3>
+ * <ul>
+ *   <li><b>数据权限拦截器</b>：{@link com.sxwl.mybatis.interceptor.SxwlDataScopeInterceptor} 读取 {@code dataScopeOrgIds} 拼 SQL</li>
+ *   <li><b>操作日志监听器</b>：{@link com.sxwl.system.listener.SxwlLogEventListener} 获取当前用户 ID</li>
+ *   <li><b>SSE 推送</b>：{@link com.sxwl.sse.controller.SxwlSseController} 确定推送目标用户</li>
+ *   <li><b>防重复提交</b>：{@link com.sxwl.redis.aspect.SxwlRepeatSubmitAspect} 生成 Redis Key（userId + URI）</li>
+ * </ul>
+ *
+ * <h3>与 SxwlLoginUser 的区别</h3>
+ * <table>
+ *   <tr><th>属性</th><th>SxwlPrincipal</th><th>SxwlLoginUser</th></tr>
+ *   <tr><td>所在模块</td><td>common</td><td>security</td></tr>
+ *   <tr><td>依赖</td><td>无外部依赖</td><td>依赖 Spring Security</td></tr>
+ *   <tr><td>职责</td><td>用户身份标识（最小集）</td><td>完整认证授权信息</td></tr>
+ *   <tr><td>字段</td><td>userId, orgId, dataScopeOrgIds</td><td>userId, username, nickname, roles, perms, dataScope...</td></tr>
+ *   <tr><td>使用场景</td><td>数据权限、日志、SSE 等基础设施</td><td>业务逻辑、@PreAuthorize 权限校验</td></tr>
+ * </table>
+ *
+ * <h3>注意事项</h3>
+ * <ul>
+ *   <li><b>实现类必须添加 {@code implements Serializable}</b>：为未来序列化到 Redis 预留支持</li>
+ *   <li><b> getUserId() / getOrgId() 不得返回 null</b>：使用雪花算法生成的 userId 必定有值</li>
+ *   <li><b>getDataScopeOrgIds() 返回 null 表示全部数据</b>：空集表示无可见组织（1=0 兜底）</li>
+ *   <li><b>不要在业务逻辑中直接强转 Authentication.getPrincipal()</b>：先做 instanceof 检查</li>
+ * </ul>
+ *
  * @author shitianyang
  * @date 2026/7/5
  * @since 0.1.0
+ * @see com.sxwl.security.model.SxwlLoginUser
+ * @see com.sxwl.common.utils.SxwlPrincipalUtils
+ * @see com.sxwl.mybatis.interceptor.SxwlDataScopeInterceptor
  */
-public interface SxwlPrincipal {
+public interface SxwlPrincipal extends Serializable {
 
     /**
      * 获取当前用户唯一标识

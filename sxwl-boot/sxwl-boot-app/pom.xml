@@ -12,46 +12,48 @@
     <artifactId>sxwl-boot-app</artifactId>
     <packaging>jar</packaging>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <dependencies>
+        <!-- 认证授权模块 -->
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-module-auth</artifactId>
         </dependency>
+        <!-- 系统管理模块 -->
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-module-system</artifactId>
         </dependency>
+        <!-- 代码生成器模块 -->
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-module-codegen</artifactId>
         </dependency>
+        <!-- 文件存储模块（RustFS） -->
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-module-rustfs</artifactId>
         </dependency>
+        <!-- 系统配置模块 -->
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-module-config</artifactId>
         </dependency>
+        <!-- 通知公告模块 -->
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-module-notice</artifactId>
         </dependency>
+        <!-- 定时任务模块 -->
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-module-job</artifactId>
         </dependency>
+        <!-- 数据备份模块 -->
         <dependency>
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-module-backup</artifactId>
         </dependency>
-        <!-- 测试依赖（JUnit 5 + Mockito + Spring Test） -->
+        <!-- 测试框架（JUnit 5 + Mockito + Spring Test） -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -61,10 +63,10 @@
 
     <build>
         <plugins>
+            <!-- Spring Boot 打包插件：将应用打包为可执行 JAR -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring.boot.version}</version>
                 <executions>
                     <execution>
                         <goals>

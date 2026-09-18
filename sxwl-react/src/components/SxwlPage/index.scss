@@ -108,10 +108,10 @@
     }
   }
 
-  // 表头：浅灰底 + 加粗（Pro 表格规范）
+  // 表头：浅灰底 + 正文色 + 加粗（Pro 表格规范）
   .ant-table-thead > tr > th {
     background: #fafafa;
-    color: $sxwl-color-text-secondary;
+    color: $sxwl-color-text;                // 正文色 #1F2329（规范：表头使用正文色）
     font-weight: 600;
     border-bottom: 1px solid $sxwl-color-border-secondary;
   }

@@ -1,6 +1,7 @@
 package com.sxwl.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.sxwl.common.constant.SxwlPermConstant;
 import com.sxwl.system.model.dto.SysLogDTO;
 import com.sxwl.system.model.params.SysLogPageParams;
 import com.sxwl.system.service.SysLogService;
@@ -33,7 +34,7 @@ public class SysLogController {
      * @return 分页日志列表
      */
     @GetMapping("/page")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('system:log:list')")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.LOG_VIEW + ")")
     public PageInfo<SysLogDTO> getLogPageByParams(@Valid SysLogPageParams params) {
         return sysLogService.getLogPageByParams(params);
     }

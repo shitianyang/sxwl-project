@@ -1,5 +1,7 @@
 package com.sxwl.common.utils;
 
+import com.sxwl.common.constants.SxwlSystemConstants;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -50,12 +52,12 @@ public final class SxwlCaptchaUtils {
     /**
      * 图形验证码字符集（数字 + 大写字母，去掉 0/O/1/I 易混淆字符）
      */
-    private static final String IMAGE_CHAR_POOL = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+    private static final String IMAGE_CHAR_POOL = SxwlSystemConstants.CAPTCHA_IMAGE_CHAR_POOL;
 
     /**
      * 短信/邮箱验证码字符集（纯数字，去掉 0 避免首位为 0 时前端展示异常）
      */
-    private static final String NUMERIC_CHAR_POOL = "123456789";
+    private static final String NUMERIC_CHAR_POOL = SxwlSystemConstants.CAPTCHA_NUMERIC_CHAR_POOL;
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -63,10 +65,18 @@ public final class SxwlCaptchaUtils {
      * 文字深色系（深灰 #333/#444 + 品牌橙 #F2711C 系，随机选用，保证浅底可读）
      */
     private static final Color[] TEXT_COLORS = {
-            new Color(0x33, 0x33, 0x33),
-            new Color(0x44, 0x44, 0x44),
-            new Color(0xF2, 0x71, 0x1C),
-            new Color(0xC9, 0x5E, 0x0A),
+            new Color(SxwlSystemConstants.CAPTCHA_TEXT_COLORS_RGB[0][0], 
+                    SxwlSystemConstants.CAPTCHA_TEXT_COLORS_RGB[0][1], 
+                    SxwlSystemConstants.CAPTCHA_TEXT_COLORS_RGB[0][2]),
+            new Color(SxwlSystemConstants.CAPTCHA_TEXT_COLORS_RGB[1][0], 
+                    SxwlSystemConstants.CAPTCHA_TEXT_COLORS_RGB[1][1], 
+                    SxwlSystemConstants.CAPTCHA_TEXT_COLORS_RGB[1][2]),
+            new Color(SxwlSystemConstants.CAPTCHA_TEXT_COLORS_RGB[2][0], 
+                    SxwlSystemConstants.CAPTCHA_TEXT_COLORS_RGB[2][1], 
+                    SxwlSystemConstants.CAPTCHA_TEXT_COLORS_RGB[2][2]),
+            new Color(SxwlSystemConstants.CAPTCHA_TEXT_COLORS_RGB[3][0], 
+                    SxwlSystemConstants.CAPTCHA_TEXT_COLORS_RGB[3][1], 
+                    SxwlSystemConstants.CAPTCHA_TEXT_COLORS_RGB[3][2])
     };
 
     /**

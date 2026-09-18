@@ -1,6 +1,6 @@
 // ============================================
 // LoginPage — 登录页
-// 视觉：左右分栏布局（左侧蓝色品牌玻璃侧栏 + 右侧表单卡片），玻璃拟态 · 科技蓝 #1677FF
+// 视觉：左右分栏布局（左侧暖橙品牌玻璃侧栏 + 右侧表单卡片），玻璃拟态 · 暖橙 #DE5F0E
 // 注意：仅调整布局与样式，登录逻辑（SM2 / onFinish / 验证码 / token）保持不变
 // ============================================
 
@@ -176,7 +176,7 @@ export default function LoginPage() {
                 onClick={() => setLoginMode('password')}
                 style={{
                   fontWeight: loginMode === 'password' ? 'bold' : 'normal',
-                  color: loginMode === 'password' ? '#1677FF' : '#999',
+                  color: loginMode === 'password' ? '#DE5F0E' : '#8C8C8C',
                   cursor: 'pointer',
                   marginRight: 16,
                 }}
@@ -187,7 +187,7 @@ export default function LoginPage() {
                 onClick={() => setLoginMode('sms')}
                 style={{
                   fontWeight: loginMode === 'sms' ? 'bold' : 'normal',
-                  color: loginMode === 'sms' ? '#1677FF' : '#999',
+                  color: loginMode === 'sms' ? '#DE5F0E' : '#8C8C8C',
                   cursor: 'pointer',
                 }}
               >

@@ -12,6 +12,7 @@ import com.sxwl.codegen.model.params.SysCodegenTablePageParams;
 import com.sxwl.codegen.service.SysCodegenTableService;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.common.utils.SxwlSnowFlakeUtils;
+import com.sxwl.security.model.SxwlLoginUser;
 import com.sxwl.security.utils.SxwlSecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +38,7 @@ public class SysCodegenTableServiceImpl implements SysCodegenTableService {
 
     private final SysCodegenTableMapper sysCodegenTableMapper;
     private final SysCodegenFieldMapper sysCodegenFieldMapper;
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public SysCodegenTableServiceImpl(SysCodegenTableMapper sysCodegenTableMapper,
                                        SysCodegenFieldMapper sysCodegenFieldMapper) {
@@ -82,8 +85,8 @@ public class SysCodegenTableServiceImpl implements SysCodegenTableService {
         entity.setGenType(config.getGenType() != null ? config.getGenType() : "crud");
         entity.setStatus(1);
         entity.setCreateBy(currentUserId());
-        entity.setCreateOrg(currentUserId());
-        entity.setCreateTime(now);
+        entity.setCreateOrg(currentOrgId());  // ✅ 使用用户的组织 ID，而非 userId
+        entity.setCreateTime(now);  // ✅ SxwlBasicField.createTime 是 LocalDateTime 类型
         entity.setDeleteFlag(0);
 
         sysCodegenTableMapper.insertTable(entity);
@@ -141,11 +144,26 @@ public class SysCodegenTableServiceImpl implements SysCodegenTableService {
     }
 
     /**
-     * 取当前登录用户 ID，未登录时回退 0（L20）。
+     * 取当前登录用户 ID，未登录时回退 0。
      */
     private Long currentUserId() {
         Long userId = SxwlSecurityUtils.getCurrentUserId();
         return userId != null ? userId : 0L;
+    }
+
+    /**
+     * 取当前登录用户的组织 ID，未登录或无组织信息时回退 0。
+     */
+    private Long currentOrgId() {
+        try {
+            SxwlLoginUser loginUser = SxwlSecurityUtils.getCurrentUser().orElse(null);
+            return loginUser != null && loginUser.getOrgId() != null 
+                    ? loginUser.getOrgId() 
+                    : 0L;
+        } catch (Exception e) {
+            log.warn("获取当前用户组织 ID 失败，使用默认值 0", e);
+            return 0L;
+        }
     }
 
     @Override
@@ -178,7 +196,7 @@ public class SysCodegenTableServiceImpl implements SysCodegenTableService {
             entity.setIsUnique(dto.getIsUnique() != null ? dto.getIsUnique() : 0);
             entity.setMaxLength(dto.getMaxLength());
             entity.setSort(dto.getSort() != null ? dto.getSort() : 0);
-            entity.setCreateTime(now.toString());
+            entity.setCreateTime(now.format(TIME_FORMATTER));  // ✅ 使用统一格式
             return entity;
         }).collect(Collectors.toList());
 

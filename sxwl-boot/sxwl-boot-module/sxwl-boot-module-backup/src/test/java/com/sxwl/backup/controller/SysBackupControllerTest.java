@@ -49,7 +49,7 @@ class SysBackupControllerTest {
 
             controller.backup();
 
-            verify(sysBackupService).backup(null);
+            verify(sysBackupService).backup(null, null);
         }
     }
 
@@ -60,11 +60,13 @@ class SysBackupControllerTest {
             securityUtils.when(SxwlSecurityUtils::getCurrentUser)
                     .thenReturn(Optional.of(new com.sxwl.security.model.SxwlLoginUser() {{
                         setUserId(1L);
+                        setCreateOrg(100L);
                     }}));
 
             controller.backup();
 
-            verify(sysBackupService).backup(1L);
+            // 备份需同时携带 userId 与所属组织，供异步线程写入审计字段
+            verify(sysBackupService).backup(1L, 100L);
         }
     }
 

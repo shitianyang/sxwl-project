@@ -1,15 +1,15 @@
-// ============================================
+﻿// ============================================
 // sxwl-react 设计变量（sass）
-// 对齐 docs/UI设计规范.md v2.0（Web 端 · 中性 Pro + 品牌科技蓝）
+// 对齐 docs/UI设计规范.md v2.0（Web 端 · Pro 骨架 + 暖橙点缀 #DE5F0E）
 // 与 theme.token.ts / theme.config.ts 对齐；antd ConfigProvider 负责组件内部主题
 // ============================================
 
-// -------- 品牌色（规范 2.1 科技蓝色阶） --------
-$sxwl-color-primary: #1677FF;
-$sxwl-color-primary-hover: #3A8BFF;
-$sxwl-color-primary-active: #0E5FD8;
-$sxwl-color-primary-1: #E8F1FF; // 品牌浅底（选中态 / 图标底 / 浅蓝横幅）
-$sxwl-gradient-brand: linear-gradient(135deg, #1677FF 0%, #0E5FD8 100%);
+// -------- 品牌色（规范 2.1 暖橙色阶） --------
+$sxwl-color-primary: #DE5F0E;          // 主按钮、链接、选中态
+$sxwl-color-primary-hover: #E8752A;    // 悬停态
+$sxwl-color-primary-active: #B84D00;   // 点击态
+$sxwl-color-primary-1: #FDE8D5;        // 品牌浅底（选中态/图标底/浅橙横幅）
+$sxwl-gradient-brand: linear-gradient(135deg, #DE5F0E 0%, #B84D00 100%);
 
 // -------- 暖色阶（规范 2.3 功能色扩展 - 欢迎横幅/通知背景） --------
 $sxwl-color-warm-1: #fff1dc;   // 暖色浅底（工作台欢迎横幅背景）
@@ -40,16 +40,16 @@ $sxwl-radius-xl: 16px;
 $sxwl-shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
 $sxwl-shadow-popup: 0 4px 12px rgba(16, 24, 40, 0.08), 0 2px 6px rgba(16, 24, 40, 0.05);
 $sxwl-shadow-modal: 0 18px 44px rgba(16, 24, 40, 0.14), 0 6px 16px rgba(16, 24, 40, 0.10);
-$sxwl-shadow-float: 0 24px 60px -20px rgba(22, 60, 130, 0.35); // 浮层玻璃卡片大阴影
+$sxwl-shadow-float: 0 24px 60px -20px rgba(222, 95, 14, 0.35); // 浮层玻璃卡片大阴影
 
-// -------- 聚焦态（输入/控件聚焦光晕，规范 12 表单） --------
-$sxwl-focus-ring: 0 0 0 3px rgba(22, 119, 255, 0.12);
+// -------- 聚焦态（输入/控件聚焦光晕 - 暖橙色） --------
+$sxwl-focus-ring: 0 0 0 3px rgba(222, 95, 14, 0.1);
 
-// -------- 玻璃质感（浮层 / 登录页，规范新增） --------
+// -------- 玻璃质感（浮层/登录页 - 暖橙色） --------
 $sxwl-glass-light: rgba(255, 255, 255, 0.55);
 $sxwl-glass-light-strong: rgba(255, 255, 255, 0.72);
-$sxwl-glass-blue: rgba(22, 119, 255, 0.16);
-$sxwl-glass-blue-strong: rgba(22, 119, 255, 0.32);
+$sxwl-glass-orange: rgba(222, 95, 14, 0.16);
+$sxwl-glass-orange-strong: rgba(222, 95, 14, 0.32);
 $sxwl-glass-border: rgba(255, 255, 255, 0.65);
 $sxwl-glass-blur: 22px;
 

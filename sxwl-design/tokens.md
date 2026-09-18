@@ -1,16 +1,16 @@
 # sxwl Design Tokens 速查表
 
-> 🎨 御权 RBAC 权限管理平台 - 设计令牌快速参考
+> 🎨 御权 RBAC 权限管理平台 - 设计令牌快速参考 (暖橙色 #DE5F0E 品牌规范)
 
 ---
 
 ## 🔴 品牌色（Primary）
 
 ```scss
-$sxwl-color-primary:       #1677FF;  // 主按钮、链接
-$sxwl-color-primary-hover: #3A8BFF;  // 悬停态
-$sxwl-color-primary-active:#0E5FD8;  // 点击态
-$sxwl-color-primary-1:     #E8F1FF;  // 选中背景
+$sxwl-color-primary:       #DE5F0E;  // 主按钮、链接
+$sxwl-color-primary-hover: #E8752A;  // 悬停态
+$sxwl-color-primary-active:#B84D00;  // 点击态
+$sxwl-color-primary-1:     #FFF1E8;  // 选中背景
 ```
 
 ### 成功色（Success）
@@ -87,7 +87,7 @@ $sxwl-color-border-secondary: #F0F0F0;  // 表格行线
 $shadow-card: 0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
 $shadow-popup: 0 4px 12px rgba(16,24,40,.08), 0 2px 6px rgba(16,24,40,.05);
 $shadow-modal: 0 18px 44px rgba(16,24,40,.14), 0 6px 16px rgba(16,24,40,.10);
-$shadow-float: 0 24px 60px -20px rgba(22,60,130,.35);
+$shadow-float: 0 24px 60px -20px rgba(222,95,14,.35);
 ```
 
 ---
@@ -132,7 +132,7 @@ $sxwl-dur:       0.3s;   // 展开/收起
 ### 聚焦光晕
 
 ```scss
-$sxwl-focus-ring: 0 0 0 3px rgba(22, 119, 255, 0.12);
+$sxwl-focus-ring: 0 0 0 3px rgba(222, 95, 14, 0.12);
 ```
 
 ### 玻璃质感
@@ -140,8 +140,8 @@ $sxwl-focus-ring: 0 0 0 3px rgba(22, 119, 255, 0.12);
 ```scss
 $sxwl-glass-light:        rgba(255, 255, 255, 0.55);
 $sxwl-glass-light-strong: rgba(255, 255, 255, 0.72);
-$sxwl-glass-blue:         rgba(22, 119, 255, 0.16);
-$sxwl-glass-blue-strong:  rgba(22, 119, 255, 0.32);
+$sxwl-glass-blue:         rgba(222, 95, 14, 0.16);
+$sxwl-glass-blue-strong:  rgba(222, 95, 14, 0.32);
 $sxwl-glass-border:       rgba(255, 255, 255, 0.65);
 $sxwl-glass-blur:         22px;
 ```

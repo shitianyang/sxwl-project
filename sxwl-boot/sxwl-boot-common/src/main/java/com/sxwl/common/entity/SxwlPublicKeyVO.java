@@ -23,7 +23,6 @@ public class SxwlPublicKeyVO {
 
     public SxwlPublicKeyVO() {
     }
-
     public SxwlPublicKeyVO(String publicKey, String keyId, long expiresAt) {
         this.publicKey = publicKey;
         this.keyId = keyId;

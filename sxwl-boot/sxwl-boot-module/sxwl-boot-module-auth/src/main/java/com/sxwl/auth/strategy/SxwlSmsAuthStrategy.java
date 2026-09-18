@@ -1,6 +1,7 @@
 package com.sxwl.auth.strategy;
 
 import com.sxwl.auth.mapper.SysAuthUserMapper;
+import com.sxwl.common.constants.SxwlSystemConstants;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.redis.helper.SxwlRedisHelper;
 import com.sxwl.security.captcha.SxwlCaptchaValidator;
@@ -11,7 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 短信登录策略
@@ -28,9 +32,6 @@ public class SxwlSmsAuthStrategy implements SxwlAuthenticationStrategy {
 
     private static final Logger log = LoggerFactory.getLogger(SxwlSmsAuthStrategy.class);
 
-    /** 短信登录方式标识 */
-    public static final String LOGIN_TYPE_SMS = "sms";
-
     private final SysAuthUserMapper sysAuthUserMapper;
     private final SxwlCaptchaValidator captchaValidator;
     private final SxwlRedisHelper redisHelper;
@@ -39,11 +40,6 @@ public class SxwlSmsAuthStrategy implements SxwlAuthenticationStrategy {
         this.sysAuthUserMapper = sysAuthUserMapper;
         this.captchaValidator = captchaValidator;
         this.redisHelper = redisHelper;
-    }
-
-    @Override
-    public String getType() {
-        return LOGIN_TYPE_SMS;
     }
 
     /**
@@ -111,22 +107,99 @@ public class SxwlSmsAuthStrategy implements SxwlAuthenticationStrategy {
 
         // 6. 构建 SxwlLoginUser
         Long userId = ((Number) userInfo.get("id")).longValue();
-        String username = userInfo.get("username").toString();
-        String nickname = userInfo.getOrDefault("nickname", username).toString();
-        String createOrg = userInfo.get("create_org") != null ? userInfo.get("create_org").toString() : null;
+        String username = (String) userInfo.get("username");
+        String nickname = (String) userInfo.getOrDefault("nickname", username);
+        Long createOrg = userInfo.get("create_org") != null
+                ? ((Number) userInfo.get("create_org")).longValue() : null;
 
         SxwlLoginUser loginUser = new SxwlLoginUser();
         loginUser.setUserId(userId);
         loginUser.setUsername(username);
-        loginUser.setNickname(nickname);
-        loginUser.setClientType("admin");
-        loginUser.setDeviceId(request.getDeviceId());
-        // TODO: 角色和权限数据需要后续加载
-        loginUser.setRoles(java.util.Collections.emptyList());
-        loginUser.setPermissions(java.util.Collections.emptySet());
-        loginUser.setDataScope(createOrg); // 暂时用组织代替数据权限
+        loginUser.setNickname(nickname != null ? nickname : username);
+        loginUser.setStatus(1);
+        loginUser.setCreateOrg(createOrg);
+
+        // 7. 填充授权信息（roles / perms / dataScope）
+        fillAuthorization(loginUser);
 
         log.info("短信登录成功: userId={}, phone={}", userId, phone);
         return loginUser;
+    }
+
+    /**
+     * 填充用户授权信息（roles、perms、dataScope）
+     * <p>
+     * 与 {@link SxwlPasswordAuthStrategy#fillAuthorization} 逻辑一致，抽取为公共方法。
+     * </p>
+     *
+     * @param loginUser 登录用户对象
+     */
+    private void fillAuthorization(SxwlLoginUser loginUser) {
+        List<Map<String, Object>> roleRows = sysAuthUserMapper.selectRolesByUserId(loginUser.getUserId());
+
+        Set<String> roles = new HashSet<>();
+        Set<Long> scopedOrgIds = new HashSet<>();
+        boolean allData = false;
+        Integer strongestScope = null;
+
+        for (Map<String, Object> row : roleRows) {
+            String roleCode = (String) row.get("role_code");
+            if (roleCode != null && !roleCode.isBlank()) {
+                roles.add(roleCode);
+            }
+
+            Long roleId = toLong(row.get("id"));
+            Integer dataScope = toInteger(row.get("data_scope"));
+            if (dataScope == null) {
+                continue;
+            }
+            boolean isProtectedSuperAdmin = SxwlSystemConstants.ADMIN_USERNAME.equals(loginUser.getUsername())
+                    && SxwlSystemConstants.ADMIN_ROLE_CODE.equals(roleCode);
+            if (dataScope == 1 && !isProtectedSuperAdmin) {
+                continue;
+            }
+            strongestScope = strongestScope == null ? dataScope : Math.min(strongestScope, dataScope);
+
+            if (dataScope == 1) {
+                allData = true;
+                break;
+            }
+            if (dataScope == 2) {
+                addIfNotNull(scopedOrgIds, loginUser.getCreateOrg());
+            } else if (dataScope == 3) {
+                addIfNotNull(scopedOrgIds, loginUser.getCreateOrg());
+                if (loginUser.getCreateOrg() != null) {
+                    scopedOrgIds.addAll(sysAuthUserMapper.selectSelfAndChildOrgIds(loginUser.getCreateOrg()));
+                }
+            } else if (dataScope == 4) {
+                loginUser.setDataScopeSelf(true);
+            } else if (dataScope == 5 && roleId != null) {
+                scopedOrgIds.addAll(sysAuthUserMapper.selectCustomDataScopeOrgIds(roleId));
+            }
+        }
+
+        Set<String> perms = new HashSet<>(sysAuthUserMapper.selectPermissionsByUserId(loginUser.getUserId()));
+        if (allData) {
+            perms.add("*:*:*");
+        }
+
+        loginUser.setRoles(roles);
+        loginUser.setPerms(perms);
+        loginUser.setDataScope(allData ? 1 : (strongestScope != null ? strongestScope : 0));
+        loginUser.setDataScopeOrgIds(allData ? null : scopedOrgIds);
+    }
+
+    private void addIfNotNull(Set<Long> values, Long value) {
+        if (value != null) {
+            values.add(value);
+        }
+    }
+
+    private Long toLong(Object value) {
+        return value instanceof Number ? ((Number) value).longValue() : null;
+    }
+
+    private Integer toInteger(Object value) {
+        return value instanceof Number ? ((Number) value).intValue() : null;
     }
 }

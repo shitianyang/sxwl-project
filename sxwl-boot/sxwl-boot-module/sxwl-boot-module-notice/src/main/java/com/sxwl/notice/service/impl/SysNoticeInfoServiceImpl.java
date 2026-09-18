@@ -117,11 +117,13 @@ public class SysNoticeInfoServiceImpl implements SysNoticeInfoService {
         }
         log.info("发布通知公告成功: id={}", id);
 
-        // SSE 推送：广播新公告给所有在线用户
+        // ✅ SSE 推送：查询刚发布的公告详情并广播给所有在线用户
         try {
-            List<SysNoticeUnreadItem> recentList = sysNoticeReadMapper.listRecentNotices(null, 1);
-            if (!recentList.isEmpty()) {
-                sseEmitterManager.sendToAll("new-notice", recentList.get(0));
+            SysNoticeDTO noticeDetail = sysNoticeInfoMapper.getPublishedNoticeById(id);
+            if (noticeDetail != null) {
+                // 转换为未读列表项格式（SSE 推送专用）
+                SysNoticeUnreadItem item = convertToUnreadItem(noticeDetail, null);
+                sseEmitterManager.sendToAll("new-notice", item);
             }
         } catch (Exception e) {
             log.warn("SSE 推送新公告失败: id={}", id, e);
@@ -172,5 +174,33 @@ public class SysNoticeInfoServiceImpl implements SysNoticeInfoService {
         entity.setPublishTime(dto.getPublishTime());
         entity.setExpireTime(dto.getExpireTime());
         return entity;
+    }
+
+    /**
+     * 将公告详情转换为未读列表项（用于 SSE 推送）
+     *
+     * @param noticeDetail 公告详情
+     * @param userId 用户 ID（如果提供，则查询已读状态）
+     * @return 未读列表项
+     */
+    private SysNoticeUnreadItem convertToUnreadItem(SysNoticeDTO noticeDetail, Long userId) {
+        SysNoticeUnreadItem item = new SysNoticeUnreadItem();
+        item.setId(noticeDetail.getId());
+        item.setTitle(noticeDetail.getTitle());
+        item.setNoticeType(noticeDetail.getNoticeType());
+        item.setLevel(noticeDetail.getLevel());
+        item.setPublishTime(noticeDetail.getPublishTime());
+        item.setCreateTime(noticeDetail.getCreateTime());
+        
+        // 如果提供了 userId，检查是否已读
+        if (userId != null) {
+            Long readCount = sysNoticeReadMapper.existsRead(noticeDetail.getId(), userId);
+            item.setReadFlag(readCount != null && readCount > 0 ? 1 : 0);
+        } else {
+            // SSE 推送时不传 userId，前端统一标记为未读
+            item.setReadFlag(0);
+        }
+        
+        return item;
     }
 }
