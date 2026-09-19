@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ColumnsType } from 'antd/es/table';
 import {
   SxwlIcon, SxwlTag,
-  SxwlSpace, SxwlPopconfirm, SxwlMessage, SxwlModal,
+  SxwlSpace, SxwlPopconfirm, SxwlMessage,
   SxwlPage, SxwlPermissionButton,
   type ToolbarButtonConfig,
 } from '@/components';
@@ -97,7 +97,7 @@ export default function BackupPage() {
       render: (status: number) =>
         status === 1 ? <SxwlTag color="green">正常</SxwlTag> : <SxwlTag color="red">异常</SxwlTag>,
     },
-    { title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 180 },
+    { title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 200 },
     {
       title: '操作', key: 'action', width: 200,
       render: (_, record) => (

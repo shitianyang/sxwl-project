@@ -83,3 +83,12 @@ export function formatFileSize(bytes: number): string {
 
   return `${size.toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
 }
+
+/**
+ * 百分比格式化
+ * @example formatPercent(12.34) // "12.3%"
+ */
+export function formatPercent(value: number | null | undefined): string {
+  if (value == null) return '-';
+  return `${value.toFixed(1)}%`;
+}

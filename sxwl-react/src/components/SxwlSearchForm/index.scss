@@ -1,54 +1,53 @@
 // ============================================
-// SxwlSearchForm — 搜索表单样式（sass, 规范 v2.0 · Pro 纯展示）
-// 所有业务页搜索区都通过 SxwlSearchForm 拼装，改此文件全局受益
-// 规范：纯白无装饰，4 列网格布局，无卡片包裹
+// SxwlSearchForm — 面板内筛选条
+// 字段名进 placeholder，一行摆满就换行；查询/重置贴右端。
 // ============================================
 
 @use "../../styles/variables" as *;
 @use "../../styles/mixins" as *;
 
-.sxwl-search-form-wrapper {
-  position: relative;
-  margin-bottom: 16px;
-  padding: 0;                               // 无内边距（规范：纯展示）
-  background: transparent;                   // 透明背景（规范：无卡片）
-  border: none;                             // 无边框
-  box-shadow: none;                         // 无阴影
-  animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+.sxwl-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $sxwl-space-base;
 
-  // 搜索标签：次级文字
-  .ant-form-item-label > label {
-    color: $sxwl-color-text-secondary;
-    font-size: 13px;
-  }
-
-  .ant-select {
-    min-width: 140px;
-  }
-}
-
-.sxwl-search-form-inner {
-  display: grid;                            // Grid 布局（规范：4 列网格）
-  grid-template-columns: repeat(4, 1fr);    // 4 列等宽网格
-  gap: 16px;                                // 间距（8px 倍数体系）
-  align-items: start;
-
-  .ant-form-item {
+  .sxwl-filters__field {
+    width: 240px;
     margin-bottom: 0;
   }
 
-  .ant-form-item-label {
-    padding-right: 8px;
+  .sxwl-filters__range {
+    width: 320px;
   }
 
-  // 查询/重置按钮：右对齐，跨所有列
-  .ant-form-item:last-child {
-    grid-column: span 4;
-    text-align: right;
+  .sxwl-filters__spacer {
+    flex: 1 1 auto;
+  }
 
-    .ant-space {
-      width: 100%;
-      justify-content: flex-end;
-    }
+  .sxwl-filters__actions {
+    display: flex;
+    gap: $sxwl-space-sm;
+    margin-bottom: 0;
+  }
+
+  // 控件：32 高、8 圆角、常规描边（强描边 #D4D4D4 会让整条筛选栏看着像灰框堆叠），聚焦给品牌色光环
+  .ant-input-affix-wrapper,
+  .ant-select-selector,
+  .ant-picker {
+    border-color: $sxwl-color-border !important;
+    border-radius: $sxwl-radius-md !important;
+  }
+
+  .ant-input-affix-wrapper > .ant-input {
+    font-size: $sxwl-font-size-base;
+  }
+
+  .ant-input-affix-wrapper .anticon {
+    color: $sxwl-color-text-tertiary;
+  }
+
+  .ant-select {
+    font-size: $sxwl-font-size-base;
   }
 }

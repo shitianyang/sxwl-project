@@ -1,0 +1,68 @@
+// ============================================
+// SxwlCaptcha — 图形验证码（admin-dense：与输入框同高、同圆角、同描边）
+// ============================================
+
+@use "../../styles/variables" as *;
+
+.sxwl-captcha {
+  display: flex;
+  align-items: center;
+  gap: $sxwl-space-sm;
+}
+
+.sxwl-captcha__box {
+  flex-shrink: 0;
+  width: 104px;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  background: $sxwl-color-bg-container;
+  border: 1px solid $sxwl-color-border-strong;
+  border-radius: $sxwl-radius-sm;
+  transition: border-color $sxwl-mo-fast $sxwl-mo-easing-standard;
+
+  &:hover {
+    border-color: $sxwl-brand-action;
+  }
+
+  &:focus-visible {
+    border-color: $sxwl-brand-action;
+    box-shadow: $sxwl-fx-focus-ring;
+    outline: none;
+  }
+}
+
+.sxwl-captcha__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sxwl-captcha__fallback {
+  font-size: $sxwl-font-size-xs;
+  color: $sxwl-color-text-tertiary;
+}
+
+.sxwl-captcha__refresh {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: $sxwl-ctl-tap-min;
+  height: $sxwl-ctl-tap-min;
+  color: $sxwl-color-text-secondary;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  border-radius: $sxwl-radius-sm;
+
+  &:hover {
+    color: $sxwl-brand-text;
+    background: $sxwl-color-bg-hover;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $sxwl-brand-action;
+    outline-offset: 1px;
+  }
+}

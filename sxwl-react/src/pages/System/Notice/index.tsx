@@ -156,7 +156,7 @@ export default function NoticePage() {
         return <SxwlTag color="red">已撤回</SxwlTag>;
       },
     },
-    { title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 180 },
+    { title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 200 },
     {
       title: '操作', key: 'action', width: 280,
       render: (_, record) => (

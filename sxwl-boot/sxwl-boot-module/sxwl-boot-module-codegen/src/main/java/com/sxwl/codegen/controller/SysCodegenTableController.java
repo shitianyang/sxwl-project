@@ -38,7 +38,7 @@ public class SysCodegenTableController {
      * 分页查询已配置的表
      */
     @GetMapping("/page")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Codegen.TABLE_LIST + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Codegen.TABLE_LIST + "')")
     public SxwlResult<PageInfo<SysCodegenTableDTO>> page(SysCodegenTablePageParams params) {
         return SxwlResult.success(sysCodegenTableService.page(params));
     }
@@ -47,7 +47,7 @@ public class SysCodegenTableController {
      * 获取表详情（含字段列表）
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Codegen.TABLE_QUERY + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Codegen.TABLE_QUERY + "')")
     public SxwlResult<SysCodegenTableDTO> getDetail(@PathVariable Long id) {
         return SxwlResult.success(sysCodegenTableService.getDetail(id));
     }
@@ -58,7 +58,7 @@ public class SysCodegenTableController {
     @PostMapping
     @SxwlRepeatSubmit(interval = 5, message = "表配置创建中，请稍候")
     @SxwlLog(title = "代码生成", description = "新增表配置")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Codegen.TABLE_ADD + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Codegen.TABLE_ADD + "')")
     public SxwlResult<SysCodegenTableDTO> create(@RequestBody CodegenConfigDTO config) {
         return SxwlResult.success(sysCodegenTableService.create(config));
     }
@@ -69,7 +69,7 @@ public class SysCodegenTableController {
     @PutMapping("/{id}")
     @SxwlRepeatSubmit(interval = 5, message = "表配置修改中，请稍候")
     @SxwlLog(title = "代码生成", description = "编辑表配置")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Codegen.TABLE_EDIT + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Codegen.TABLE_EDIT + "')")
     public SxwlResult<Void> update(@PathVariable Long id, @RequestBody CodegenConfigDTO config) {
         sysCodegenTableService.update(id, config);
         return SxwlResult.success();
@@ -81,7 +81,7 @@ public class SysCodegenTableController {
     @DeleteMapping("/{id}")
     @SxwlRepeatSubmit(interval = 5, message = "表配置删除中，请稍候")
     @SxwlLog(title = "代码生成", description = "删除表配置")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Codegen.TABLE_DELETE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Codegen.TABLE_DELETE + "')")
     public SxwlResult<Void> delete(@PathVariable Long id) {
         sysCodegenTableService.delete(id);
         return SxwlResult.success();
@@ -93,7 +93,7 @@ public class SysCodegenTableController {
     @PutMapping("/{id}/fields")
     @SxwlRepeatSubmit(interval = 10, message = "字段配置保存中，请稍候")
     @SxwlLog(title = "代码生成", description = "编辑字段配置")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Codegen.TABLE_EDIT + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Codegen.TABLE_EDIT + "')")
     public SxwlResult<Void> saveFields(@PathVariable Long id, @RequestBody List<SysCodegenFieldDTO> fields) {
         sysCodegenTableService.saveFieldConfigs(id, fields);
         return SxwlResult.success();

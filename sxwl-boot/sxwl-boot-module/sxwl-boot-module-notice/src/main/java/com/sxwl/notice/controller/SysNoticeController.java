@@ -37,14 +37,14 @@ public class SysNoticeController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.NOTICE_QUERY + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.NOTICE_QUERY + "')")
     @SxwlLog(title = "通知公告", description = "查询公告详情[id=#{#id}]")
     public SysNoticeDTO getNoticeById(@PathVariable("id") Long id) {
         return sysNoticeInfoService.getNoticeById(id);
     }
 
     @GetMapping("/page")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.NOTICE_LIST + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.NOTICE_LIST + "')")
     @SxwlLog(title = "通知公告", description = "查询公告列表")
     public PageInfo<SysNoticeDTO> getNoticePageByParams(@Valid SysNoticePageParams params) {
         return sysNoticeInfoService.getNoticePageByParams(params);
@@ -52,7 +52,7 @@ public class SysNoticeController {
 
     @PostMapping
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.NOTICE_ADD + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.NOTICE_ADD + "')")
     @SxwlLog(title = "通知公告", description = "新增公告[#{#dto.title}]")
     public void createNotice(@Valid @RequestBody SysNoticeDTO dto) {
         sysNoticeInfoService.createNotice(dto);
@@ -60,7 +60,7 @@ public class SysNoticeController {
 
     @PutMapping
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.NOTICE_EDIT + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.NOTICE_EDIT + "')")
     @SxwlLog(title = "通知公告", description = "修改公告[#{#dto.id}]")
     public void updateNotice(@Valid @RequestBody SysNoticeDTO dto) {
         sysNoticeInfoService.updateNotice(dto);
@@ -68,7 +68,7 @@ public class SysNoticeController {
 
     @DeleteMapping("/{id}")
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.NOTICE_DELETE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.NOTICE_DELETE + "')")
     @SxwlLog(title = "通知公告", description = "删除公告[id=#{#id}]")
     public void deleteNoticeById(@PathVariable("id") Long id) {
         sysNoticeInfoService.deleteNoticeById(id);
@@ -76,7 +76,7 @@ public class SysNoticeController {
 
     @PutMapping("/publish/{id}")
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.NOTICE_PUBLISH + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.NOTICE_PUBLISH + "')")
     @SxwlLog(title = "通知公告", description = "发布公告[id=#{#id}]")
     public void publishNotice(@PathVariable("id") Long id) {
         sysNoticeInfoService.publishNotice(id);
@@ -84,7 +84,7 @@ public class SysNoticeController {
 
     @PutMapping("/revoke/{id}")
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.NOTICE_REVOKE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.NOTICE_REVOKE + "')")
     @SxwlLog(title = "通知公告", description = "撤回公告[id=#{#id}]")
     public void revokeNotice(@PathVariable("id") Long id) {
         sysNoticeInfoService.revokeNotice(id);

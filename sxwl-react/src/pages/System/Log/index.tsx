@@ -176,7 +176,7 @@ export default function LogPage() {
     {
       title: '创建时间',
       dataIndex: 'createTime',
-      width: 180,
+      width: 200,
       sorter: true,
     },
   ];

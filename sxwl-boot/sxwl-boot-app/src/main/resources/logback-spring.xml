@@ -108,7 +108,9 @@
     <!-- ==================== 测试环境配置 ==================== -->
     <springProfile name="test">
         <!-- 项目代码：DEBUG（详细日志，便于测试追踪） -->
+        <!-- 注意：additivity=false 会阻断向 root 传递，故必须显式绑定 CONSOLE，否则 com.sxwl 日志不进控制台 -->
         <logger name="com.sxwl" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE_ALL"/>
             <appender-ref ref="FILE_ERROR"/>
             <appender-ref ref="FILE_WARN"/>

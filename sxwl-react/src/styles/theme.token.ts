@@ -1,46 +1,128 @@
 // ============================================
-// sxwl-react 自定义品牌 Token
-// 对齐 docs/UI设计规范.md v2.0（Web 端 · Pro 骨架 + 品牌暖橙 #DE5F0E）
-// 仅保留被实际引用的字段（App.tsx ConfigProvider 使用），已按"无冗余"原则清理
-// 自定义样式层变量见 variables.scss（编译期），两处值必须保持一致
+// antd v6 主题：数值与 tokens.scss 同源，改颜色时两边一起改
+// 主色 #DE5F0E 固定（品牌锁死）。但它只用于图标/装饰/焦点环/图表主色：白字压在上面只有 3.65:1，14px 文字不过 WCAG AA。实色按钮底走 action=#C5530A（4.55:1），品牌色文字走 text=#A84709（5.88:1）。
 // ============================================
+import type { ThemeConfig } from 'antd';
 
-export const SXWL_TOKENS = {
-  /** 文字色：正文（规范中性阶 1） */
-  colorText: '#1F2329',
-  /** 文字色：次级（规范中性阶 2） */
-  colorTextSecondary: '#4E5969',
-  /** 文字色：弱化（规范中性阶 3） */
-  colorTextTertiary: '#86909C',
-  /** 文字色：禁用/占位（规范中性阶 4） */
-  colorTextDisabled: '#C9CDD4',
-
-  /** 背景色：页面（Pro 浅灰底 #F0F2F5） */
-  colorBgLayout: '#F0F2F5',
-  /** 背景色：容器 */
-  colorBgContainer: '#ffffff',
-
-  /** 边框色：次级（表格内分割） */
-  colorBorderSecondary: '#F0F0F0',
-  /** 边框色：常规控件 */
-  colorBorder: '#E5E6EB',
-
-  /** 圆角：按钮/小元素 */
-  borderRadiusSM: 6,
-  /** 圆角：输入框/表格 */
-  borderRadius: 8,
-  /** 圆角：卡片/弹窗 */
-  borderRadiusLG: 12,
-  /** 圆角：超大容器（Modal） */
-  borderRadiusXL: 16,
-
-  /** 阴影：L1 卡片常驻 */
-  shadowCard: '0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06)',
-  /** 阴影：L2 悬浮 */
-  shadowPopup: '0 4px 12px rgba(16,24,40,.08), 0 2px 6px rgba(16,24,40,.05)',
-
-  /** 品牌色 hover（暖橙色 400 亮） */
-  colorPrimaryHover: '#E8752A',
-  /** 品牌色 active（暖橙色 700 深） */
-  colorPrimaryActive: '#B84D00',
+/** 给 JS 侧用的尺寸：组件里算高度时用这个，不要把 px 再硬写一遍 */
+export const SXWL_LAYOUT = {
+  headerHeight: 56,
+  sidebarWidth: 224,
+  sidebarCollapsedWidth: 56,
+  contentPadding: 24,
+  tableRow: 44,
+  controlHeight: 32,
 } as const;
+
+/** 给 JS 侧用的颜色：图表 / canvas / SVG paint 用，禁止在 tsx 里再写十六进制 */
+export const SXWL_COLOR = {
+  brand500: '#DE5F0E',
+  brandAction: '#C5530A',
+  brandText: '#A84709',
+  brandSubtle: '#FFF7ED',
+  brandSelected: '#FDE8D5',
+  brandBorder: '#F9C7A3',
+  textHeading: '#171717',
+  textBody: '#404040',
+  textSecondary: '#525252',
+  textTertiary: '#737373',
+  textInverse: '#FFFFFF',
+  bgContainer: '#FFFFFF',
+  bgSubtle: '#F5F5F5',
+  bgPage: '#FAFAFA',
+  border: '#E8E8E8',
+  borderStrong: '#D4D4D4',
+  divider: '#E8E8E8',
+  success: '#059669',
+  successText: '#047857',
+  successSubtle: '#ECFDF5',
+  warning: '#D97706',
+  warningText: '#B45309',
+  warningSubtle: '#FFFBEB',
+  danger: '#DC2626',
+  dangerText: '#B91C1C',
+  dangerSubtle: '#FEF2F2',
+  chartSeries: ['#DE5F0E', '#F4A572', '#A3A3A3', '#525252', '#E8E8E8'],
+  chartGrid: '#E8E8E8',
+  chartAxisText: '#525252',
+} as const;
+
+export const SXWL_ANTD_THEME: ThemeConfig = {
+  token: {
+    colorPrimary: '#C5530A',
+    colorPrimaryHover: '#A84709',
+    colorPrimaryActive: '#8A3A07',
+    colorLink: '#A84709',
+    colorLinkHover: '#C5530A',
+    colorText: '#404040',
+    colorTextSecondary: '#525252',
+    colorTextTertiary: '#737373',
+    colorTextQuaternary: '#A3A3A3',
+    colorTextPlaceholder: '#737373',
+    colorBgLayout: '#FAFAFA',
+    colorBgContainer: '#FFFFFF',
+    colorBgElevated: '#FFFFFF',
+    colorFillAlter: '#F5F5F5',
+    controlItemBgHover: '#F5F5F5',
+    controlItemBgActive: '#FDE8D5',
+    colorBorder: '#E8E8E8',
+    colorBorderSecondary: '#E8E8E8',
+    colorSuccess: '#059669',
+    colorSuccessText: '#047857',
+    colorSuccessBg: '#ECFDF5',
+    colorWarning: '#D97706',
+    colorWarningText: '#B45309',
+    colorWarningBg: '#FFFBEB',
+    colorError: '#DC2626',
+    colorErrorText: '#B91C1C',
+    colorErrorBg: '#FEF2F2',
+    colorInfo: '#2563EB',
+    colorInfoText: '#1D4ED8',
+    colorInfoBg: '#EFF6FF',
+    fontFamily: "'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.5715,
+    borderRadius: 6,
+    borderRadiusSM: 4,
+    borderRadiusLG: 8,
+    controlHeight: 32,
+    controlHeightSM: 24,
+    controlHeightLG: 40,
+    boxShadowSecondary: '0 4px 12px rgba(15, 15, 15, 0.08), 0 2px 4px rgba(15, 15, 15, 0.04)',
+  },
+  components: {
+    Button: { fontWeight: 500, primaryShadow: 'none', defaultShadow: 'none' },
+    Card: { borderRadiusLG: 12, boxShadowTertiary: 'none' },
+    Table: {
+      // 表头不铺灰底：靠字重 + 一条底线分层。颜色一律走这里，不要再在 scss 里覆写 .ant-table
+      headerBg: '#FFFFFF',
+      headerColor: '#404040',
+      headerSplitColor: 'transparent',
+      rowHoverBg: '#FAFAFA',
+      rowSelectedBg: '#FFF7ED',
+      rowSelectedHoverBg: '#FFF7ED',
+      borderColor: '#F0F0F0',
+      cellPaddingBlock: 0,
+      // 16 而不是 24：列宽当初是按 12 内边距调的，抬到 24 会把 180 的时间列挤到折行
+      cellPaddingInline: 16,
+    },
+    Layout: {
+      headerHeight: 56,
+      headerPadding: '0 24px',
+      headerBg: '#FFFFFF',
+      siderBg: '#FFFFFF',
+      bodyBg: '#FAFAFA',
+    },
+    Menu: {
+      itemHeight: 32,
+      itemBorderRadius: 6,
+      itemSelectedBg: '#FDE8D5',
+      itemSelectedColor: '#A84709',
+      subMenuItemBg: 'transparent',
+      iconSize: 16,
+    },
+    Modal: { borderRadiusLG: 12, boxShadow: '0 12px 32px rgba(15, 15, 15, 0.10), 0 4px 8px rgba(15, 15, 15, 0.04)' },
+    Tabs: { horizontalItemPadding: '12px 16px' },
+    Tag: { borderRadiusSM: 6 },
+  },
+};

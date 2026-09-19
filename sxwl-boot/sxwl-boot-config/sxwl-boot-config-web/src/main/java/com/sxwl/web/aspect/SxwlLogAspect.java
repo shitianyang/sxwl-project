@@ -269,19 +269,16 @@ public class SxwlLogAspect {
      * 采集当前用户信息
      */
     private void collectUserInfo(SxwlOperationLogEvent event) {
+        // userId / userName 统一从 SxwlPrincipal 获取。
+        // 注意：不能用 Authentication.getName()——principal（SxwlLoginUser）不是 UserDetails，
+        // 会回退到 String.valueOf(principal)，导致 user_name 存入对象地址垃圾串。
         SxwlPrincipalUtils.getCurrentPrincipal().ifPresent(principal -> {
             event.userId(principal.getUserId());
-        });
-        // userName 从 Authentication.getName() 获取
-        try {
-            var auth = org.springframework.security.core.context.SecurityContextHolder
-                    .getContext().getAuthentication();
-            if (auth != null && auth.getName() != null && !"anonymousUser".equals(auth.getName())) {
-                event.userName(auth.getName());
+            String username = principal.getUsername();
+            if (username != null && !username.isBlank()) {
+                event.userName(username);
             }
-        } catch (Exception ignored) {
-            // 无 SecurityContext 时跳过
-        }
+        });
     }
 
     /**

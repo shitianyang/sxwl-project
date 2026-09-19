@@ -147,7 +147,7 @@ export default function CachePage() {
             dataSource={keys}
             loading={keysLoading}
             breadcrumb={['监控运维', '缓存管理']}
-            scroll={{ x: 800, y: 'calc(100vh - 480px)' }}
+            scroll={{ x: 800 }}
             toolbarButtons={toolbarButtons}
           />
         </div>

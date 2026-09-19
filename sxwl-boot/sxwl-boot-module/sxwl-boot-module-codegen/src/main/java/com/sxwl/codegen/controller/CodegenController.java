@@ -37,7 +37,7 @@ public class CodegenController {
      */
     @PostMapping("/generate/{tableId}")
     @SxwlLog(title = "代码生成", description = "生成代码")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Codegen.CODEGEN_GENERATE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Codegen.CODEGEN_GENERATE + "')")
     public ResponseEntity<byte[]> generate(@PathVariable Long tableId) {
         byte[] zipBytes = codegenService.generateCode(tableId);
 
@@ -53,7 +53,7 @@ public class CodegenController {
      * 预览将生成的文件列表
      */
     @GetMapping("/preview/{tableId}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Codegen.CODEGEN_PREVIEW + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Codegen.CODEGEN_PREVIEW + "')")
     public SxwlResult<List<CodegenPreviewDTO>> preview(@PathVariable Long tableId) {
         return SxwlResult.success(codegenService.preview(tableId));
     }

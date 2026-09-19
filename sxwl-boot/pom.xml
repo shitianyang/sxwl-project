@@ -151,6 +151,11 @@
                 <artifactId>sxwl-boot-module-backup</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.sxwl</groupId>
+                <artifactId>sxwl-boot-module-sse</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- ==================== 自有配置类模块 ==================== -->
             <dependency>
                 <groupId>com.sxwl</groupId>

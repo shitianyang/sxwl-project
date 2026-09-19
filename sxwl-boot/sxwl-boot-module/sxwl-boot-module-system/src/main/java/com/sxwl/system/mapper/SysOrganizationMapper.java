@@ -45,6 +45,17 @@ public interface SysOrganizationMapper {
     int countChildrenByParentId(@Param("parentId") Long parentId);
 
     /**
+     * 统计引用该组织的用户数（主组织 create_org 或 用户-组织关联，去重）
+     * <p>
+     * SQL 实现：resources/mappers/SysOrganizationMapper.xml#countUsersByOrgId
+     * </p>
+     *
+     * @param orgId 组织 ID
+     * @return 引用该组织的有效用户数
+     */
+    int countUsersByOrgId(@Param("orgId") Long orgId);
+
+    /**
      * 校验组织编码是否唯一（排除指定 ID）
      *
      * @param orgCode   组织编码

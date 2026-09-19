@@ -40,6 +40,8 @@ public class LoginFailLogEventListener {
         try {
             // ✅ 尝试查询目标用户的真实 userId（如果用户存在于系统中）
             Long targetUserId = sysLogMapper.getUserIdByAccount(event.getTargetAccount());
+            // ✅ 目标用户所属组织：用于 create_org 落库，使该组织的管理员可见失败记录
+            Long targetOrgId = sysLogMapper.getOrgIdByAccount(event.getTargetAccount());
 
             SysLog entity = new SysLog();
             entity.setLogType(1);
@@ -48,7 +50,9 @@ public class LoginFailLogEventListener {
             entity.setOperateIp(event.getIp());
             entity.setUserName(event.getTargetAccount());
             entity.setUserId(targetUserId);  // ✅ 设置真实 userId（可能为 null，表示该账号不存在）
-            entity.setCreateBy(targetUserId); // ✅ 同步 setCreateBy
+            // create_by / create_org 非空约束兜底：账号不存在时记 0（仅全数据范围可见）
+            entity.setCreateBy(targetUserId != null ? targetUserId : 0L);
+            entity.setCreateOrg(targetOrgId != null ? targetOrgId : 0L);
             entity.setErrorMsg(event.getFailReason());
             entity.setStatus(0);
             entity.setExecuteTime(0L);

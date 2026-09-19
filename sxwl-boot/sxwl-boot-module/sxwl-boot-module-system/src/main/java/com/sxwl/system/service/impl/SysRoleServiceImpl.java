@@ -8,6 +8,7 @@ import com.sxwl.system.mapper.SysRoleMapper;
 import com.sxwl.system.model.dto.SysRoleDTO;
 import com.sxwl.system.model.entity.SysRole;
 import com.sxwl.system.model.params.SysRolePageParams;
+import com.sxwl.system.service.SxwlAuthCacheService;
 import com.sxwl.system.service.SysRoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +36,13 @@ public class SysRoleServiceImpl implements SysRoleService {
     /** SysRole Mapper */
     private final SysRoleMapper sysRoleMapper;
 
-    public SysRoleServiceImpl(SysRoleMapper sysRoleMapper) {
+    /** 登录权限快照失效服务（角色变更后让在线用户无感拿到新权限） */
+    private final SxwlAuthCacheService sxwlAuthCacheService;
+
+    public SysRoleServiceImpl(SysRoleMapper sysRoleMapper,
+                              SxwlAuthCacheService sxwlAuthCacheService) {
         this.sysRoleMapper = sysRoleMapper;
+        this.sxwlAuthCacheService = sxwlAuthCacheService;
     }
 
     // ==================== CRUD ====================
@@ -141,6 +147,8 @@ public class SysRoleServiceImpl implements SysRoleService {
         if (result == 0) {
             throw new SxwlBusinessException(10004, "角色不存在或已被删除");
         }
+        // 数据范围可能变更，清除该角色下所有用户的登录权限快照
+        sxwlAuthCacheService.evictUsersAuthCacheByRoleId(dto.getId());
         log.info("修改角色成功: id={}", dto.getId());
         return result;
     }
@@ -165,6 +173,8 @@ public class SysRoleServiceImpl implements SysRoleService {
         if (affected == 0) {
             throw new SxwlBusinessException(10004, "角色不存在或已被删除");
         }
+        // 角色已删除，清除原关联用户的登录权限快照
+        sxwlAuthCacheService.evictUsersAuthCacheByRoleId(id);
         log.info("删除角色成功: id={}", id);
         return affected;
     }
@@ -189,6 +199,8 @@ public class SysRoleServiceImpl implements SysRoleService {
             List<Long> ids = menuIds.stream().map(m -> SxwlSnowFlakeUtils.nextId()).collect(Collectors.toList());
             sysRoleMapper.batchInsertRoleMenus(roleId, menuIds, ids, 0L, 0L, new Date());
         }
+        // 菜单（按钮权限）分配变更，清除该角色下所有用户的登录权限快照
+        sxwlAuthCacheService.evictUsersAuthCacheByRoleId(roleId);
         log.info("保存角色菜单分配成功: roleId={}, menuCount={}", roleId, menuIds != null ? menuIds.size() : 0);
     }
 
@@ -223,6 +235,8 @@ public class SysRoleServiceImpl implements SysRoleService {
             List<Long> ids = orgIds.stream().map(m -> SxwlSnowFlakeUtils.nextId()).collect(Collectors.toList());
             sysRoleMapper.batchInsertRoleDataScope(roleId, orgIds, ids, 0L, 0L, new Date());
         }
+        // 自定义数据权限组织变更，清除该角色下所有用户的登录权限快照
+        sxwlAuthCacheService.evictUsersAuthCacheByRoleId(roleId);
         log.info("保存角色数据权限成功: roleId={}, orgCount={}", roleId, orgIds != null ? orgIds.size() : 0);
     }
 

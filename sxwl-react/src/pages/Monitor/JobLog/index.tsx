@@ -96,7 +96,7 @@ export default function JobLogPage() {
       title: '耗时', dataIndex: 'executeTime', key: 'executeTime', width: 80,
       render: (val: number) => (val != null ? `${val}ms` : '-'),
     },
-    { title: '执行时间', dataIndex: 'createTime', key: 'createTime', width: 180 },
+    { title: '执行时间', dataIndex: 'createTime', key: 'createTime', width: 200 },
     {
       title: '操作', key: 'action', width: 180,
       render: (_, record) => (

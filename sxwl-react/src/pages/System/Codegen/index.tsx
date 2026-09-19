@@ -165,7 +165,7 @@ export default function CodegenPage() {
       render: (status: number) =>
         status === 1 ? <SxwlTag color="green">启用</SxwlTag> : <SxwlTag color="red">禁用</SxwlTag>,
     },
-    { title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 180 },
+    { title: '创建时间', dataIndex: 'createTime', key: 'createTime', width: 200 },
     {
       title: '操作', key: 'action', width: 360,
       render: (_, record) => (

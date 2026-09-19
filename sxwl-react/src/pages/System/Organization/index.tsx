@@ -180,8 +180,8 @@ export default function OrganizationPage() {
     { name: 'orgName', label: '组织名称', type: 'input', required: true, maxLength: 64, placeholder: '请输入组织名称' },
     { name: 'orgCode', label: '组织编码', type: 'input', required: true, maxLength: 4, placeholder: '请输入组织编码，如：DEPT' },
     {
-      name: 'parentId', label: '上级组织', type: 'select', placeholder: '请选择上级组织',
-      options: flatTree.map(n => ({ value: n.key as number, label: n.title as string })),
+      name: 'parentId', label: '上级组织', type: 'treeSelect', placeholder: '请选择上级组织',
+      treeData: flatTree, fieldNames: { label: 'title', value: 'value', children: 'children' },
     },
     {
       name: 'orgLevel', label: '组织层级', type: 'select', required: true, initialValue: 2,

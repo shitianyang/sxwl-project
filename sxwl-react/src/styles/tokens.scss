@@ -1,0 +1,196 @@
+// ============================================
+// 设计 token —— 全项目颜色/间距/字号/圆角的唯一数值源，改这里即可
+// 主色 #DE5F0E 固定（品牌锁死）。但它只用于图标/装饰/焦点环/图表主色：白字压在上面只有 3.65:1，14px 文字不过 WCAG AA。实色按钮底走 action=#C5530A（4.55:1），品牌色文字走 text=#A84709（5.88:1）。
+// ============================================
+
+
+// -------- color --------
+$sxwl-brand-50: #FFF7ED;
+$sxwl-brand-100: #FDE8D5;
+$sxwl-brand-200: #F9C7A3;
+$sxwl-brand-300: #F4A572;
+$sxwl-brand-400: #EC8B3F;
+$sxwl-brand-500: #DE5F0E;
+$sxwl-brand-600: #C5530A;
+$sxwl-brand-700: #A84709;
+$sxwl-brand-800: #8A3A07;
+$sxwl-brand-900: #703206;
+$sxwl-brand-action: #C5530A;
+$sxwl-brand-action-hover: #A84709;
+$sxwl-brand-text: #A84709;
+$sxwl-brand-subtle: #FFF7ED;
+$sxwl-brand-selected: #FDE8D5;
+$sxwl-brand-border: #F9C7A3;
+$sxwl-brand-ring: rgba(222, 95, 14, 0.16);
+$sxwl-gray-0: #FFFFFF;
+$sxwl-gray-50: #FAFAFA;
+$sxwl-gray-100: #F5F5F5;
+$sxwl-gray-200: #E8E8E8;
+$sxwl-gray-300: #D4D4D4;
+$sxwl-gray-400: #A3A3A3;
+$sxwl-gray-500: #737373;
+$sxwl-gray-600: #525252;
+$sxwl-gray-700: #404040;
+$sxwl-gray-800: #262626;
+$sxwl-gray-900: #171717;
+$sxwl-color-text-heading: #171717;
+$sxwl-color-text-body: #404040;
+$sxwl-color-text-secondary: #525252;
+$sxwl-color-text-tertiary: #737373;
+$sxwl-color-text-disabled: #A3A3A3;
+$sxwl-color-text-inverse: #FFFFFF;
+$sxwl-color-text-brand: #A84709;
+$sxwl-color-bg-page: #FAFAFA;
+$sxwl-color-bg-container: #FFFFFF;
+$sxwl-color-bg-subtle: #F5F5F5;
+$sxwl-color-bg-hover: #F5F5F5;
+$sxwl-color-bg-selected: #FDE8D5;
+$sxwl-color-border: #E8E8E8;
+$sxwl-color-border-strong: #D4D4D4;
+$sxwl-color-divider: #E8E8E8;
+$sxwl-color-placeholder: #737373;
+$sxwl-color-success: #059669;
+$sxwl-color-success-text: #047857;
+$sxwl-color-success-subtle: #ECFDF5;
+$sxwl-color-warning: #D97706;
+$sxwl-color-warning-text: #B45309;
+$sxwl-color-warning-subtle: #FFFBEB;
+$sxwl-color-danger: #DC2626;
+$sxwl-color-danger-text: #B91C1C;
+$sxwl-color-danger-subtle: #FEF2F2;
+$sxwl-color-info: #2563EB;
+$sxwl-color-info-text: #1D4ED8;
+$sxwl-color-info-subtle: #EFF6FF;
+$sxwl-chart-series-1: #DE5F0E;
+$sxwl-chart-series-2: #F4A572;
+$sxwl-chart-series-3: #A3A3A3;
+$sxwl-chart-series-4: #525252;
+$sxwl-chart-series-5: #E8E8E8;
+$sxwl-chart-grid: #E8E8E8;
+$sxwl-chart-axis-text: #525252;
+$sxwl-chart-max-slices: 5;
+
+// -------- typography --------
+$sxwl-font-family: 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+$sxwl-font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+$sxwl-font-size-xs: 12px;
+$sxwl-font-size-sm: 13px;
+$sxwl-font-size-base: 14px;
+$sxwl-font-size-md: 16px;
+$sxwl-font-size-lg: 18px;
+$sxwl-font-size-xl: 20px;
+$sxwl-font-size-2xl: 24px;
+$sxwl-font-size-3xl: 30px;
+$sxwl-font-size-4xl: 36px;
+$sxwl-font-weight-regular: 400;
+$sxwl-font-weight-medium: 500;
+$sxwl-font-weight-semibold: 600;
+$sxwl-font-weight-bold: 700;
+$sxwl-line-height-tight: 1.25;
+$sxwl-line-height-snug: 1.4;
+$sxwl-line-height-normal: 1.5715;
+$sxwl-line-height-relaxed: 1.7;
+
+// -------- space --------
+$sxwl-space-2xs: 2px;
+$sxwl-space-xs: 4px;
+$sxwl-space-sm: 8px;
+$sxwl-space-md: 12px;
+$sxwl-space-base: 16px;
+$sxwl-space-lg: 20px;
+$sxwl-space-xl: 24px;
+$sxwl-space-2xl: 32px;
+$sxwl-space-3xl: 40px;
+$sxwl-space-4xl: 48px;
+$sxwl-space-5xl: 64px;
+
+// -------- radius --------
+$sxwl-radius-xs: 4px;
+$sxwl-radius-sm: 6px;
+$sxwl-radius-md: 8px;
+$sxwl-radius-lg: 12px;
+$sxwl-radius-xl: 16px;
+$sxwl-radius-full: 999px;
+
+// -------- control --------
+$sxwl-ctl-height-sm: 32px;
+$sxwl-ctl-height-md: 40px;
+$sxwl-ctl-height-lg: 48px;
+$sxwl-ctl-table-row: 44px;
+$sxwl-ctl-table-row-relaxed: 52px;  // 行高宽松档：单元格里有胶囊/双行内容时用
+$sxwl-ctl-tap-min: 32px;
+$sxwl-ctl-icon-block-xs: 40px;
+$sxwl-ctl-icon-block-sm: 44px;
+$sxwl-ctl-icon-block-md: 48px;
+$sxwl-ctl-icon-block-lg: 64px;
+
+// -------- layout --------
+$sxwl-layout-header-height: 56px;
+$sxwl-layout-sidebar-width: 224px;
+$sxwl-layout-sidebar-collapsed-width: 56px;
+$sxwl-layout-content-padding: 24px;
+$sxwl-layout-page-max-width: 1440px;
+
+// -------- effect --------
+$sxwl-fx-focus-ring: 0 0 0 3px rgba(222, 95, 14, 0.16);
+$sxwl-fx-glass-light: rgba(255, 255, 255, 0.55);
+$sxwl-fx-glass-light-strong: rgba(255, 255, 255, 0.72);
+$sxwl-fx-glass-brand: rgba(222, 95, 14, 0.16);
+$sxwl-fx-glass-brand-strong: rgba(222, 95, 14, 0.32);
+$sxwl-fx-glass-border: rgba(255, 255, 255, 0.65);
+$sxwl-fx-glass-blur: 22px;
+
+// -------- shadow --------
+$sxwl-shadow-xs: 0 1px 2px rgba(15, 15, 15, 0.04);
+$sxwl-shadow-sm: 0 1px 3px rgba(15, 15, 15, 0.06), 0 1px 2px rgba(15, 15, 15, 0.04);
+$sxwl-shadow-md: 0 4px 12px rgba(15, 15, 15, 0.08), 0 2px 4px rgba(15, 15, 15, 0.04);
+$sxwl-shadow-lg: 0 12px 32px rgba(15, 15, 15, 0.10), 0 4px 8px rgba(15, 15, 15, 0.04);
+$sxwl-shadow-float: 0 24px 60px -20px rgba(222, 95, 14, 0.35);
+
+// -------- motion --------
+$sxwl-mo-fast: 120ms;
+$sxwl-mo-base: 200ms;
+$sxwl-mo-slow: 320ms;
+$sxwl-mo-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+$sxwl-mo-easing-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+
+// -------- 存量别名：旧 scss 仍在引用，迁移完成后删除本段 --------
+$sxwl-color-primary: #DE5F0E;  // 品牌装饰色（图标/渐变/焦点环），禁止当文字色
+$sxwl-color-primary-hover: #EC8B3F;  // 旧 hover 装饰档
+$sxwl-color-primary-active: #A84709;  // 旧 active 装饰档
+$sxwl-color-primary-1: #FDE8D5;  // 品牌浅底
+$sxwl-color-text: #171717;  // 正文（规范名 color-text-body）
+$sxwl-color-text-quaternary: #A3A3A3;  // 装饰性文字
+$sxwl-color-warm-1: #FFF7ED;  // 暖浅底
+$sxwl-color-warm-2: #F9C7A3;  // 暖边框
+$sxwl-gradient-brand: linear-gradient(135deg, #DE5F0E 0%, #A84709 100%);  // 品牌渐变
+$sxwl-bg-layout: #FAFAFA;  // 页面底（规范名 color-bg-page）
+$sxwl-color-border-secondary: #E8E8E8;  // 旧名 → 分割线（规范名 color-divider）
+$sxwl-radius: 8px;  // 规范名 radius-md
+$sxwl-space-1: 4px;  // 规范名 space-xs
+$sxwl-space-2: 8px;  // 规范名 space-sm
+$sxwl-space-3: 12px;  // 规范名 space-md
+$sxwl-space-4: 16px;  // 规范名 space-base
+$sxwl-space-5: 20px;  // 规范名 space-lg
+$sxwl-space-6: 24px;  // 规范名 space-xl
+$sxwl-space-8: 32px;  // 规范名 space-2xl
+$sxwl-space-10: 40px;  // 规范名 space-3xl
+$sxwl-space-12: 48px;  // 规范名 space-4xl
+$sxwl-shadow-card: 0 1px 3px rgba(15, 15, 15, 0.06), 0 1px 2px rgba(15, 15, 15, 0.04);  // 规范名 shadow-sm
+$sxwl-shadow-popup: 0 4px 12px rgba(15, 15, 15, 0.08), 0 2px 4px rgba(15, 15, 15, 0.04);  // 规范名 shadow-md
+$sxwl-shadow-modal: 0 12px 32px rgba(15, 15, 15, 0.10), 0 4px 8px rgba(15, 15, 15, 0.04);  // 规范名 shadow-lg
+$sxwl-focus-ring: 0 0 0 3px rgba(222, 95, 14, 0.16);  // 规范名 fx-focus-ring
+$sxwl-glass-light: rgba(255, 255, 255, 0.55);  // 规范名 fx-glass-light
+$sxwl-glass-light-strong: rgba(255, 255, 255, 0.72);  // 规范名 fx-glass-light-strong
+$sxwl-glass-orange: rgba(222, 95, 14, 0.16);  // 规范名 fx-glass-brand
+$sxwl-glass-orange-strong: rgba(222, 95, 14, 0.32);  // 规范名 fx-glass-brand-strong
+$sxwl-glass-border: rgba(255, 255, 255, 0.65);  // 规范名 fx-glass-border
+$sxwl-glass-blur: 22px;  // 规范名 fx-glass-blur
+$sxwl-font-size: 14px;  // 规范名 font-size-base
+$sxwl-font-size-heading-2: 24px;  // 规范名 font-size-2xl
+$sxwl-icon-block-xs: 40px;  // 规范名 ctl-icon-block-xs
+$sxwl-icon-block-sm: 44px;  // 规范名 ctl-icon-block-sm
+$sxwl-icon-block-md: 48px;  // 规范名 ctl-icon-block-md
+$sxwl-icon-block-lg: 64px;  // 规范名 ctl-icon-block-lg
+$sxwl-dur-fast: 120ms;  // 规范名 dur-fast
+$sxwl-dur: 200ms;  // 规范名 dur-base

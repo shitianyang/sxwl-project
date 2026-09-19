@@ -1,34 +1,35 @@
 // ============================================
-// SxwlFormModal — 表单弹窗样式（sass, 规范 v2.0）
-// 所有业务弹窗都通过 SxwlFormModal 拼装，改此文件全局受益
-// 弹窗框架（header/标题）品牌化在 global.scss 的 .ant-modal 统一处理
+// SxwlFormModal — 表单弹窗样式
+// 弹窗框架（header / 标题 / 分割线 / 底栏）已在 global.scss 的 .ant-modal 统一处理，
+// 焦点环由 theme.token.ts 的 colorPrimary 派生，这里不再重复覆盖。
 // ============================================
 
 @use "../../styles/variables" as *;
 @use "../../styles/mixins" as *;
 
 .sxwl-form-modal-form {
-  margin-top: 4px;
-
-  // vertical 布局下表单字段间距
+  // 字段纵向节奏：16px 一档，末项不留多余空白
   .ant-form-item {
-    margin-bottom: 18px;
+    margin-bottom: $sxwl-space-base;
   }
 
-  // 控件聚焦：品牌橙描边 + 聚焦光晕（规范 12 表单）
-  .ant-input:focus,
-  .ant-input-focused,
-  .ant-input-number-focused .ant-input-number-input,
-  .ant-select-focused .ant-select-selector,
-  .ant-picker-focused {
-    border-color: $sxwl-color-primary !important;
-    box-shadow: $sxwl-focus-ring !important;
+  .ant-form-item:last-child {
+    margin-bottom: 0;
   }
 
-  // 文本域聚焦同样
-  .ant-input-affix-wrapper-focused,
-  .ant-input-affix-wrapper:focus {
-    border-color: $sxwl-color-primary !important;
-    box-shadow: $sxwl-focus-ring !important;
+  // 标签比控件轻一档，让填写区成为视觉主体
+  .ant-form-item-label > label {
+    color: $sxwl-color-text-secondary;
+    font-size: $sxwl-font-size-sm;
+  }
+
+  .ant-form-item-label > label.ant-form-item-required::before {
+    color: $sxwl-color-danger;
+  }
+
+  // 说明文字（help / extra）
+  .ant-form-item-additional {
+    font-size: $sxwl-font-size-xs;
+    color: $sxwl-color-text-tertiary;
   }
 }

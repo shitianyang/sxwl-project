@@ -37,7 +37,7 @@ public class SysUserController {
      * @return 用户信息
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.USER_QUERY + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.USER_QUERY + "')")
     @SxwlLog(title = "用户管理", description = "查询用户详情[id=#{#id}]")
     public SysUserDTO getUserById(@PathVariable("id") Long id) {
         return sysUserService.getUserById(id);
@@ -50,7 +50,7 @@ public class SysUserController {
      * @return 分页用户列表
      */
     @GetMapping("/page")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.USER_LIST + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.USER_LIST + "')")
     @SxwlLog(title = "用户管理", description = "查询用户列表")
     public PageInfo<SysUserDTO> getUserPageByParams(@Valid SysUserPageParams params) {
         return sysUserService.getUserPageByParams(params);
@@ -64,7 +64,7 @@ public class SysUserController {
      */
     @PostMapping
     @SxwlRepeatSubmit(interval = 3, message = "用户创建中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.USER_ADD + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.USER_ADD + "')")
     @SxwlLog(title = "用户管理", description = "新增用户[#{#dto.username}]")
     public void createUser(@Valid @RequestBody SysUserDTO dto) {
         sysUserService.createUser(dto);
@@ -78,7 +78,7 @@ public class SysUserController {
      */
     @PutMapping
     @SxwlRepeatSubmit(interval = 3, message = "用户修改中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.USER_EDIT + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.USER_EDIT + "')")
     @SxwlLog(title = "用户管理", description = "修改用户[#{#dto.username}]")
     public void updateUser(@Valid @RequestBody SysUserDTO dto) {
         sysUserService.updateUser(dto);
@@ -92,7 +92,7 @@ public class SysUserController {
      */
     @DeleteMapping("/{id}")
     @SxwlRepeatSubmit(interval = 3, message = "用户删除中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.USER_DELETE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.USER_DELETE + "')")
     @SxwlLog(title = "用户管理", description = "删除用户[id=#{#id}]")
     public void deleteUserById(@PathVariable("id") Long id) {
         sysUserService.deleteUserById(id);
@@ -106,7 +106,7 @@ public class SysUserController {
      */
     @DeleteMapping("/batch")
     @SxwlRepeatSubmit(interval = 60, message = "批量删除用户中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.USER_DELETE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.USER_DELETE + "')")
     @SxwlLog(title = "用户管理", description = "批量删除用户[ids=#{#ids}]")
     public void batchDeleteByIds(@RequestBody List<Long> ids) {
         sysUserService.batchDeleteByIds(ids);

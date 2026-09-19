@@ -43,4 +43,12 @@ public interface SysLogMapper {
      * @return 用户 ID，如果用户不存在则返回 null
      */
     Long getUserIdByAccount(String account);
+
+    /**
+     * 根据用户账号查询所属组织 ID（用于登录失败日志的 create_org 落库）
+     *
+     * @param account 用户账号（用户名或手机号）
+     * @return 组织 ID，如果用户不存在则返回 null
+     */
+    Long getOrgIdByAccount(String account);
 }

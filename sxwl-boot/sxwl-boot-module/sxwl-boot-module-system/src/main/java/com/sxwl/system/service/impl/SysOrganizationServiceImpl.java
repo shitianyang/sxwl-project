@@ -161,11 +161,11 @@ public class SysOrganizationServiceImpl implements SysOrganizationService {
 
     /**
      * 删除组织（逻辑删除）
-     * <p>存在子组织则不允许删除。</p>
+     * <p>存在子组织或仍有用户归属（主组织/关联组织）则不允许删除。</p>
      *
      * @param id 组织 ID
      * @return 影响行数
-     * @throws SxwlBusinessException 存在子组织或组织不存在时抛出
+     * @throws SxwlBusinessException 存在子组织、存在归属用户或组织不存在时抛出
      */
     @Override
     public int deleteOrganizationById(Long id) {
@@ -173,6 +173,12 @@ public class SysOrganizationServiceImpl implements SysOrganizationService {
         int childCount = sysOrganizationMapper.countChildrenByParentId(id);
         if (childCount > 0) {
             throw new SxwlBusinessException(10001, "存在子组织，不允许删除");
+        }
+        // 检查是否仍有用户归属该组织（主组织 create_org 或用户-组织关联），
+        // 避免删除后数据权限锚点 create_org 悬空导致用户可见范围异常
+        int userCount = sysOrganizationMapper.countUsersByOrgId(id);
+        if (userCount > 0) {
+            throw new SxwlBusinessException(10001, "该组织下存在用户，不允许删除");
         }
 
         int affected = sysOrganizationMapper.deleteOrganizationById(id);

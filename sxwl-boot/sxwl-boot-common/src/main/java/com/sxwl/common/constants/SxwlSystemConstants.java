@@ -237,30 +237,30 @@ public final class SxwlSystemConstants {
     public static final int DATA_SCOPE_SELF_AND_SUB_ORG = 3;
 
     /**
-     * 数据权限范围：本部门和本部门下级组织数据
-     * <p>角色可以访问所属部门及其挂载的下级组织的数据</p>
+     * 数据权限范围：仅本人数据
+     * <p>角色只能访问自己创建的数据（create_by 隔离）</p>
      */
-    public static final int DATA_SCOPE_DEPT_AND_SUB_ORG = 4;
+    public static final int DATA_SCOPE_ONLY_SELF = 4;
 
     /**
-     * 数据权限范围：仅本人数据
-     * <p>角色只能访问自己创建的数据</p>
+     * 数据权限范围：自定义组织集合
+     * <p>角色可访问 sys_role_data_scope_info 中显式授权的组织数据</p>
      */
-    public static final int DATA_SCOPE_ONLY_SELF = 5;
+    public static final int DATA_SCOPE_CUSTOM = 5;
 
     // ==================== 用户状态常量 ====================
 
     /**
-     * 用户状态：正常
-     * <p>用户可以正常登录和使用系统</p>
+     * 用户状态：正常（启用）
+     * <p>用户可以正常登录和使用系统，与 DB 列注释保持一致：0=禁用 1=启用</p>
      */
-    public static final int USER_STATUS_NORMAL = 0;
+    public static final int USER_STATUS_NORMAL = 1;
 
     /**
      * 用户状态：禁用
      * <p>用户被管理员禁用，无法登录系统</p>
      */
-    public static final int USER_STATUS_DISABLED = 1;
+    public static final int USER_STATUS_DISABLED = 0;
 
     // ==================== 性别常量 ====================
 

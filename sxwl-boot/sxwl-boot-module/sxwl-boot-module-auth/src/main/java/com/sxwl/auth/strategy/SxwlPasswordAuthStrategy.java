@@ -2,7 +2,7 @@ package com.sxwl.auth.strategy;
 
 import com.sxwl.auth.crypto.SxwlPasswordDecryptor;
 import com.sxwl.auth.mapper.SysAuthUserMapper;
-import com.sxwl.common.constants.SxwlSystemConstants;
+import com.sxwl.auth.service.SxwlLoginUserLoader;
 import com.sxwl.common.exception.SxwlBusinessException;
 import com.sxwl.security.model.SxwlLoginRequest;
 import com.sxwl.security.model.SxwlLoginUser;
@@ -12,10 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * 密码登录策略
@@ -45,13 +42,16 @@ public class SxwlPasswordAuthStrategy implements SxwlAuthenticationStrategy {
     private final SysAuthUserMapper sysUserMapper;
     private final PasswordEncoder passwordEncoder;
     private final SxwlPasswordDecryptor passwordDecryptor;
+    private final SxwlLoginUserLoader loginUserLoader;
 
     public SxwlPasswordAuthStrategy(SysAuthUserMapper sysUserMapper,
                                     PasswordEncoder passwordEncoder,
-                                    SxwlPasswordDecryptor passwordDecryptor) {
+                                    SxwlPasswordDecryptor passwordDecryptor,
+                                    SxwlLoginUserLoader loginUserLoader) {
         this.sysUserMapper = sysUserMapper;
         this.passwordEncoder = passwordEncoder;
         this.passwordDecryptor = passwordDecryptor;
+        this.loginUserLoader = loginUserLoader;
     }
 
     @Override
@@ -98,7 +98,7 @@ public class SxwlPasswordAuthStrategy implements SxwlAuthenticationStrategy {
             throw new SxwlBusinessException(401, "用户名或密码错误");
         }
 
-        // 5. 构建 SxwlLoginUser（角色/权限/数据范围后续完善）
+        // 5. 构建 SxwlLoginUser（权限快照由加载器统一计算）
         Long userId = ((Number) userRow.get("id")).longValue();
         String nickname = (String) userRow.get("nickname");
         Long createOrg = userRow.get("create_org") != null
@@ -110,84 +110,10 @@ public class SxwlPasswordAuthStrategy implements SxwlAuthenticationStrategy {
         loginUser.setNickname(nickname != null ? nickname : username);
         loginUser.setStatus(status);
         loginUser.setCreateOrg(createOrg);
-        fillAuthorization(loginUser);
+        // 权限快照统一由加载器计算（与 /auth/refresh 重建链路共用同一实现）
+        loginUserLoader.applyAuthorization(loginUser);
 
         log.info("密码认证成功: userId={}, username={}", userId, username);
         return loginUser;
-    }
-
-    private void fillAuthorization(SxwlLoginUser loginUser) {
-        List<Map<String, Object>> roleRows = sysUserMapper.selectRolesByUserId(loginUser.getUserId());
-
-        Set<String> roles = new HashSet<>();
-        Set<Long> scopedOrgIds = new HashSet<>();
-        boolean allData = false;
-        Integer strongestScope = null;
-
-        for (Map<String, Object> row : roleRows) {
-            String roleCode = (String) row.get("role_code");
-            if (roleCode != null && !roleCode.isBlank()) {
-                roles.add(roleCode);
-            }
-
-            Long roleId = toLong(row.get("id"));
-            Integer dataScope = toInteger(row.get("data_scope"));
-            if (dataScope == null) {
-                continue;
-            }
-            boolean isProtectedSuperAdmin = SxwlSystemConstants.ADMIN_USERNAME.equals(loginUser.getUsername())
-                    && SxwlSystemConstants.ADMIN_ROLE_CODE.equals(roleCode);
-            if (dataScope == 1 && !isProtectedSuperAdmin) {
-                continue;
-            }
-            strongestScope = strongestScope == null ? dataScope : Math.min(strongestScope, dataScope);
-
-            if (dataScope == 1) {
-                allData = true;
-                break;
-            }
-            if (dataScope == 2) {
-                addIfNotNull(scopedOrgIds, loginUser.getCreateOrg());
-            } else if (dataScope == 3) {
-                addIfNotNull(scopedOrgIds, loginUser.getCreateOrg());
-                if (loginUser.getCreateOrg() != null) {
-                    scopedOrgIds.addAll(sysUserMapper.selectSelfAndChildOrgIds(loginUser.getCreateOrg()));
-                }
-            } else if (dataScope == 4) {
-                loginUser.setDataScopeSelf(true);
-            } else if (dataScope == 5 && roleId != null) {
-                scopedOrgIds.addAll(sysUserMapper.selectCustomDataScopeOrgIds(roleId));
-            }
-        }
-
-        Set<String> perms = new HashSet<>(sysUserMapper.selectPermissionsByUserId(loginUser.getUserId()));
-        if (allData) {
-            perms.add("*:*:*");
-        }
-
-        loginUser.setRoles(roles);
-        loginUser.setPerms(perms);
-        loginUser.setDataScope(allData ? 1 : (strongestScope != null ? strongestScope : 0));
-        loginUser.setDataScopeOrgIds(allData ? null : scopedOrgIds);
-    }
-
-    private void addIfNotNull(Set<Long> values, Long value) {
-        if (value != null) {
-            values.add(value);
-        }
-    }
-
-    private Long toLong(Object value) {
-        if (value instanceof Number number) {
-            return number.longValue();
-        }
-        return null;
-    }
-
-    private Integer toInteger(Object value) {
-        if (value instanceof Number number) {
-            return number.intValue();
-        }
-        return null;
     }
 }

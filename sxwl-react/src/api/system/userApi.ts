@@ -23,6 +23,12 @@ export interface UserItem {
   status: number;
   superAdmin: boolean;
   createTime: string;
+  /** 已分配角色 ID（详情回显） */
+  roleIds?: number[];
+  /** 已分配组织 ID（首个为主组织，详情回显） */
+  orgIds?: number[];
+  /** 已分配岗位 ID（详情回显） */
+  positionId?: number | null;
 }
 
 /** 用户查询参数 */
@@ -42,6 +48,12 @@ export interface UserForm {
   email: string;
   status: number;
   password?: string;
+  /** 分配角色 ID 列表 */
+  roleIds?: number[];
+  /** 分配组织 ID 列表（首个为主组织） */
+  orgIds?: number[];
+  /** 分配岗位 ID */
+  positionId?: number | null;
 }
 
 /** 查询用户列表 */

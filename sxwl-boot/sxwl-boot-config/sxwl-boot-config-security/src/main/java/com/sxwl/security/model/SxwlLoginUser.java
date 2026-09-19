@@ -54,7 +54,7 @@ import java.util.Set;
  *   <tr><td>username</td><td>数据库 user_info.user_name</td><td>登录账号，唯一索引</td></tr>
  *   <tr><td>nickname</td><td>数据库 user_info.nickname</td><td>显示名称，可为空</td></tr>
  *   <tr><td>createOrg</td><td>数据库 user_info.create_org</td><td>用户所属主组织</td></tr>
- *   <tr><td>dataScope</td><td>角色表的 data_scope 字段</td><td>1=全部 2=自定义 3=本部门 4=本人 5=部门及以下</td></tr>
+ *   <tr><td>dataScope</td><td>角色表的 data_scope 字段</td><td>1=全部 2=本组织 3=本组织及下级 4=仅本人 5=自定义</td></tr>
  *   <tr><td>dataScopeOrgIds</td><td>登录时由 auth 模块计算</td><td>根据 dataScope 动态填充</td></tr>
  * </table>
  *

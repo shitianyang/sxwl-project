@@ -34,7 +34,7 @@ public class SysLogController {
      * @return 分页日志列表
      */
     @GetMapping("/page")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.LOG_VIEW + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.LOG_VIEW + "')")
     public PageInfo<SysLogDTO> getLogPageByParams(@Valid SysLogPageParams params) {
         return sysLogService.getLogPageByParams(params);
     }

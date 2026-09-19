@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.InitializingBean;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -136,16 +137,39 @@ public class SxwlRustfsAutoConfiguration {
 
     /**
      * 确保默认 Bucket 存在（启动后执行，RustFS 未就绪时仅 warn 不阻塞）
+     *
+     * <p>该方法在 {@code sxwlRustfsTemplate} Bean 初始化后自动触发。</p>
      */
     @Bean
-    public void ensureDefaultBucket(SxwlRustfsProperties properties) {
-        SxwlRustfsTemplate template = new SxwlRustfsTemplate(properties);
-        try {
-            template.createBucketIfNotExists(DEFAULT_BUCKET);
-            log.info("默认 Bucket 初始化成功: {}", DEFAULT_BUCKET);
-        } catch (Exception e) {
-            log.warn("默认 Bucket 初始化失败（RustFS 可能未启动）: bucket={}, error={}",
-                    DEFAULT_BUCKET, e.getMessage());
+    @ConditionalOnMissingBean
+    public DefaultBucketInitializer defaultBucketInitializer(SxwlRustfsProperties properties) {
+        return new DefaultBucketInitializer(properties, DEFAULT_BUCKET);
+    }
+
+    /**
+     * 默认 Bucket 初始化的辅助类
+     *
+     * <p>实现 {@link InitializingBean}，在 Spring Bean 初始化后执行 Bucket 检查创建。</p>
+     */
+    public static class DefaultBucketInitializer implements InitializingBean {
+        private final SxwlRustfsProperties properties;
+        private final String bucketName;
+
+        public DefaultBucketInitializer(SxwlRustfsProperties properties, String bucketName) {
+            this.properties = properties;
+            this.bucketName = bucketName;
+        }
+
+        @Override
+        public void afterPropertiesSet() throws Exception {
+            SxwlRustfsTemplate template = new SxwlRustfsTemplate(properties);
+            try {
+                template.createBucketIfNotExists(bucketName);
+                log.info("默认 Bucket 初始化成功: {}", bucketName);
+            } catch (Exception e) {
+                log.warn("默认 Bucket 初始化失败（RustFS 可能未启动）: bucket={}, error={}",
+                        bucketName, e.getMessage());
+            }
         }
     }
 }
