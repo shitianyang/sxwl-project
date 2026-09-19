@@ -1,8 +1,9 @@
 import { type JSX, useLayoutEffect } from 'react';
 import type { FormInstance } from 'antd/es/form';
-import { SxwlInput, SxwlSelect, SxwlModal, SxwlForm, SxwlMarkdownEditor,
+import { SxwlInput, SxwlSelect, SxwlTreeSelect, SxwlModal, SxwlForm, SxwlMarkdownEditor,
   SxwlRichTextEditor, SxwlRow, SxwlCol,
 } from '@/components';
+import type { SxwlTreeSelectProps } from '@/components';
 import type { FormFieldConfig } from '@/types/FormFieldConfig';
 import './index.scss';
 
@@ -146,13 +147,39 @@ function SxwlFormModal({
               <SxwlForm.Item
                 name={field.name}
                 label={field.label}
+                extra={field.extra}
                 rules={buildRules(field)}
                 initialValue={field.initialValue}
               >
                 {field.type === 'select' ? (
                   <SxwlSelect
-                    placeholder={field.placeholder ?? `请选择${field.label ?? field.name}`}
+                    placeholder={field.placeholder}
                     options={field.options}
+                    disabled={field.disabled}
+                    mode={field.mode}
+                    showSearch={field.showSearch}
+                    allowClear={field.allowClear}
+                    optionFilterProp="label"
+                    maxTagCount="responsive"
+                  />
+                ) : field.type === 'treeSelect' ? (
+                  <SxwlTreeSelect
+                    placeholder={field.placeholder}
+                    treeData={(field.treeData ?? []) as SxwlTreeSelectProps['treeData']}
+                    fieldNames={field.fieldNames ?? { label: 'label', value: 'id', children: 'children' }}
+                    multiple={field.multiple}
+                    disabled={field.disabled}
+                    showSearch
+                    treeNodeFilterProp={field.fieldNames?.label ?? 'label'}
+                    allowClear
+                    maxTagCount="responsive"
+                    treeDefaultExpandAll
+                  />
+                ) : field.type === 'password' ? (
+                  <SxwlInput
+                    type="password"
+                    placeholder={field.placeholder}
+                    maxLength={field.maxLength}
                     disabled={field.disabled}
                   />
                 ) : field.type === 'markdown' ? (
@@ -163,7 +190,7 @@ function SxwlFormModal({
                   />
                 ) : (
                   <SxwlInput
-                    placeholder={field.placeholder ?? `请输入${field.label ?? field.name}`}
+                    placeholder={field.placeholder}
                     maxLength={field.maxLength}
                     disabled={field.disabled}
                   />

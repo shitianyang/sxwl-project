@@ -126,19 +126,19 @@
   border-radius: 50%;
   vertical-align: middle;
   flex-shrink: 0;
-  transition: background $sxwl-dur;
+  transition: background $sxwl-mo-fast;
 
   &.connected {
-    background: #52c41a;
+    background: $sxwl-color-success;
   }
 
   &.connecting {
-    background: #faad14;
+    background: $sxwl-color-warning;
     animation: sxwl-sse-pulse 1s ease-in-out infinite;
   }
 
   &.disconnected {
-    background: #ff4d4f;
+    background: $sxwl-color-danger;
   }
 }
 

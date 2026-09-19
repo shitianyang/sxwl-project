@@ -1,90 +1,74 @@
 /**
  * ServerMonitor 服务器监控页面
- * 
+ *
  * <p>核心功能：实时监控 CPU、内存、磁盘、JVM、Redis、数据库连接池</p>
- * <p>设计规范：品牌色暖橙 #DE5F0E + Token 化设计 + Ant Design 6</p>
+ * <p>设计规范：admin-dense 面板（1px 描边 + 无阴影 + 2px 品牌标题条），配色全部取自 SXWL_COLOR</p>
  */
-import { SxwlCard, SxwlRow, SxwlCol, SxwlStatistic, SxwlTag, SxwlTable } from '@/components';
-import { Button } from 'antd';
-import ReloadOutlined from '@ant-design/icons';
+import { SxwlCard, SxwlRow, SxwlCol, SxwlStatistic, SxwlTable, SxwlButton, SxwlIcon, SxwlTag } from '@/components';
 import SxwlLineChart from '@/components/SxwlChart/SxwlLineChart';
 import SxwlChart from '@/components/SxwlChart';
+import { SXWL_COLOR } from '@/styles/theme.token';
 import { useMonitorSSE } from '@/hooks/useMonitorSSE';
+import { formatFileSize, formatPercent, formatRelativeTime } from '@/utils/formatUtils';
 import { useState, useCallback } from 'react';
 import './index.scss';
 
-/** 品牌主色（与 variables.scss $sxwl-color-primary 对齐） */
-const BRAND = '#DE5F0E';
-const BRAND_LIGHT = '#F0972D';
-/** 面积图填充/描边（替代原硬编码蓝 #1677ff33） */
-const AREA_STYLE = { fill: 'rgba(222, 95, 14, 0.16)', stroke: BRAND, fillOpacity: 1, lineWidth: 2 };
-/** 单系列折线品牌橙 */
-const LINE_STYLE = { stroke: BRAND, lineWidth: 2.5 };
-/** 多系列（堆内存已用/最大）橙系深浅，可区分且统一 */
-const DUAL_RANGE = [BRAND, BRAND_LIGHT];
+/** 图表高度：单值即可，窄屏由 SxwlCol 的 span 换行处理 */
+const CHART_HEIGHT = 240;
 
-/** 字节格式化 */
-function formatBytes(bytes: number | null | undefined): string {
-  if (bytes == null || bytes === 0) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + units[i];
+const SERIES_1 = SXWL_COLOR.chartSeries[0];
+const SERIES_2 = SXWL_COLOR.chartSeries[1];
+
+/** G2 的 fill 需要 rgba 字符串，透明度从品牌主色派生，避免再写一遍十六进制 */
+function withAlpha(hex: string, alpha: number): string {
+  const n = hex.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(n.slice(i, i + 2), 16));
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-/** 百分比格式化 */
-function formatPercent(value: number | null | undefined): string {
-  if (value == null) return '-';
-  return value.toFixed(1) + '%';
-}
+/** 面积图：品牌主色描边 + 16% 同色填充 */
+const AREA_STYLE = { fill: withAlpha(SERIES_1, 0.16), stroke: SERIES_1, fillOpacity: 1, lineWidth: 2 };
+/** 单系列折线 */
+const LINE_STYLE = { stroke: SERIES_1, lineWidth: 2 };
+/** 多系列（堆内存已用/最大）：主色 + 品牌亮阶 */
+const DUAL_RANGE = [SERIES_1, SERIES_2];
 
-/**
- * 获取 CPU 负载颜色（异常阈值视觉提示）
- * 
- * <p>> 95% 红色危险，> 80% 橙色警告，≤ 80% 默认文字色</p>
- * <p>符合监控页面规范：快速识别异常</p>
- */
-function getCpuLoadColor(cpuLoad: number): string {
-  if (cpuLoad > 95) return '#FF4D4F';  // 红色危险
-  if (cpuLoad > 80) return BRAND;      // 橙色警告
-  return '';                           // 默认文字色
+/** 轴通用配置：SSE 采样间隔在秒级，只到分钟会让相邻刻度重名；到秒则长到会竖排 */
+const AXIS_TITLE_TIME = '时间';
+function formatAxisTime(v: string): string {
+  return v.includes('T') ? v.split('T')[1].slice(3, 8) : v;
+}
+const xAxisTime = { title: AXIS_TITLE_TIME, labelFormatter: formatAxisTime };
+
+/** 轴刻度：命中率这类浮点值不截断会印出 99.2932862191 */
+function formatAxisNumber(v: number | string): string {
+  const n = Number(v);
+  return Number.isInteger(n) ? String(n) : n.toFixed(0);
 }
 
 /**
- * 获取内存使用率颜色（异常阈值视觉提示）
- * 
- * <p>> 90% 红色危险，> 75% 橙色警告，≤ 75% 默认文字色</p>
+ * 按阈值给出统计数值的语义档位
+ *
+ * <p>文字压在白底上，所以走 -text 档（≥4.5:1），不用无后缀的填充档</p>
  */
-function getMemUsageColor(memUsed: number, memTotal: number): string {
-  if (memTotal === 0) return '';
-  const usagePercent = (memUsed / memTotal) * 100;
-  if (usagePercent > 90) return '#FF4D4F';  // 红色危险
-  if (usagePercent > 75) return BRAND;       // 橙色警告
-  return '';                                 // 默认文字色
+function toneFor(ratio: number, warnAt: number, dangerAt: number): string {
+  if (ratio >= dangerAt) return ' sxwl-monitor-stat--danger';
+  if (ratio >= warnAt) return ' sxwl-monitor-stat--warn';
+  return '';
 }
 
-/**
- * 刷新时间格式为友好显示
- * 
- * <p>例如：14:30:25、刚刚</p>
- */
-function formatRelativeTime(date: Date): string {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  
-  if (diffSec < 60) return '刚刚';
-  if (diffSec < 3600) return `${Math.floor(diffSec / 60)} 分钟前`;
-  return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+/** 使用率类指标：值越大越危险 */
+function usageTone(used: number | null | undefined, total: number | null | undefined, warnAt: number, dangerAt: number): string {
+  if (!used || !total) return '';
+  return toneFor((used / total) * 100, warnAt, dangerAt);
 }
 
-/**
- * 计算图表响应式高度
- * 
- * <p>基于容器宽度动态调整，最小 200px，最大 300px</p>
- * <p>在窄屏（span <= 8）时使用 200px，宽屏时使用 250px</p>
- */
-function getChartHeight(span: number = 12): number {
-  return span <= 8 ? 200 : 250;
+/** 命中率类指标：值越小越危险 */
+function inverseTone(value: number | null | undefined, warnBelow: number, dangerBelow: number): string {
+  if (value == null) return '';
+  if (value < dangerBelow) return ' sxwl-monitor-stat--danger';
+  if (value < warnBelow) return ' sxwl-monitor-stat--warn';
+  return '';
 }
 
 export default function ServerMonitorPage() {
@@ -98,9 +82,6 @@ export default function ServerMonitorPage() {
 
   const loading = !data;
 
-  /** 响应式图表高度 */
-  const [chartHeight] = useState(() => getChartHeight(12));
-
   /** 手动刷新处理 */
   const handleRefresh = useCallback(() => {
     setLastUpdateTime(new Date());
@@ -110,77 +91,68 @@ export default function ServerMonitorPage() {
 
   const gcColumns = [
     { title: 'GC 名称', dataIndex: 'name', key: 'name', width: 200 },
-    { title: '次数', dataIndex: 'count', key: 'count', width: 100 },
-    { title: '总耗时（ms）', dataIndex: 'totalTimeMs', key: 'totalTimeMs', width: 120 },
+    { title: '次数', dataIndex: 'count', key: 'count', width: 100, render: (v: number) => <span className="sxwl-num">{v}</span> },
+    { title: '总耗时（ms）', dataIndex: 'totalTimeMs', key: 'totalTimeMs', width: 120, render: (v: number) => <span className="sxwl-num">{v}</span> },
   ];
 
   return (
     <div className="sxwl-monitor-page">
       <div className="sxwl-monitor-head">
-        <span className="sxwl-monitor-breadcrumb">监控运维 / 系统监控</span>
-        <div className="sxwl-monitor-status">
-          <SxwlTag color={connected ? BRAND : 'red'}>
+        <div className="sxwl-monitor-head-text">
+          <div className="sxwl-monitor-crumb">监控运维 / 系统监控</div>
+          <h1 className="sxwl-monitor-title">系统监控</h1>
+          <p className="sxwl-monitor-desc">服务器、JVM、Redis 与数据库连接池的实时指标</p>
+        </div>
+        <div className="sxwl-monitor-head-side">
+          <SxwlTag tone={connected ? 'success' : 'danger'}>
             {connected ? '实时' : '连接断开'}
           </SxwlTag>
-          <span className="sxwl-monitor-last-update">
-            最后更新：{formatRelativeTime(lastUpdateTime)}
-          </span>
-          <Button 
-            type="text" 
-            icon={<ReloadOutlined />}
-            onClick={handleRefresh}
-            className="sxwl-monitor-refresh-btn"
-            title="手动刷新"
-          >
+          <span className="sxwl-monitor-last-update">最后更新 {formatRelativeTime(lastUpdateTime)}</span>
+          <SxwlButton icon={<SxwlIcon name="ReloadOutlined" />} onClick={handleRefresh}>
             刷新
-          </Button>
+          </SxwlButton>
         </div>
       </div>
 
       {/* 服务器信息 */}
-      <SxwlCard title="服务器状态" style={{ marginBottom: 16 }} loading={loading}>
+      <SxwlCard variant="outlined" className="sxwl-monitor-panel" title="服务器状态" loading={loading}>
         <SxwlRow gutter={[16, 16]}>
           <SxwlCol span={6}>
-            <SxwlStatistic 
-              title="CPU 负载" 
+            <SxwlStatistic
+              title="CPU 负载"
               value={serverInfo ? formatPercent(serverInfo.cpuLoad) : '-'}
-              style={{ 
-                color: serverInfo?.cpuLoad && serverInfo.cpuLoad > 80 ? getCpuLoadColor(serverInfo.cpuLoad) : undefined,
-                fontWeight: serverInfo?.cpuLoad && serverInfo.cpuLoad > 80 ? 600 : 400
-              }}
+              className={'sxwl-monitor-stat' + toneFor(serverInfo?.cpuLoad ?? 0, 80, 95)}
             />
           </SxwlCol>
           <SxwlCol span={6}>
             <SxwlStatistic
               title="内存"
-              value={serverInfo ? formatBytes(serverInfo.memUsed) : '-'}
-              suffix={`/ ${serverInfo ? formatBytes(serverInfo.memTotal) : ''}`}
-              style={{ 
-                color: serverInfo?.memUsed && serverInfo.memTotal ? getMemUsageColor(serverInfo.memUsed, serverInfo.memTotal) : undefined,
-                fontWeight: serverInfo?.memUsed && serverInfo.memTotal && ((serverInfo.memUsed / serverInfo.memTotal) * 100) > 75 ? 600 : 400
-              }}
+              value={serverInfo ? formatFileSize(serverInfo.memUsed) : '-'}
+              suffix={serverInfo ? `/ ${formatFileSize(serverInfo.memTotal)}` : undefined}
+              className={'sxwl-monitor-stat' + usageTone(serverInfo?.memUsed, serverInfo?.memTotal, 75, 90)}
             />
           </SxwlCol>
           <SxwlCol span={6}>
             <SxwlStatistic
               title="磁盘"
-              value={serverInfo ? formatBytes(serverInfo.diskUsed) : '-'}
-              suffix={`/ ${serverInfo ? formatBytes(serverInfo.diskTotal) : ''}`}
+              value={serverInfo ? formatFileSize(serverInfo.diskUsed) : '-'}
+              suffix={serverInfo ? `/ ${formatFileSize(serverInfo.diskTotal)}` : undefined}
+              className="sxwl-monitor-stat"
             />
           </SxwlCol>
         </SxwlRow>
         {/* 趋势图：CPU 负载（折线图）+ 内存（面积图） */}
-        <SxwlRow gutter={16} style={{ marginTop: 16 }}>
+        <SxwlRow gutter={16} className="sxwl-monitor-charts">
           <SxwlCol span={12}>
             <SxwlLineChart
               data={history.server.map(d => ({ time: d.time, cpuLoad: d.cpuLoad }))}
               xField="time"
               yField="cpuLoad"
-              height={chartHeight}
+              height={CHART_HEIGHT}
               markStyle={LINE_STYLE}
               tooltip={{ channel: 'y', valueFormatter: (v: number) => formatPercent(v) }}
-              axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: 'CPU 负载 (%)' } }}
-              scale={{ y: { min: 0, max: 100 } }}
+              axis={{ x: xAxisTime, y: { title: 'CPU 负载 (%)', labelFormatter: formatAxisNumber } }}
+              scale={{ y: { domainMin: 0, domainMax: 100 } }}
             />
           </SxwlCol>
           <SxwlCol span={12}>
@@ -192,55 +164,51 @@ export default function ServerMonitorPage() {
               }))}
               xField="time"
               yField="memUsedMB"
-              height={chartHeight}
+              height={CHART_HEIGHT}
               markStyle={AREA_STYLE}
-              axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '内存使用 (MB)' } }}
-              tooltip={{ channel: 'y', valueFormatter: (v: number) => formatBytes(v * 1024 * 1024) }}
+              axis={{ x: xAxisTime, y: { title: '内存使用 (MB)' } }}
+              tooltip={{ channel: 'y', valueFormatter: (v: number) => formatFileSize(v * 1024 * 1024) }}
             />
           </SxwlCol>
         </SxwlRow>
       </SxwlCard>
 
       {/* JVM 信息 */}
-      <SxwlCard title="JVM 健康" style={{ marginBottom: 16 }} loading={loading}>
+      <SxwlCard variant="outlined" className="sxwl-monitor-panel" title="JVM 健康" loading={loading}>
         <SxwlRow gutter={[16, 16]}>
           <SxwlCol span={6}>
             <SxwlStatistic
               title="堆内存已用"
-              value={jvmInfo ? formatBytes(jvmInfo.heapUsed) : '-'}
-              suffix={`/ ${jvmInfo ? formatBytes(jvmInfo.heapMax) : ''}`}
-              style={{ 
-                color: jvmInfo?.heapUsed && jvmInfo.heapMax ? getMemUsageColor(jvmInfo.heapUsed, jvmInfo.heapMax) : undefined,
-                fontWeight: jvmInfo?.heapUsed && jvmInfo.heapMax && ((jvmInfo.heapUsed / jvmInfo.heapMax) * 100) > 90 ? 600 : 400
-              }}
+              value={jvmInfo ? formatFileSize(jvmInfo.heapUsed) : '-'}
+              suffix={jvmInfo ? `/ ${formatFileSize(jvmInfo.heapMax)}` : undefined}
+              className={'sxwl-monitor-stat' + usageTone(jvmInfo?.heapUsed, jvmInfo?.heapMax, 75, 90)}
             />
           </SxwlCol>
           <SxwlCol span={6}>
             <SxwlStatistic
               title="堆内存提交"
-              value={jvmInfo ? formatBytes(jvmInfo.heapCommitted) : '-'}
+              value={jvmInfo ? formatFileSize(jvmInfo.heapCommitted) : '-'}
+              className="sxwl-monitor-stat"
             />
           </SxwlCol>
           <SxwlCol span={6}>
-            <SxwlStatistic 
-              title="线程数" 
+            <SxwlStatistic
+              title="线程数"
               value={jvmInfo?.threadCount ?? '-'}
-              suffix={`/ 峰值 ${jvmInfo?.peakThreadCount ?? ''}`}
-              style={{ 
-                color: jvmInfo?.threadCount && jvmInfo?.peakThreadCount && (jvmInfo.threadCount / jvmInfo.peakThreadCount) > 0.85 ? BRAND : undefined,
-                fontWeight: jvmInfo?.threadCount && jvmInfo?.peakThreadCount && (jvmInfo.threadCount / jvmInfo.peakThreadCount) > 0.85 ? 600 : 400
-              }}
+              suffix={jvmInfo ? `/ 峰值 ${jvmInfo.peakThreadCount}` : undefined}
+              className="sxwl-monitor-stat"
             />
           </SxwlCol>
           <SxwlCol span={6}>
             <SxwlStatistic
               title="类加载数"
               value={jvmInfo?.classLoadedCount ?? '-'}
+              className="sxwl-monitor-stat"
             />
           </SxwlCol>
         </SxwlRow>
         {/* 趋势图：堆内存双线（已用+最大）+ 线程 */}
-        <SxwlRow gutter={16} style={{ marginTop: 16 }}>
+        <SxwlRow gutter={16} className="sxwl-monitor-charts">
           <SxwlCol span={12}>
             <SxwlChart
               chartType="line"
@@ -251,9 +219,9 @@ export default function ServerMonitorPage() {
               xField="time"
               yField="value"
               colorField="type"
-              height={chartHeight}
+              height={CHART_HEIGHT}
               scale={{ color: { range: DUAL_RANGE } }}
-              axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '堆内存 (MB)' } }}
+              axis={{ x: xAxisTime, y: { title: '堆内存 (MB)' } }}
               tooltip={{ channel: 'y', valueFormatter: (v: number) => `${v} MB` }}
             />
           </SxwlCol>
@@ -262,58 +230,55 @@ export default function ServerMonitorPage() {
               data={history.jvm.map(d => ({ time: d.time, threadCount: d.threadCount }))}
               xField="time"
               yField="threadCount"
-              height={chartHeight}
+              height={CHART_HEIGHT}
               markStyle={LINE_STYLE}
-              axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '线程数' } }}
+              axis={{ x: xAxisTime, y: { title: '线程数' } }}
             />
           </SxwlCol>
         </SxwlRow>
         {jvmInfo?.gcInfos && jvmInfo.gcInfos.length > 0 && (
           <SxwlTable
+            className="sxwl-monitor-table"
             dataSource={jvmInfo.gcInfos}
             columns={gcColumns}
             rowKey="name"
             pagination={false}
             size="small"
-            style={{ marginTop: 16 }}
           />
         )}
       </SxwlCard>
 
       {/* Redis 信息 */}
-      <SxwlCard title="Redis 状态" style={{ marginBottom: 16 }} loading={loading}>
+      <SxwlCard variant="outlined" className="sxwl-monitor-panel" title="Redis 状态" loading={loading}>
         <SxwlRow gutter={[16, 16]}>
           <SxwlCol span={6}>
-            <SxwlStatistic title="已连接客户端" value={redisInfo?.connectedClients ?? '-'} />
+            <SxwlStatistic title="已连接客户端" value={redisInfo?.connectedClients ?? '-'} className="sxwl-monitor-stat" />
           </SxwlCol>
           <SxwlCol span={6}>
-            <SxwlStatistic title="内存使用" value={redisInfo ? formatBytes(redisInfo.usedMemory) : '-'} />
+            <SxwlStatistic title="内存使用" value={redisInfo ? formatFileSize(redisInfo.usedMemory) : '-'} className="sxwl-monitor-stat" />
           </SxwlCol>
           <SxwlCol span={6}>
-            <SxwlStatistic 
-              title="缓存命中率" 
+            <SxwlStatistic
+              title="缓存命中率"
               value={redisInfo ? formatPercent(redisInfo.hitRate) : '-'}
-              style={{ 
-                color: redisInfo?.hitRate !== undefined && redisInfo.hitRate < 90 ? '#FF4D4F' : undefined,
-                fontWeight: redisInfo?.hitRate !== undefined && redisInfo.hitRate < 90 ? 600 : 400
-              }}
+              className={'sxwl-monitor-stat' + inverseTone(redisInfo?.hitRate, 95, 90)}
             />
           </SxwlCol>
           <SxwlCol span={6}>
-            <SxwlStatistic title="Key 总数" value={redisInfo?.totalKeys ?? '-'} />
+            <SxwlStatistic title="Key 总数" value={redisInfo?.totalKeys ?? '-'} className="sxwl-monitor-stat" />
           </SxwlCol>
         </SxwlRow>
         {/* 趋势图：命中率（折线图）+ 内存（面积图） */}
-        <SxwlRow gutter={16} style={{ marginTop: 16 }}>
+        <SxwlRow gutter={16} className="sxwl-monitor-charts">
           <SxwlCol span={12}>
             <SxwlLineChart
               data={history.redis.map(d => ({ time: d.time, hitRate: d.hitRate }))}
               xField="time"
               yField="hitRate"
-              height={chartHeight}
+              height={CHART_HEIGHT}
               markStyle={LINE_STYLE}
-              axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '命中率 (%)' } }}
-              scale={{ y: { min: 0, max: 100 } }}
+              axis={{ x: xAxisTime, y: { title: '命中率 (%)', labelFormatter: formatAxisNumber } }}
+              scale={{ y: { domainMin: 0, domainMax: 100 } }}
               tooltip={{ channel: 'y', valueFormatter: (v: number) => formatPercent(v) }}
             />
           </SxwlCol>
@@ -326,32 +291,32 @@ export default function ServerMonitorPage() {
               }))}
               xField="time"
               yField="usedMemoryMB"
-              height={chartHeight}
+              height={CHART_HEIGHT}
               markStyle={AREA_STYLE}
-              axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '内存使用 (MB)' } }}
-              tooltip={{ channel: 'y', valueFormatter: (v: number) => formatBytes(v * 1024 * 1024) }}
+              axis={{ x: xAxisTime, y: { title: '内存使用 (MB)' } }}
+              tooltip={{ channel: 'y', valueFormatter: (v: number) => formatFileSize(v * 1024 * 1024) }}
             />
           </SxwlCol>
         </SxwlRow>
       </SxwlCard>
 
       {/* 数据库信息 */}
-      <SxwlCard title="数据库连接池" loading={loading}>
+      <SxwlCard variant="outlined" className="sxwl-monitor-panel" title="数据库连接池" loading={loading}>
         <SxwlRow gutter={[16, 16]}>
           <SxwlCol span={6}>
-            <SxwlStatistic title="活跃连接数" value={dbInfo?.activeConnections ?? '-'} />
+            <SxwlStatistic title="活跃连接数" value={dbInfo?.activeConnections ?? '-'} className="sxwl-monitor-stat" />
           </SxwlCol>
         </SxwlRow>
         {/* 趋势图：数据库连接（折线图） */}
-        <SxwlRow gutter={16} style={{ marginTop: 16 }}>
+        <SxwlRow gutter={16} className="sxwl-monitor-charts">
           <SxwlCol span={12}>
             <SxwlLineChart
               data={history.db.map(d => ({ time: d.time, activeConnections: d.activeConnections }))}
               xField="time"
               yField="activeConnections"
-              height={chartHeight}
+              height={CHART_HEIGHT}
               markStyle={LINE_STYLE}
-              axis={{ x: { title: '时间', labelFormatter: (v: string) => v.includes('T') ? v.split('T')[1].substring(0, 5) : v }, y: { title: '活跃连接数' } }}
+              axis={{ x: xAxisTime, y: { title: '活跃连接数' } }}
             />
           </SxwlCol>
         </SxwlRow>

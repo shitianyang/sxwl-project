@@ -9,17 +9,18 @@ import { useState, useEffect, useCallback } from 'react';
 import type { FormInstance } from 'antd';
 import { getCaptchaImage } from '@/api/authApi';
 import SxwlIcon from '../SxwlIcon';
+import './index.scss';
 
 export interface SxwlCaptchaProps {
   /** 父表单实例（用于设置 captchaUuid 字段） */
   form: FormInstance;
   /** 变化时强制重新加载验证码（如登录失败后） */
   refreshKey?: number;
-  /** 验证码图片高度（默认 48，与登录页输入框等高） */
+  /** 验证码图片高度（默认与登录页输入框等高） */
   height?: number;
 }
 
-const SxwlCaptcha: React.FC<SxwlCaptchaProps> = ({ form, refreshKey, height = 48 }) => {
+const SxwlCaptcha: React.FC<SxwlCaptchaProps> = ({ form, refreshKey, height = 40 }) => {
   const [base64Image, setBase64Image] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
@@ -42,47 +43,30 @@ const SxwlCaptcha: React.FC<SxwlCaptchaProps> = ({ form, refreshKey, height = 48
   }, [loadCaptcha, refreshKey]);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <div
+    <div className="sxwl-captcha">
+      <button
+        type="button"
+        className="sxwl-captcha__box"
+        style={{ height }}
         onClick={loadCaptcha}
-        style={{
-          cursor: 'pointer',
-          opacity: loading ? 0.5 : 1,
-          transition: 'opacity 0.2s',
-          flexShrink: 0,
-        }}
         title="点击刷新验证码"
+        aria-label="验证码图片，点击刷新"
       >
         {base64Image ? (
-          <img
-            src={base64Image}
-            alt="验证码"
-            style={{ height, width: 104, borderRadius: 12, display: 'block' }}
-          />
+          <img className="sxwl-captcha__img" src={base64Image} alt="验证码" />
         ) : (
-          <div
-            style={{
-              width: 104,
-              height,
-              borderRadius: 12,
-              background: '#f5f5f5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 12,
-              color: '#999',
-            }}
-          >
-            {loading ? '加载中...' : '加载失败'}
-          </div>
+          <span className="sxwl-captcha__fallback">{loading ? '加载中' : '加载失败'}</span>
         )}
-      </div>
-      <SxwlIcon
-        name="ReloadOutlined"
+      </button>
+      <button
+        type="button"
+        className="sxwl-captcha__refresh"
         onClick={loadCaptcha}
-        style={{ cursor: 'pointer', color: '#999', fontSize: 14, flexShrink: 0 }}
-        size={14}
-      />
+        title="刷新验证码"
+        aria-label="刷新验证码"
+      >
+        <SxwlIcon name="ReloadOutlined" size={14} />
+      </button>
     </div>
   );
 };

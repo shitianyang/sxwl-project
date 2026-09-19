@@ -2,7 +2,7 @@ spring:
   application:
     name: sxwl-boot                    # 应用名称，日志和监控会用到
   profiles:
-    active: test                        # 默认激活的环境配置（dev/prod）
+    active: test                        # 激活的环境：test（测试环境），可选：dev、prod
   security:
     user:
       name: disabled                    # 禁用默认内存用户（纯 JWT，不走表单登录）
@@ -14,7 +14,7 @@ spring:
 
 logging:
   file:
-    path: ./logs                             # 日志输出目录（相对于工作目录）
+    path: ${LOG_PATH:./logs}               # 日志输出目录（支持环境变量 LOG_PATH 覆盖）
 
 server:
   port: 30101                          # 应用端口号
@@ -32,10 +32,10 @@ sxwl:
     enabled: false                        # 是否启用短信发送（false=仅生成验证码不发送，true=真实发送）
     
     # --- 阿里云 SMS ---
-    access-key-id: LTAI5t42KNhqGWXrXXXXXX   # 阿里云 AccessKey ID
-    access-key-secret: KlC4xxxxxxx       # 阿里云 AccessKey Secret
-    sign-name: 御权平台                    # 阿里云签名名称
-    template-code: SMS_xxx                 # 阿里云短信模板 Code（示例：SMS_123456789）
+    access-key-id: ""                     # 阿里云 AccessKey ID（示例值：LTAI5t42KNhqGWXrXXXXXX）
+    access-key-secret: ""                 # 阿里云 AccessKey Secret（示例值：KlC4xxxxxxx）
+    sign-name: 御权平台                    # 阿里云签名名称（需在控制台申请）
+    template-code: ""                     # 阿里云短信模板 Code（示例：SMS_123456789，需在控制台申请）
     template-param-name: code             # 模板参数名，默认为 "code"
 
   # ==================== IP 黑白名单配置 ====================
@@ -43,6 +43,7 @@ sxwl:
     ip-whitelist-enabled: false          # 是否启用白名单模式（true=仅允许白名单 IP，false=正常访问）
 
     # 白名单 IP 列表（为空则不启用白名单，仅黑名单生效）
+    # 注意：当 ip-whitelist-enabled=false 时，此列表不生效
     ip-whitelist:
       - "127.0.0.1"                      # 本地开发
       # - "192.168.1.100"                # 管理员电脑

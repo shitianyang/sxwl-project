@@ -52,9 +52,9 @@ export function loginBySms(data: LoginRequest) {
   return http.post<TokenPair>('/auth/login/sms', data);
 }
 
-/** 获取短信验证码 */
+/** 获取短信验证码（服务端对同一手机号 60 秒内拒发，并回剩余秒数） */
 export function getSmsCaptcha(phone: string) {
-  return http.post<null>('/captcha/sms', { phone });
+  return http.post<{ sent: string }>('/captcha/sms', { phone });
 }
 
 /** 刷新 Token */

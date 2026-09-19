@@ -49,7 +49,7 @@ const columns: ColumnsType<SysFileDTO> = [
     width: 100,
     render: (val: number) => formatFileSize(val),
   },
-  { title: '上传时间', dataIndex: 'createTime', key: 'createTime', width: 180 },
+  { title: '上传时间', dataIndex: 'createTime', key: 'createTime', width: 200 },
 ];
 
 const searchFields: SearchFieldConfig[] = [

@@ -41,7 +41,7 @@ public class SysRoleController {
      * @return 角色信息
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ROLE_QUERY + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ROLE_QUERY + "')")
     @SxwlLog(title = "角色管理", description = "查询角色详情[id=#{#id}]")
     public SysRoleDTO getRoleById(@PathVariable("id") Long id) {
         return sysRoleService.getRoleById(id);
@@ -54,7 +54,7 @@ public class SysRoleController {
      * @return 分页角色列表
      */
     @GetMapping("/page")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ROLE_LIST + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ROLE_LIST + "')")
     @SxwlLog(title = "角色管理", description = "查询角色列表")
     public PageInfo<SysRoleDTO> getRolePageByParams(@Valid SysRolePageParams params) {
         return sysRoleService.getRolePageByParams(params);
@@ -67,7 +67,7 @@ public class SysRoleController {
      */
     @PostMapping
     @SxwlRepeatSubmit(interval = 3, message = "角色创建中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ROLE_ADD + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ROLE_ADD + "')")
     @SxwlLog(title = "角色管理", description = "新增角色[#{#dto.roleCode}]")
     public void createRole(@Valid @RequestBody SysRoleDTO dto) {
         sysRoleService.createRole(dto);
@@ -80,7 +80,7 @@ public class SysRoleController {
      */
     @PutMapping
     @SxwlRepeatSubmit(interval = 3, message = "角色修改中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ROLE_EDIT + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ROLE_EDIT + "')")
     @SxwlLog(title = "角色管理", description = "修改角色[#{#dto.roleCode}]")
     public void updateRole(@Valid @RequestBody SysRoleDTO dto) {
         sysRoleService.updateRole(dto);
@@ -93,7 +93,7 @@ public class SysRoleController {
      */
     @DeleteMapping("/{id}")
     @SxwlRepeatSubmit(interval = 3, message = "角色删除中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ROLE_DELETE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ROLE_DELETE + "')")
     @SxwlLog(title = "角色管理", description = "删除角色[id=#{#id}]")
     public void deleteRoleById(@PathVariable("id") Long id) {
         sysRoleService.deleteRoleById(id);
@@ -108,7 +108,7 @@ public class SysRoleController {
      */
     @PostMapping("/{roleId}/menus")
     @SxwlRepeatSubmit(interval = 5, message = "菜单分配中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ROLE_GRANT + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ROLE_GRANT + "')")
     @SxwlLog(title = "角色管理", description = "分配菜单[roleId=#{#roleId}]")
     public void saveRoleMenus(@PathVariable("roleId") Long roleId,
                               @Valid @RequestBody SysRoleMenuGrantDTO grantDTO) {
@@ -122,7 +122,7 @@ public class SysRoleController {
      * @return 菜单 ID 列表
      */
     @GetMapping("/{roleId}/menus")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ROLE_QUERY + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ROLE_QUERY + "')")
     @SxwlLog(title = "角色管理", description = "查询角色菜单[roleId=#{#roleId}]")
     public List<Long> getMenuIdListByRoleId(@PathVariable("roleId") Long roleId) {
         return sysRoleService.getMenuIdListByRoleId(roleId);
@@ -137,7 +137,7 @@ public class SysRoleController {
      */
     @PostMapping("/{roleId}/data-scope")
     @SxwlRepeatSubmit(interval = 5, message = "数据权限配置中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ROLE_GRANT + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ROLE_GRANT + "')")
     @SxwlLog(title = "角色管理", description = "配置数据权限[roleId=#{#roleId}]")
     public void saveRoleDataScope(@PathVariable("roleId") Long roleId,
                                   @Valid @RequestBody SysRoleDataScopeDTO dataScopeDTO) {
@@ -151,7 +151,7 @@ public class SysRoleController {
      * @return 组织 ID 列表
      */
     @GetMapping("/{roleId}/data-scope")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ROLE_QUERY + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ROLE_QUERY + "')")
     @SxwlLog(title = "角色管理", description = "查询角色数据权限[roleId=#{#roleId}]")
     public List<Long> getDataScopeOrgIdListByRoleId(@PathVariable("roleId") Long roleId) {
         return sysRoleService.getDataScopeOrgIdListByRoleId(roleId);

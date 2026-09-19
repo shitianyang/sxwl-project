@@ -96,4 +96,14 @@ public interface SysRoleMapper {
                                   @Param("createBy") Long createBy,
                                   @Param("createOrg") Long createOrg,
                                   @Param("createTime") java.util.Date createTime);
+
+    // ==================== 角色-用户关联 ====================
+
+    /**
+     * 查询拥有指定角色的有效用户 ID 列表（角色权限变更时用于失效登录权限快照）
+     * <p>
+     * SQL 实现：resources/mappers/SysRoleMapper.xml#selectUserIdsByRoleId
+     * </p>
+     */
+    List<Long> selectUserIdsByRoleId(@Param("roleId") Long roleId);
 }

@@ -13,6 +13,8 @@ public class SxwlLoginSuccessEvent {
 
     private Long userId;
     private String username;
+    /** 登录用户所属主组织 ID（用于登录日志 create_org 落库，使其在数据权限范围内可见） */
+    private Long orgId;
     private String ip;
     private String deviceId;
     private String loginType;
@@ -29,6 +31,8 @@ public class SxwlLoginSuccessEvent {
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
+    public Long getOrgId() { return orgId; }
+    public void setOrgId(Long orgId) { this.orgId = orgId; }
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
     public String getIp() { return ip; }

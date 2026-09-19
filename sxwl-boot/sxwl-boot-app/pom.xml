@@ -53,6 +53,11 @@
             <groupId>com.sxwl</groupId>
             <artifactId>sxwl-boot-module-backup</artifactId>
         </dependency>
+        <!-- SSE 实时推送模块 -->
+        <dependency>
+            <groupId>com.sxwl</groupId>
+            <artifactId>sxwl-boot-module-sse</artifactId>
+        </dependency>
         <!-- 测试框架（JUnit 5 + Mockito + Spring Test） -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

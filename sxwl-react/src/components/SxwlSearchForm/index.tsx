@@ -2,7 +2,7 @@ import { type JSX } from 'react';
 import type { Dayjs } from 'dayjs';
 import {
   SxwlInput, SxwlButton, SxwlSelect, SxwlIcon,
-  SxwlSpace, SxwlForm, SxwlRangePicker,
+  SxwlForm, SxwlRangePicker,
 } from '@/components';
 import type { FormFieldConfig } from '@/types/FormFieldConfig';
 import './index.scss';
@@ -12,6 +12,8 @@ import './index.scss';
 export interface SxwlSearchFormProps {
   /** 搜索字段配置 */
   fields: FormFieldConfig[];
+  /** 外层类名（SxwlPage 用它把筛选条挂进面板） */
+  className?: string;
   /** 点击查询 */
   onSearch?: (values: Record<string, any>) => void;
   /** 点击重置 */
@@ -20,11 +22,11 @@ export interface SxwlSearchFormProps {
 
 // ==================== Inner Component
 
-function SxwlSearchFormInner({ fields, onSearch, onReset }: SxwlSearchFormProps): JSX.Element {
+function SxwlSearchFormInner({ fields, className, onSearch, onReset }: SxwlSearchFormProps): JSX.Element {
   const [form] = SxwlForm.useForm();
 
-  const handleSearch = () => {
-    const values = form.getFieldsValue();
+  const handleFinish = (raw: Record<string, any>) => {
+    const values = { ...raw };
 
     // 自动转换 dateRange 字段为自定义或默认参数名
     for (const field of fields) {
@@ -48,41 +50,44 @@ function SxwlSearchFormInner({ fields, onSearch, onReset }: SxwlSearchFormProps)
     onReset?.();
   };
 
+  // 筛选条不显示 label：字段名进 placeholder，无障碍名交给 aria-label
   return (
-    <div className="sxwl-search-form-wrapper">
-      <SxwlForm form={form} layout="inline" className="sxwl-search-form-inner">
-        {fields.map((field) => (
-          <SxwlForm.Item key={field.name} name={field.name} label={field.label}>
+    <SxwlForm
+      form={form}
+      className={`sxwl-filters${className ? ` ${className}` : ''}`}
+      onFinish={handleFinish}
+    >
+      {fields.map((field) => {
+        const text = field.placeholder ?? field.label ?? field.name;
+        return (
+          <SxwlForm.Item key={field.name} name={field.name} className="sxwl-filters__field">
             {field.type === 'select' ? (
               <SxwlSelect
-                placeholder={field.placeholder ?? `请选择${field.label ?? field.name}`}
+                aria-label={field.label ?? text}
+                placeholder={text}
                 allowClear
-                style={{ width: 160 }}
+                suffixIcon={<SxwlIcon name="CaretDownOutlined" />}
                 options={field.options}
               />
             ) : field.type === 'dateRange' ? (
-              <SxwlRangePicker style={{ width: 360 }} />
+              <SxwlRangePicker aria-label={field.label ?? text} className="sxwl-filters__range" />
             ) : (
               <SxwlInput
-                placeholder={field.placeholder ?? `请输入${field.label ?? field.name}`}
-                allowClear
+                aria-label={field.label ?? text}
+                placeholder={text}
                 maxLength={field.maxLength}
+                prefix={<SxwlIcon name="SearchOutlined" />}
               />
             )}
           </SxwlForm.Item>
-        ))}
-        <SxwlForm.Item>
-          <SxwlSpace>
-            <SxwlButton type="primary" icon={<SxwlIcon name="SearchOutlined" />} onClick={handleSearch}>
-              查询
-            </SxwlButton>
-            <SxwlButton icon={<SxwlIcon name="ReloadOutlined" />} onClick={handleReset}>
-              重置
-            </SxwlButton>
-          </SxwlSpace>
-        </SxwlForm.Item>
-      </SxwlForm>
-    </div>
+        );
+      })}
+      <div className="sxwl-filters__spacer" />
+      <SxwlForm.Item className="sxwl-filters__actions">
+        <SxwlButton type="primary" htmlType="submit">查询</SxwlButton>
+        <SxwlButton onClick={handleReset}>重置</SxwlButton>
+      </SxwlForm.Item>
+    </SxwlForm>
   );
 }
 

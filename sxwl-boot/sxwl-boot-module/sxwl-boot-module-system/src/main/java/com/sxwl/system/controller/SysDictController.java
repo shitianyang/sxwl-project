@@ -40,7 +40,7 @@ public class SysDictController {
      * @return 字典信息
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.DICT_QUERY + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.DICT_QUERY + "')")
     @SxwlLog(title = "字典管理", description = "查询字典详情[id=#{#id}]")
     public SysDictDTO getDictById(@PathVariable("id") Long id) {
         return sysDictService.getDictById(id);
@@ -53,7 +53,7 @@ public class SysDictController {
      * @return 分页字典列表
      */
     @GetMapping("/page")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.DICT_LIST + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.DICT_LIST + "')")
     @SxwlLog(title = "字典管理", description = "查询字典列表")
     public PageInfo<SysDictDTO> getDictPageByParams(@Valid SysDictPageParams params) {
         return sysDictService.getDictPageByParams(params);
@@ -66,7 +66,7 @@ public class SysDictController {
      */
     @PostMapping
     @SxwlRepeatSubmit(interval = 3, message = "字典创建中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.DICT_ADD + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.DICT_ADD + "')")
     @SxwlLog(title = "字典管理", description = "新增字典[#{#dto.dictCode}]")
     public void createDict(@Valid @RequestBody SysDictDTO dto) {
         sysDictService.createDict(dto);
@@ -79,7 +79,7 @@ public class SysDictController {
      */
     @PutMapping
     @SxwlRepeatSubmit(interval = 3, message = "字典修改中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.DICT_EDIT + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.DICT_EDIT + "')")
     @SxwlLog(title = "字典管理", description = "修改字典[#{#dto.dictCode}]")
     public void updateDict(@Valid @RequestBody SysDictDTO dto) {
         sysDictService.updateDict(dto);
@@ -92,7 +92,7 @@ public class SysDictController {
      */
     @DeleteMapping("/{id}")
     @SxwlRepeatSubmit(interval = 3, message = "字典删除中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.DICT_DELETE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.DICT_DELETE + "')")
     @SxwlLog(title = "字典管理", description = "删除字典[id=#{#id}]")
     public void deleteDictById(@PathVariable("id") Long id) {
         sysDictService.deleteDictById(id);
@@ -107,7 +107,7 @@ public class SysDictController {
      * @return 明细列表
      */
     @GetMapping("/{dictId}/details")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.DICT_QUERY + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.DICT_QUERY + "')")
     @SxwlLog(title = "字典管理", description = "查询字典明细[dictId=#{#dictId}]")
     public List<SysDictDetailDTO> getDetailListByDictId(@PathVariable("dictId") Long dictId) {
         return sysDictService.getDetailListByDictId(dictId);
@@ -120,7 +120,7 @@ public class SysDictController {
      */
     @PostMapping("/details")
     @SxwlRepeatSubmit(interval = 3, message = "字典明细创建中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.DICT_ADD + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.DICT_ADD + "')")
     @SxwlLog(title = "字典管理", description = "新增字典明细[#{#dto.detailValue}]")
     public void createDetail(@Valid @RequestBody SysDictDetailDTO dto) {
         sysDictService.createDetail(dto);
@@ -133,7 +133,7 @@ public class SysDictController {
      */
     @PutMapping("/details")
     @SxwlRepeatSubmit(interval = 3, message = "字典明细修改中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.DICT_EDIT + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.DICT_EDIT + "')")
     @SxwlLog(title = "字典管理", description = "修改字典明细[id=#{#dto.id}]")
     public void updateDetail(@Valid @RequestBody SysDictDetailDTO dto) {
         sysDictService.updateDetail(dto);
@@ -146,7 +146,7 @@ public class SysDictController {
      */
     @DeleteMapping("/details/{id}")
     @SxwlRepeatSubmit(interval = 3, message = "字典明细删除中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.DICT_DELETE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.DICT_DELETE + "')")
     @SxwlLog(title = "字典管理", description = "删除字典明细[id=#{#id}]")
     public void deleteDetailById(@PathVariable("id") Long id) {
         sysDictService.deleteDetailById(id);

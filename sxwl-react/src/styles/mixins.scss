@@ -7,7 +7,7 @@
 @use "variables" as *;
 
 // 极细滚动条
-@mixin scrollbar-thin($thumb: #cbd5e1, $hover: #94a3b8) {
+@mixin scrollbar-thin($thumb: $sxwl-color-border-strong, $hover: $sxwl-color-text-disabled) {
   &::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -21,5 +21,23 @@
   }
   &::-webkit-scrollbar-thumb:hover {
     background: $hover;
+  }
+}
+
+// 面板：唯一的容器 —— 1px 描边 + 小圆角，永远不加阴影
+@mixin dense-panel {
+  background: $sxwl-color-bg-container;
+  border: 1px solid $sxwl-color-border;
+  border-radius: $sxwl-radius-sm;
+}
+
+// 签名母题：标题左侧的 2px 品牌竖条（admin-dense 里唯一的饱和品牌像素）
+@mixin dense-title-bar($height: 14px) {
+  &::before {
+    content: "";
+    flex: none;
+    width: 2px;
+    height: $height;
+    background: $sxwl-brand-action;
   }
 }

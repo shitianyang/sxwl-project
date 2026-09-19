@@ -37,7 +37,7 @@ public class SysCacheController {
      * @return 缓存分类列表
      */
     @GetMapping("/names")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.CACHE_VIEW + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Monitor.CACHE_VIEW + "')")
     public List<SysCacheCategoryDTO> listCategories() {
         return sysCacheService.listCategories();
     }
@@ -49,7 +49,7 @@ public class SysCacheController {
      * @return Key 详情列表
      */
     @GetMapping("/keys")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.CACHE_VIEW + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Monitor.CACHE_VIEW + "')")
     public List<SysCacheKeyDetailDTO> listKeys(@RequestParam("keyPrefix") String keyPrefix) {
         return sysCacheService.listKeys(keyPrefix);
     }
@@ -61,7 +61,7 @@ public class SysCacheController {
      * @return Key 详情（类型 + Value + TTL）
      */
     @GetMapping("/value")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.CACHE_VIEW + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Monitor.CACHE_VIEW + "')")
     public SysCacheKeyDetailDTO getKeyDetail(@RequestParam("key") String key) {
         return sysCacheService.getKeyDetail(key);
     }
@@ -72,7 +72,7 @@ public class SysCacheController {
      * @param keyPrefix 缓存分类前缀模式
      */
     @DeleteMapping("/clearName")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.CACHE_CLEAR + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Monitor.CACHE_CLEAR + "')")
     @SxwlLog(title = "缓存管理", description = "清空缓存分类[prefix=#{#keyPrefix}]")
     public void clearByName(@RequestParam("keyPrefix") String keyPrefix) {
         sysCacheService.clearByName(keyPrefix);
@@ -84,7 +84,7 @@ public class SysCacheController {
      * @param key 完整 Key 名称
      */
     @DeleteMapping("/clearKey")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.CACHE_CLEAR + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Monitor.CACHE_CLEAR + "')")
     @SxwlLog(title = "缓存管理", description = "清除缓存 Key[#{#key}]")
     public void clearByKey(@RequestParam("key") String key) {
         sysCacheService.clearByKey(key);

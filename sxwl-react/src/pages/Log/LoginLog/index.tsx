@@ -9,7 +9,7 @@ import type { LogItem } from '@/api/system/logApi';
 import { getLogPageByParams } from '@/api/system/logApi';
 
 const columns: ColumnsType<LogItem> = [
-  { title: '登录账号', dataIndex: 'userName', key: 'userName', width: 120 },
+  { title: '登录账号', dataIndex: 'userName', key: 'userName', width: 120, ellipsis: true },
   { title: '登录IP', dataIndex: 'operateIp', key: 'operateIp', width: 140 },
   { title: '登录地点', dataIndex: 'operateLocation', key: 'operateLocation', width: 160, ellipsis: true },
   {
@@ -26,7 +26,7 @@ const columns: ColumnsType<LogItem> = [
   { title: '操作系统', dataIndex: 'os', key: 'os', width: 100,
     render: (val: string) => val || '-',
   },
-  { title: '登录时间', dataIndex: 'createTime', key: 'createTime', width: 180 },
+  { title: '登录时间', dataIndex: 'createTime', key: 'createTime', width: 200 },
 ];
 
 const searchFields: SearchFieldConfig[] = [

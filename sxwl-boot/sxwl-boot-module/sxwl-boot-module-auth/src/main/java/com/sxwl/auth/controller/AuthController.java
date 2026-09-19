@@ -1,5 +1,6 @@
 package com.sxwl.auth.controller;
 
+import com.sxwl.auth.service.SxwlLoginUserLoader;
 import com.sxwl.auth.strategy.SxwlPasswordAuthStrategy;
 import com.sxwl.auth.strategy.SxwlSmsAuthStrategy;
 import com.sxwl.common.annotation.SxwlRepeatSubmit;
@@ -69,6 +70,7 @@ public class AuthController {
     private final SxwlSM2KeyManager keyManager;
     private final Optional<SxwlIpLocationService> ipLocationService;
     private final SxwlWebProperties webProperties;
+    private final SxwlLoginUserLoader loginUserLoader;
 
     public AuthController(SxwlAuthenticationHandler handler,
                           SxwlRedisHelper redisHelper,
@@ -79,7 +81,8 @@ public class AuthController {
                           SxwlSmsAuthStrategy smsAuthStrategy,
                           SxwlSM2KeyManager keyManager,
                           Optional<SxwlIpLocationService> ipLocationService,
-                          SxwlWebProperties webProperties) {
+                          SxwlWebProperties webProperties,
+                          SxwlLoginUserLoader loginUserLoader) {
         this.handler = handler;
         this.redisHelper = redisHelper;
         this.properties = properties;
@@ -90,6 +93,7 @@ public class AuthController {
         this.keyManager = keyManager;
         this.ipLocationService = ipLocationService;
         this.webProperties = webProperties;
+        this.loginUserLoader = loginUserLoader;
     }
 
     /**
@@ -209,6 +213,8 @@ public class AuthController {
         SxwlLoginSuccessEvent successEvent = new SxwlLoginSuccessEvent();
         successEvent.setUserId(loginUser.getUserId());
         successEvent.setUsername(loginUser.getUsername());
+        // 携带登录用户主组织，供登录日志 create_org 落库（否则会被数据权限过滤不可见）
+        successEvent.setOrgId(loginUser.getCreateOrg());
         successEvent.setIp(ip);
         successEvent.setDeviceId(deviceId);
         successEvent.setLoginType(loginType);
@@ -262,7 +268,19 @@ public class AuthController {
         // 4. 删除旧白名单
         redisHelper.delete(whiteKey);
 
-        // 5. 签发新 Token 对（不覆盖用户缓存）
+        // 5. 用户权限快照已被主动失效（如管理员调整组织/角色/数据权限）时，
+        //    从 DB 重建最新快照，用户无感刷新，无需重新登录
+        String infoKey = SxwlRedisKeyUtils.tokenInfoKey(clientType, userId);
+        if (redisHelper.hgetAll(infoKey).isEmpty()) {
+            SxwlLoginUser freshUser = loginUserLoader.loadByUserId(userId);
+            if (freshUser == null) {
+                throw new SxwlBusinessException(401, "账号状态已变更，请重新登录");
+            }
+            handler.cacheUserInfo(freshUser, clientType);
+            log.info("刷新时重建用户权限快照: userId={}, clientType={}", userId, clientType);
+        }
+
+        // 6. 签发新 Token 对
         SxwlTokenPair tokenPair = handler.refreshTokenPair(userId, deviceId, clientType);
 
         log.info("Token 刷新成功: userId={}, deviceId={}", userId, deviceId);

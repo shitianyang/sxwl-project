@@ -1,84 +1,155 @@
 // ============================================
-// ServerMonitor — 系统监控页样式（sass, 规范 v2.0）
-// 中性卡片 + 细边框，无渐变线 / 无渐变标题；图表配色由 tsx 常量控制（v1.1 规范）
+// ServerMonitor — 系统监控页样式（admin-dense）
+// 普通面板堆叠：1px 描边 + 小圆角 + 无阴影；标题带 2px 品牌竖条
+// 配色不在这里出现：图表色由 tsx 从 SXWL_COLOR 取，阈值色走语义 -text 档
 // ============================================
 
 @use "../../../styles/variables" as *;
 @use "../../../styles/mixins" as *;
 
+$rise: $sxwl-mo-base $sxwl-mo-easing-decelerate both;
+
+// 外层 padding 由 SxwlLayout 的 content 负责，这里不再叠加
 .sxwl-monitor-page {
-  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: $sxwl-space-base;
+}
 
-  // 区块卡片（Pro 白卡）
-  .ant-card {
-    position: relative;
-    border-radius: $sxwl-radius-lg;
-    background: $sxwl-color-bg-container;
-    border: 1px solid $sxwl-color-border-secondary;
-    box-shadow: $sxwl-shadow-card;
-    overflow: hidden;
-    transition: box-shadow $sxwl-dur ease, transform $sxwl-dur ease;
-    animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) both;
+// -------- 页头 --------
 
-    &:hover {
-      box-shadow: $sxwl-shadow-popup;
-    }
-  }
+.sxwl-monitor-head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $sxwl-space-base;
+  margin-bottom: $sxwl-space-lg;
+  animation: sxwl-rise-soft $rise;
+}
 
-  // 卡片标题：中性加粗
+.sxwl-monitor-crumb {
+  margin-bottom: $sxwl-space-2xs;
+  font-size: $sxwl-font-size-sm;
+  color: $sxwl-color-text-secondary;
+}
+
+.sxwl-monitor-title {
+  margin: 0 0 $sxwl-space-2xs;
+  font-size: $sxwl-font-size-xl;
+  font-weight: $sxwl-font-weight-semibold;
+  line-height: $sxwl-line-height-tight;
+  color: $sxwl-color-text-heading;
+}
+
+.sxwl-monitor-desc {
+  margin: 0;
+  font-size: $sxwl-font-size-sm;
+  color: $sxwl-color-text-secondary;
+}
+
+.sxwl-monitor-head-side {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: $sxwl-space-md;
+}
+
+.sxwl-monitor-last-update {
+  font-size: $sxwl-font-size-sm;
+  color: $sxwl-color-text-tertiary;
+}
+
+// -------- 面板 --------
+
+.sxwl-monitor-panel.ant-card {
+  background: $sxwl-color-bg-container;
+  border: 1px solid $sxwl-color-border;
+  border-radius: $sxwl-radius-sm;
+  box-shadow: none;
+  animation: sxwl-rise-soft $rise;
+
   .ant-card-head {
-    border-bottom: 1px solid $sxwl-color-border-secondary;
+    min-height: $sxwl-ctl-height-md;
+    padding: 0 $sxwl-space-lg;
+    border-bottom: 1px solid $sxwl-color-border;
   }
 
   .ant-card-head-title {
-    font-weight: 600;
-    color: $sxwl-color-text-heading;
-  }
-
-  // 顶部面包屑 / 状态区
-  .sxwl-monitor-head {
-    margin-bottom: 16px;
     display: flex;
     align-items: center;
-    justify-content: space-between;  /* 两端对齐 */
-    gap: 12px;
-    font-size: 14px;
-    animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  // 面包屑文字
-  .sxwl-monitor-breadcrumb {
-    color: $sxwl-color-text-secondary;
-    font-size: 14px;
-  }
-
-  // 右侧状态区域
-  .sxwl-monitor-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  // 最后更新时间
-  .sxwl-monitor-last-update {
-    color: $sxwl-color-text-tertiary;  // #8C8C8C 辅助文字色
-    font-size: 12px;
-  }
-
-  // 手动刷新按钮
-  .sxwl-monitor-refresh-btn {
-    color: $sxwl-color-text-secondary;  // #595959 辅助文字色
-    transition: all 0.2s;
-
-    &:hover {
-      color: $sxwl-color-primary;  // #DE5F0E 品牌色
-      background: rgba(222, 95, 14, 0.06);  // 品牌色浅底
-    }
-  }
-
-  // 统计数字强调（异常阈值颜色分级）
-  .ant-statistic-content {
+    gap: $sxwl-space-sm;
+    font-size: $sxwl-font-size-md;
+    font-weight: $sxwl-font-weight-semibold;
     color: $sxwl-color-text-heading;
-    font-weight: 600;
+
+    @include dense-title-bar;
+  }
+
+  .ant-card-body {
+    padding: $sxwl-space-lg;
+  }
+}
+
+// -------- 统计数值 --------
+
+.sxwl-monitor-stat {
+  .ant-statistic-title {
+    font-size: $sxwl-font-size-sm;
+    color: $sxwl-color-text-secondary;
+  }
+
+  .ant-statistic-content {
+    font-family: $sxwl-font-mono;
+    font-size: $sxwl-font-size-xl;
+    font-weight: $sxwl-font-weight-semibold;
+    font-variant-numeric: tabular-nums;
+    color: $sxwl-color-text-heading;
+  }
+
+  .ant-statistic-suffix {
+    font-size: $sxwl-font-size-sm;
+    font-weight: $sxwl-font-weight-regular;
+    color: $sxwl-color-text-tertiary;
+  }
+}
+
+// 阈值提示只改文字色，不加底色：语义 -text 档在白底上过 4.5:1
+.sxwl-monitor-stat--warn .ant-statistic-content {
+  color: $sxwl-color-warning-text;
+}
+
+.sxwl-monitor-stat--danger .ant-statistic-content {
+  color: $sxwl-color-danger-text;
+}
+
+// -------- 图表区 --------
+
+.sxwl-monitor-charts {
+  margin-top: $sxwl-space-lg !important;
+}
+
+// GC 表：与 SxwlPage 的面板内表格同一套密度
+.sxwl-monitor-table {
+  margin-top: $sxwl-space-lg;
+
+  .ant-table-thead > tr > th {
+    height: $sxwl-ctl-height-sm;
+    padding: 0 $sxwl-space-md;
+    font-size: $sxwl-font-size-sm;
+    font-weight: $sxwl-font-weight-medium;
+    color: $sxwl-color-text-secondary;
+    background: $sxwl-color-bg-subtle;
+    border-bottom: 1px solid $sxwl-color-border;
+  }
+
+  .ant-table-tbody > tr > td {
+    height: $sxwl-ctl-table-row;
+    padding: 0 $sxwl-space-md;
+    border-bottom: 1px solid $sxwl-color-border;
+  }
+
+  .ant-table-tbody > tr:last-child > td {
+    border-bottom: 0;
   }
 }

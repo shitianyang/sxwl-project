@@ -18,6 +18,14 @@
           AND delete_flag = 0
     </select>
 
+    <!-- 根据用户 ID 查询用户（仅查权限快照重建必需字段，不含密码） -->
+    <select id="selectById" resultType="java.util.Map">
+        SELECT id, username, nickname, status, create_org
+        FROM sys_user_info
+        WHERE id = #{userId}
+          AND delete_flag = 0
+    </select>
+
     <!-- 查询用户角色列表（含数据权限） -->
     <select id="selectRolesByUserId" resultType="java.util.Map">
         SELECT r.id, r.role_code, r.data_scope

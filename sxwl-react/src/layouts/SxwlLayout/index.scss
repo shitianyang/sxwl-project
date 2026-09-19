@@ -1,6 +1,7 @@
 // ============================================
-// SxwlLayout — 全局布局样式（sass, 规范 v2.0 · Pro 白底侧边菜单）
-// 白底 Sider + 浅橙激活（亮色菜单），无辉光 / 无暖色遗留
+// SxwlLayout — 全局骨架（admin-dense）
+// 白底 Sider + 32px 导航行 + 2px 品牌竖条；面板/头部一律 1px 细线，不用阴影
+// 数值全部来自 tokens.scss，尺寸同时在 theme.token.ts 里喂给 antd
 // ============================================
 
 @use "../../styles/variables" as *;
@@ -8,167 +9,159 @@
 
 .sxwl-layout-layout {
   min-height: 100vh;
-  // 页面背景：Pro 浅灰底
-  background: $sxwl-bg-layout;
+  background: $sxwl-color-bg-page;
 }
 
-// -------- Sider：白底亮色菜单 --------
+// -------- Sider --------
 .sxwl-layout-sider {
-  overflow-x: hidden;
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-  height: 100vh;
   position: sticky;
   top: 0;
   left: 0;
-  bottom: 0;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   background: $sxwl-color-bg-container !important;
-  border-right: 1px solid $sxwl-color-border-secondary;
-  transition: width $sxwl-dur-fast cubic-bezier(0.645, 0.045, 0.355, 1), background $sxwl-dur-fast;
+  border-right: 1px solid $sxwl-color-divider;
+  transition: width $sxwl-mo-fast $sxwl-mo-easing-standard;
 
-  @include scrollbar-thin(rgba(148, 163, 184, 0.4), rgba(148, 163, 184, 0.7));
+  @include scrollbar-thin;
 
-  // 侧边栏 antd Menu 整体覆盖
   .ant-menu {
+    padding: $sxwl-space-xs 8px $sxwl-space-base;
     background: transparent;
     border-inline-end: none !important;
-    padding: 4px 10px 16px;
+    font-size: $sxwl-font-size-sm;
 
-    // 一级菜单项
-    .ant-menu-item {
-      height: 40px;
-      line-height: 40px;
-      margin: 4px 0;
-      border-radius: $sxwl-radius-sm;
-      color: $sxwl-color-text-secondary;
-      font-size: 14px;
-
-      .ant-menu-item-icon {
-        font-size: 16px;
-        color: $sxwl-color-text-tertiary;
-        transition: color $sxwl-dur-fast;
-      }
-
-      &:hover {
-        background: #f5f5f5;
-        color: $sxwl-color-primary;
-
-        .ant-menu-item-icon {
-          color: $sxwl-color-primary;
-        }
-      }
-
-      // 激活项：品牌浅橙底 + 橙字（Pro 亮色菜单）
-      &.ant-menu-item-selected {
-        background: $sxwl-color-primary-1;
-        color: $sxwl-color-primary;
-        font-weight: 600;
-
-        .ant-menu-item-icon {
-          color: $sxwl-color-primary;
-        }
-      }
-    }
-
-    // 子菜单标题（目录）
+    .ant-menu-item,
     .ant-menu-submenu-title {
-      height: 40px;
-      line-height: 40px;
-      margin: 4px 0;
-      border-radius: $sxwl-radius-sm;
-      color: $sxwl-color-text-secondary;
-      font-size: 14px;
+      // 相对定位承载左侧 2px 品牌竖条（选中态签名）
+      position: relative;
+      margin-inline: 0;
+      margin-block: 2px;
+      color: $sxwl-color-text-body;
+      font-size: $sxwl-font-size-sm;
 
-      .ant-menu-item-icon {
-        font-size: 16px;
-        color: $sxwl-color-text-tertiary;
+      .ant-menu-title-content {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
-      &:hover {
-        color: $sxwl-color-primary;
-        background: #f5f5f5;
-
-        .ant-menu-item-icon {
-          color: $sxwl-color-primary;
-        }
+      .ant-menu-item-icon {
+        color: $sxwl-color-text-tertiary;
+        transition: color $sxwl-mo-fast;
       }
     }
 
-    // 子菜单展开容器
+    .ant-menu-item:hover:not(.ant-menu-item-selected),
+    .ant-menu-submenu-title:hover {
+      background: $sxwl-color-bg-hover;
+      color: $sxwl-color-text-heading;
+
+      .ant-menu-item-icon {
+        color: $sxwl-color-text-secondary;
+      }
+    }
+
+    // 选中：浅橙底 + 品牌文字色（#A84709 压 #FDE8D5 = 4.95:1）+ 2px 品牌竖条
+    .ant-menu-item-selected {
+      background: $sxwl-color-bg-selected;
+      color: $sxwl-color-text-brand;
+      font-weight: $sxwl-font-weight-medium;
+
+      .ant-menu-item-icon {
+        color: $sxwl-color-text-brand;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 2px;
+        height: 16px;
+        transform: translateY(-50%);
+        border-radius: $sxwl-radius-full;
+        background: $sxwl-brand-500;
+      }
+    }
+
+    .ant-menu-submenu-open > .ant-menu-submenu-title {
+      color: $sxwl-color-text-heading;
+
+      .ant-menu-item-icon {
+        color: $sxwl-color-text-secondary;
+      }
+    }
+
     .ant-menu-sub {
       background: transparent !important;
 
       .ant-menu-item {
-        padding-left: 40px !important;
-      }
-    }
-
-    // 目录展开态高亮
-    .ant-menu-submenu-open > .ant-menu-submenu-title {
-      color: $sxwl-color-primary;
-
-      .ant-menu-item-icon {
-        color: $sxwl-color-primary;
+        padding-inline-start: 38px !important;
       }
     }
   }
+
+  // 折叠态：竖条会顶到图标，收起时隐掉
+  &.ant-layout-sider-collapsed .ant-menu-item-selected::before {
+    display: none;
+  }
 }
 
-// -------- Logo 区 --------
+// -------- Logo 区：与 Header 同高，让两条细线对齐 --------
 .sxwl-layout-logo {
-  height: 64px;
   display: flex;
+  height: $sxwl-layout-header-height;
   align-items: center;
   justify-content: center;
-  padding: 0 16px;
-  gap: 10px;
-  white-space: nowrap;
+  gap: $sxwl-space-sm;
+  padding: 0 $sxwl-space-base;
   overflow: hidden;
-  border-bottom: 1px solid $sxwl-color-border-secondary;
-  margin-bottom: 8px;
+  white-space: nowrap;
+  border-bottom: 1px solid $sxwl-color-divider;
 }
 
 .sxwl-layout-logo-icon {
-  width: 34px;
-  height: 34px;
   flex-shrink: 0;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
-  border-radius: $sxwl-radius-sm;
 }
 
 .sxwl-layout-logo-text {
-  font-size: 18px;
-  font-weight: 700;
   color: $sxwl-color-text-heading;
-  letter-spacing: 2px;
+  font-size: $sxwl-font-size-md;
+  font-weight: $sxwl-font-weight-semibold;
+  letter-spacing: 0.5px;
 }
 
 // -------- Header --------
 .sxwl-layout-header {
-  padding: 0 24px 0 0 !important;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: $sxwl-color-bg-container;
-  border-bottom: 1px solid $sxwl-color-border-secondary;
   position: sticky;
   top: 0;
   z-index: 9;
-  height: 64px;
-  line-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: $sxwl-layout-header-height;
+  padding: 0 $sxwl-layout-content-padding 0 0 !important;
+  line-height: normal;
+  background: $sxwl-color-bg-container;
+  border-bottom: 1px solid $sxwl-color-divider;
 }
 
 .sxwl-layout-header-left {
   display: flex;
   align-items: center;
 
-  .ant-btn {
+  .ant-btn-text {
     color: $sxwl-color-text-secondary;
-    transition: all $sxwl-dur-fast;
 
     &:hover {
-      color: $sxwl-color-primary;
-      background: #f5f5f5;
+      background: $sxwl-color-bg-hover;
+      color: $sxwl-color-text-heading;
     }
   }
 }
@@ -176,56 +169,53 @@
 .sxwl-layout-header-center {
   display: flex;
   align-items: center;
-  font-size: 13px;
   color: $sxwl-color-text-secondary;
-  letter-spacing: 0.3px;
+  font-size: $sxwl-font-size-sm;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.2px;
   user-select: none;
 
-  // SxwlClock（全局类，此处覆盖）
   .sxwl-header-clock {
     display: inline-flex;
+    gap: $sxwl-space-sm;
     align-items: center;
-    gap: 8px;
-    color: $sxwl-color-text-secondary;
 
-    // 时间前加品牌橙圆点点缀
+    // 状态点：装饰用主色，不承担文字对比度
     &::before {
-      content: '';
       width: 6px;
       height: 6px;
-      border-radius: 50%;
-      background: $sxwl-gradient-brand;
+      border-radius: $sxwl-radius-full;
+      background: $sxwl-brand-500;
+      content: '';
     }
   }
 }
 
 .sxwl-layout-header-right {
   display: flex;
+  gap: $sxwl-space-xs;
   align-items: center;
-  gap: 4px;
 }
 
 .sxwl-layout-user-dropdown {
-  cursor: pointer;
-  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  padding: $sxwl-space-xs $sxwl-space-md;
   border-radius: $sxwl-radius-sm;
-  transition: all $sxwl-dur-fast;
+  cursor: pointer;
+  transition: background $sxwl-mo-fast;
 
-  .anticon {
+  .anticon,
+  svg {
     color: $sxwl-color-text-tertiary;
-    transition: color $sxwl-dur-fast;
   }
 
   &:hover {
-    background: #f5f5f5;
-
-    .anticon {
-      color: $sxwl-color-primary;
-    }
+    background: $sxwl-color-bg-hover;
   }
 }
 
 .sxwl-layout-content {
-  margin: 24px;
-  min-height: calc(100vh - 64px - 48px);
+  min-height: calc(100vh - #{$sxwl-layout-header-height});
+  padding: $sxwl-layout-content-padding;
 }

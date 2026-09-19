@@ -35,7 +35,7 @@ public class SysOrganizationController {
      * @return 组织信息
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ORG_QUERY + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ORG_QUERY + "')")
     @SxwlLog(title = "组织管理", description = "查询组织详情[id=#{#id}]")
     public SysOrganizationDTO getOrganizationById(@PathVariable("id") Long id) {
         return sysOrganizationService.getOrganizationById(id);
@@ -47,7 +47,7 @@ public class SysOrganizationController {
      * @return 树形组织列表
      */
     @GetMapping("/tree")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ORG_LIST + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ORG_LIST + "')")
     @SxwlLog(title = "组织管理", description = "查询组织树")
     public List<SysOrganizationDTO> getOrganizationTree() {
         return sysOrganizationService.getOrganizationTree();
@@ -59,7 +59,7 @@ public class SysOrganizationController {
      * @return 平铺组织列表
      */
     @GetMapping("/all")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ORG_LIST + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ORG_LIST + "')")
     @SxwlLog(title = "组织管理", description = "查询所有组织")
     public List<SysOrganizationDTO> getAllOrganizationList() {
         return sysOrganizationService.getAllOrganizationList();
@@ -72,7 +72,7 @@ public class SysOrganizationController {
      */
     @PostMapping
     @SxwlRepeatSubmit(interval = 3, message = "组织创建中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ORG_ADD + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ORG_ADD + "')")
     @SxwlLog(title = "组织管理", description = "新增组织[#{#dto.orgName}]")
     public void createOrganization(@Valid @RequestBody SysOrganizationDTO dto) {
         sysOrganizationService.createOrganization(dto);
@@ -85,7 +85,7 @@ public class SysOrganizationController {
      */
     @PutMapping
     @SxwlRepeatSubmit(interval = 3, message = "组织修改中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ORG_EDIT + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ORG_EDIT + "')")
     @SxwlLog(title = "组织管理", description = "修改组织[#{#dto.orgName}]")
     public void updateOrganization(@Valid @RequestBody SysOrganizationDTO dto) {
         sysOrganizationService.updateOrganization(dto);
@@ -98,7 +98,7 @@ public class SysOrganizationController {
      */
     @DeleteMapping("/{id}")
     @SxwlRepeatSubmit(interval = 3, message = "组织删除中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.ORG_DELETE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.ORG_DELETE + "')")
     @SxwlLog(title = "组织管理", description = "删除组织[id=#{#id}]")
     public void deleteOrganizationById(@PathVariable("id") Long id) {
         sysOrganizationService.deleteOrganizationById(id);

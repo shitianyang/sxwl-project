@@ -57,7 +57,8 @@ public class LoginLogEventListener {
 
             LocalDateTime now = LocalDateTime.now();
             entity.setCreateBy(event.getUserId());
-            entity.setCreateOrg(0L);
+            // 写入登录用户真实主组织（而非固定 0），否则会被数据权限 create_org IN(...) 过滤不可见
+            entity.setCreateOrg(event.getOrgId() != null ? event.getOrgId() : 0L);
             entity.setCreateTime(now);
             entity.setDeleteFlag(0);
 

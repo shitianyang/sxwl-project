@@ -65,6 +65,16 @@ public interface SxwlPrincipal extends Serializable {
     Long getOrgId();
 
     /**
+     * 获取当前用户登录账号
+     * <p>用于操作日志等场景记录操作人。实现类（如 SxwlLoginUser）已有 getUsername() 时自动覆盖本默认实现。</p>
+     *
+     * @return 登录账号；无实现时返回 null
+     */
+    default String getUsername() {
+        return null;
+    }
+
+    /**
      * 获取数据权限可见的组织 ID 集合
      * <p>登录时由 auth 模块计算好后写入，mybatis 拦截器直接读取拼 SQL。</p>
      *

@@ -61,7 +61,7 @@ public class SysMonitorController {
      * @return 服务器硬件信息（CPU、内存、磁盘）
      */
     @GetMapping("/server")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.SERVER_VIEW + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Monitor.SERVER_VIEW + "')")
     @SxwlLog(title = "系统监控", description = "查询服务器信息")
     public ServerInfoVO server() {
         return serverInfoService.getServerInfo();
@@ -73,7 +73,7 @@ public class SysMonitorController {
      * @return JVM 运行时信息（堆内存、非堆内存、线程数、类加载数、GC 统计）
      */
     @GetMapping("/jvm")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.SERVER_VIEW + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Monitor.SERVER_VIEW + "')")
     @SxwlLog(title = "系统监控", description = "查询 JVM 信息")
     public JvmInfoVO jvm() {
         return jvmInfoService.getJvmInfo();
@@ -85,7 +85,7 @@ public class SysMonitorController {
      * @return Redis 运行时信息（连接客户端数、内存使用、总 Key 数、命中率）
      */
     @GetMapping("/redis")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.SERVER_VIEW + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Monitor.SERVER_VIEW + "')")
     @SxwlLog(title = "系统监控", description = "查询 Redis 信息")
     public SysRedisInfoDTO redis() {
         SysRedisInfoDTO dto = new SysRedisInfoDTO();
@@ -117,7 +117,7 @@ public class SysMonitorController {
      * @return 数据库连接池信息（活跃连接数）
      */
     @GetMapping("/db")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.SERVER_VIEW + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Monitor.SERVER_VIEW + "')")
     @SxwlLog(title = "系统监控", description = "查询数据库连接信息")
     public SysDbInfoDTO db() {
         SysDbInfoDTO dto = new SysDbInfoDTO();

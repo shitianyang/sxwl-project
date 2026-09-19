@@ -1,0 +1,51 @@
+// ============================================
+// SxwlTag — 语义标签
+// 浅底 + 同族 -text 文字色，不带描边；胶囊形，枚举值在表格里读起来是"一个整体"而不是一块补丁
+// ============================================
+
+@use "../../styles/variables" as *;
+
+.ant-tag.sxwl-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: $sxwl-space-2xs;
+  padding: $sxwl-space-2xs $sxwl-space-base;
+  font-size: $sxwl-font-size-xs;
+  font-weight: $sxwl-font-weight-medium;
+  line-height: $sxwl-line-height-snug;
+  white-space: nowrap;
+  background: $sxwl-color-bg-subtle;
+  border: 1px solid transparent;
+  border-radius: $sxwl-radius-full;
+
+  // 枚举值同时又是代码时（请求方式、字典编码）用等宽，比 YaHei 更像标签
+  &--mono {
+    font-family: $sxwl-font-mono;
+    letter-spacing: 0.02em;
+  }
+
+  &--success {
+    color: $sxwl-color-success-text;
+    background: $sxwl-color-success-subtle;
+  }
+
+  &--warning {
+    color: $sxwl-color-warning-text;
+    background: $sxwl-color-warning-subtle;
+  }
+
+  &--danger {
+    color: $sxwl-color-danger-text;
+    background: $sxwl-color-danger-subtle;
+  }
+
+  &--info {
+    color: $sxwl-color-info-text;
+    background: $sxwl-color-info-subtle;
+  }
+
+  &--neutral {
+    color: $sxwl-color-text-secondary;
+    background: $sxwl-color-bg-subtle;
+  }
+}

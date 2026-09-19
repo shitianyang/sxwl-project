@@ -121,4 +121,76 @@ public interface SysUserMapper {
                             @Param("createBy") Long createBy,
                             @Param("createOrg") Long createOrg,
                             @Param("createTime") java.time.LocalDateTime createTime);
+
+    /**
+     * 查询用户已分配的角色 ID 列表（编辑回显用）
+     *
+     * @param userId 用户 ID
+     * @return 角色 ID 列表
+     */
+    List<Long> getRoleIdsByUserId(@Param("userId") Long userId);
+
+    /**
+     * 查询用户已分配的组织 ID 列表（主组织排在首位，编辑回显用）
+     *
+     * @param userId 用户 ID
+     * @return 组织 ID 列表
+     */
+    List<Long> getOrgIdsByUserId(@Param("userId") Long userId);
+
+    /**
+     * 查询用户已分配的岗位 ID（编辑回显用）
+     *
+     * @param userId 用户 ID
+     * @return 岗位 ID，未分配时返回 null
+     */
+    Long getPositionIdByUserId(@Param("userId") Long userId);
+
+    /**
+     * 批量插入用户-组织关联（首个组织为主组织 is_main=1）
+     *
+     * @param ids        雪花 ID 列表（与 orgIds 一一对应）
+     * @param userId     用户 ID
+     * @param orgIds     组织 ID 列表
+     * @param createBy   创建人
+     * @param createOrg  创建人所属组织
+     * @param createTime 创建时间
+     * @return 影响行数
+     */
+    int batchInsertUserOrganization(@Param("ids") List<Long> ids,
+                                    @Param("userId") Long userId,
+                                    @Param("orgIds") List<Long> orgIds,
+                                    @Param("createBy") Long createBy,
+                                    @Param("createOrg") Long createOrg,
+                                    @Param("createTime") java.time.LocalDateTime createTime);
+
+    /**
+     * 插入用户-岗位关联（单岗位）
+     *
+     * @param id         雪花 ID
+     * @param userId     用户 ID
+     * @param positionId 岗位 ID
+     * @param createBy   创建人
+     * @param createOrg  创建人所属组织
+     * @param createTime 创建时间
+     * @return 影响行数
+     */
+    int insertUserPosition(@Param("id") Long id,
+                           @Param("userId") Long userId,
+                           @Param("positionId") Long positionId,
+                           @Param("createBy") Long createBy,
+                           @Param("createOrg") Long createOrg,
+                           @Param("createTime") java.time.LocalDateTime createTime);
+
+    /** 逻辑删除指定用户的组织关联。 */
+    int deleteUserOrganizationByUserId(@Param("userId") Long userId);
+
+    /** 逻辑删除指定用户的岗位关联。 */
+    int deleteUserPositionByUserId(@Param("userId") Long userId);
+
+    /** 批量逻辑删除指定用户的组织关联（删除用户时清理孤儿数据）。 */
+    int deleteUserOrganizationByUserIds(@Param("ids") List<Long> ids);
+
+    /** 批量逻辑删除指定用户的岗位关联（删除用户时清理孤儿数据）。 */
+    int deleteUserPositionByUserIds(@Param("ids") List<Long> ids);
 }

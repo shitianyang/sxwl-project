@@ -65,7 +65,7 @@ export default function OnlineUserPage() {
     { title: '浏览器', dataIndex: 'browser', key: 'browser', width: 160, ellipsis: true },
     { title: '操作系统', dataIndex: 'os', key: 'os', width: 140 },
     { title: '设备 ID', dataIndex: 'deviceId', key: 'deviceId', width: 200, ellipsis: true },
-    { title: '登录时间', dataIndex: 'loginTime', key: 'loginTime', width: 180 },
+    { title: '登录时间', dataIndex: 'loginTime', key: 'loginTime', width: 200 },
     {
       title: '操作', key: 'action', width: 120,
       render: (_, record) => (

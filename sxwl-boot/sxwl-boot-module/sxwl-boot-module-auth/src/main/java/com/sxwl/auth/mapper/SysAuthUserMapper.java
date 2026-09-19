@@ -24,6 +24,14 @@ public interface SysAuthUserMapper {
     Map<String, Object> selectByUsername(String username);
 
     /**
+     * 根据用户 ID 查询用户（仅查权限快照重建必需字段，不含密码）
+     * <p>
+     * SQL 实现：resources/mappers/SysAuthUserMapper.xml#selectById
+     * </p>
+     */
+    Map<String, Object> selectById(Long userId);
+
+    /**
      * 查询用户角色列表（含数据权限）
      * <p>
      * SQL 实现：resources/mappers/SysAuthUserMapper.xml#selectRolesByUserId

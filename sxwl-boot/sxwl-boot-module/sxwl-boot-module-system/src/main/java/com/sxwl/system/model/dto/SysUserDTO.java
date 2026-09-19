@@ -37,8 +37,14 @@ public class SysUserDTO {
     /** 创建时间（仅列表返回时填充） */
     private String createTime;
 
-    /** 角色 ID 列表（仅新增时使用） */
+    /** 角色 ID 列表（新增/修改时用于分配角色，回显时返回当前角色） */
     private List<Long> roleIds;
+
+    /** 组织 ID 列表（新增/修改时用于分配组织，首个为主组织；回显时返回当前组织） */
+    private List<Long> orgIds;
+
+    /** 岗位 ID（新增/修改时用于分配岗位；回显时返回当前岗位） */
+    private Long positionId;
 
     /** 是否为超级管理员账号（仅列表展示使用） */
     private Boolean superAdmin;
@@ -113,6 +119,22 @@ public class SysUserDTO {
 
     public void setRoleIds(List<Long> roleIds) {
         this.roleIds = roleIds;
+    }
+
+    public List<Long> getOrgIds() {
+        return orgIds;
+    }
+
+    public void setOrgIds(List<Long> orgIds) {
+        this.orgIds = orgIds;
+    }
+
+    public Long getPositionId() {
+        return positionId;
+    }
+
+    public void setPositionId(Long positionId) {
+        this.positionId = positionId;
     }
 
     public Boolean getSuperAdmin() {

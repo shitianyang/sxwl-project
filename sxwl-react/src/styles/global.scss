@@ -26,7 +26,11 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  line-height: 1.6;
+  font-family: $sxwl-font-family;
+  font-size: $sxwl-font-size-base;
+  line-height: $sxwl-line-height-normal;
+  color: $sxwl-color-text-body;
+  background: $sxwl-color-bg-page;
 }
 
 #root {
@@ -48,6 +52,15 @@ body {
 }
 
 // ============================================
+// 等宽数字工具类：ID / 手机号 / 时间 / 统计值统一用它
+// 不用 tabular-nums 的话，同一列里数字宽度会逐行跳动
+// ============================================
+.sxwl-num {
+  font-family: $sxwl-font-mono;
+  font-variant-numeric: tabular-nums;
+}
+
+// ============================================
 // antd Modal（portal 渲染到 body，必须在 .sxwl-root 之外才能生效）
 // Pro 观感：白底 header + 中性加粗标题 + 橙色关闭 hover
 // ============================================
@@ -58,34 +71,34 @@ body {
 
   &-header {
     margin-bottom: 0;
-    padding: 16px 24px;
-    border-bottom: 1px solid $sxwl-color-border-secondary;
+    padding: $sxwl-space-base $sxwl-space-xl;
+    border-bottom: 1px solid $sxwl-color-divider;
     background: $sxwl-color-bg-container;
   }
 
   &-title {
     color: $sxwl-color-text-heading;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: $sxwl-font-size-md;
+    font-weight: $sxwl-font-weight-semibold;
   }
 
   &-close {
     color: $sxwl-color-text-tertiary;
-    transition: color $sxwl-dur-fast;
+    transition: color $sxwl-mo-fast;
 
     &:hover {
-      color: $sxwl-color-primary !important;
+      color: $sxwl-brand-500 !important;
     }
   }
 
   &-body {
-    padding: 20px 24px;
+    padding: $sxwl-space-lg $sxwl-space-xl;
   }
 
   &-footer {
     margin-top: 0;
-    padding: 12px 24px;
-    border-top: 1px solid $sxwl-color-border-secondary;
+    padding: $sxwl-space-md $sxwl-space-xl;
+    border-top: 1px solid $sxwl-color-divider;
   }
 }
 

@@ -1,128 +1,261 @@
 // ============================================
-// SxwlPage — CRUD 页面骨架样式（sass, 规范 v2.0 · Pro 中性观感）
-// 所有业务页都通过 SxwlPage 拼装，改此文件全局受益
+// SxwlPage — CRUD 页面骨架
+// 一块浮起的白色台面装下 筛选 / 表格 / 分页：无描边、12 圆角、一层浅阴影。
+// 所有业务页都通过 SxwlPage 拼装，改此文件全局受益。
+// 表格的颜色（表头底、行线、hover、选中、单元格内边距）在 theme.token.ts 的
+// components.Table 里，本文件只留 antd 没有令牌的那部分：容器、行高、字重、分页。
 // ============================================
 
 @use "../../styles/variables" as *;
 @use "../../styles/mixins" as *;
 
-// 页面根容器：撑满 Content，flex 纵向排布
-.sxwl-page-wrapper {
-  height: calc(100vh - 64px - 48px);
+.sxwl-page {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) both;
+  height: calc(100vh - #{$sxwl-layout-header-height} - #{$sxwl-layout-content-padding} * 2);
+  min-height: 0;
 }
 
-// 面包屑
-.sxwl-page-breadcrumb {
-  margin-bottom: 16px;
-  flex-shrink: 0;
-  font-size: 13px;
-  color: $sxwl-color-text-tertiary;
-  animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
-}
+// -------- 页头：面包屑 + 标题 + 说明 + 主操作 --------
 
-.sxwl-page-breadcrumb-sep {
-  margin: 0 8px;
-  color: $sxwl-color-text-quaternary;
-}
-
-.sxwl-page-breadcrumb-item {
-  transition: color $sxwl-dur-fast;
-
-  &:hover {
-    color: $sxwl-color-primary;
-  }
-
-  // 当前项：中性加粗（Pro 风格）
-  &.is-current {
-    color: $sxwl-color-text-heading;
-    font-weight: 700;
-  }
-}
-
-// 工具栏
-.sxwl-page-toolbar {
+.sxwl-page__head {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16px;
+  align-items: flex-start;
   flex-shrink: 0;
-  animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+  gap: $sxwl-space-base;
+  margin-bottom: $sxwl-space-2xl;
+  animation: sxwl-rise-soft $sxwl-mo-base $sxwl-mo-easing-decelerate both;
 }
 
-// 表格卡片（白底 + 细边框 + L1 阴影，Pro 观感）
-.sxwl-page-table-card {
-  position: relative;
-  border-radius: $sxwl-radius-lg;
-  background: $sxwl-color-bg-container;
-  border: 1px solid $sxwl-color-border-secondary;
-  box-shadow: $sxwl-shadow-card;
-  flex: 1;
+.sxwl-page__head-text {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.sxwl-page__crumb {
+  margin-bottom: $sxwl-space-2xs;
+  font-size: $sxwl-font-size-sm;
+  color: $sxwl-color-text-secondary;
+}
+
+.sxwl-page__crumb-sep {
+  margin: 0 $sxwl-space-xs;
+  color: $sxwl-color-text-tertiary;
+}
+
+.sxwl-page__crumb-part .is-current {
+  color: $sxwl-color-text-heading;
+}
+
+.sxwl-page__title {
+  margin: 0 0 $sxwl-space-2xs;
+  font-size: $sxwl-font-size-xl;
+  font-weight: $sxwl-font-weight-semibold;
+  line-height: $sxwl-line-height-tight;
+  color: $sxwl-color-text-heading;
+}
+
+.sxwl-page__desc {
+  margin: 0;
+  font-size: $sxwl-font-size-sm;
+  color: $sxwl-color-text-secondary;
+}
+
+.sxwl-page__actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: $sxwl-space-sm;
+}
+
+// -------- 面板：唯一的容器 --------
+// 页面底是 #FAFAFA，白台面去掉描边后靠一层浅阴影分界，不需要线（描边是复古感的主要来源）
+
+.sxwl-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   min-height: 0;
   overflow: hidden;
-  animation: sxwl-rise-soft $sxwl-dur cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+  background: $sxwl-color-bg-container;
+  border-radius: $sxwl-radius-lg;
+  box-shadow: $sxwl-shadow-sm;
+  animation: sxwl-rise-soft $sxwl-mo-base $sxwl-mo-easing-decelerate 0.06s both;
+}
 
-  .ant-card-body {
-    height: 100%;
-    padding: 16px 20px;
+// 筛选条与表格之间不画线，靠留白分层
+.sxwl-panel__filters {
+  flex-shrink: 0;
+  padding: $sxwl-space-xl $sxwl-space-xl $sxwl-space-lg;
+}
+
+// -------- 表体：只有这里滚动 --------
+
+.sxwl-page__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+
+  // antd 的包裹链是 wrapper > ant-spin > ant-spin-container > (table + pagination)，
+  // 三层都要纵向撑开，分页栏才会贴在面板底部（漏掉 .ant-spin 会整条链断掉）
+  .ant-table-wrapper,
+  .ant-spin,
+  .ant-spin-nested-loading,
+  .ant-spin-container {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
+    min-height: 0;
+  }
 
-    .ant-table-wrapper {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
+  .ant-table {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
 
-      .ant-spin-nested-loading {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
+  // antd 把测出来的表体高度写成内联 max-height，它只封顶不保底：
+  // 量的高度一旦偏大（分页栏换行、窗口变矮），container 就会撑破 .ant-table 压到分页上。
+  // 让 flex 链自己吃掉多余高度，比再减一个写死的分页高度稳。
+  .ant-table-container {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
 
-        .ant-spin-container {
-          flex: 1;
-          min-height: 0;
-          display: flex;
-          flex-direction: column;
+  .ant-table-body,
+  .ant-table-content {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
 
-          .ant-table {
-            flex: 1;
-            min-height: 0;
-          }
+  // 表头：白底 + 600 字重，比数据行矮一档。底色/字色/内边距由 components.Table 给
+  .ant-table-thead > tr > th {
+    height: $sxwl-ctl-table-row;
+    font-size: $sxwl-font-size-sm;
+    font-weight: $sxwl-font-weight-semibold;
+    white-space: nowrap;
 
-          // 分页固定在底部，上下留白
-          .ant-pagination {
-            flex-shrink: 0;
-            padding: 16px 0;
-            text-align: right;
-          }
-        }
-      }
+    // borderColor 令牌会把表头线一起压淡，这里抬回一档保住表头与数据区的分界
+    border-bottom: 1px solid $sxwl-color-border;
+  }
 
-      .ant-table-container {
-        border-radius: 0 0 $sxwl-radius-lg $sxwl-radius-lg;
-      }
+  .ant-table-tbody > tr > td {
+    // 52 而不是 44：单元格里要放胶囊标签，44 会把标签挤满整行
+    height: $sxwl-ctl-table-row-relaxed;
+    font-size: $sxwl-font-size-base;
+  }
+
+  .ant-table-tbody > tr:last-child > td {
+    border-bottom: 0;
+  }
+
+  // 分页：不再是「面板脚」——去掉脚线，页码改幽灵态，当前页给品牌浅底
+  // 左右留白跟单元格内边距对齐（16），否则页码和首列文字会错开一条肉眼可见的缝
+  .ant-table-pagination.ant-pagination {
+    flex-shrink: 0;
+    margin: 0;
+    padding: $sxwl-space-base;
+  }
+
+  .ant-pagination-total-text {
+    margin-inline-end: auto;
+    font-size: $sxwl-font-size-sm;
+    color: $sxwl-color-text-secondary;
+  }
+
+  .ant-pagination-item,
+  .ant-pagination-prev .ant-pagination-item-link,
+  .ant-pagination-next .ant-pagination-item-link {
+    min-width: $sxwl-ctl-height-sm;
+    height: $sxwl-ctl-height-sm;
+    font-family: $sxwl-font-mono;
+    font-variant-numeric: tabular-nums;
+    background: transparent;
+    border-color: transparent;
+    border-radius: $sxwl-radius-md;
+  }
+
+  .ant-pagination-item a {
+    color: $sxwl-color-text-body;
+  }
+
+  .ant-pagination-item:hover,
+  .ant-pagination-item-link:hover {
+    background: $sxwl-color-bg-subtle;
+    border-color: transparent;
+
+    a {
+      color: $sxwl-color-text-heading;
     }
   }
 
-  // 表头：浅灰底 + 正文色 + 加粗（Pro 表格规范）
-  .ant-table-thead > tr > th {
-    background: #fafafa;
-    color: $sxwl-color-text;                // 正文色 #1F2329（规范：表头使用正文色）
-    font-weight: 600;
-    border-bottom: 1px solid $sxwl-color-border-secondary;
-  }
+  // 当前页用浅底 + 品牌文字，不用实色橙：整页饱和品牌色仍只留给主按钮
+  .ant-pagination-item-active {
+    font-weight: $sxwl-font-weight-semibold;
+    background: $sxwl-brand-50;
+    border-color: transparent;
 
-  // 行 hover：浅灰
-  .ant-table-tbody > tr:hover > td {
-    background: #fafafa !important;
+    a {
+      color: $sxwl-brand-text;
+    }
   }
+}
 
-  // 选中行：品牌浅橙底（点缀）
-  .ant-table-row-selected > td {
-    background: $sxwl-color-primary-1 !important;
+// -------- 单元格内容档：「值」类字段不再当正文排 --------
+// URL / IP / 耗时 / 报文 / 时间用等宽 + 表格数字，日志页最密的那几列靠对齐而不是靠字号分层
+
+.sxwl-cell-code {
+  font-family: $sxwl-font-mono;
+  font-size: $sxwl-font-size-sm;
+  font-variant-numeric: tabular-nums;
+  color: $sxwl-color-text-secondary;
+}
+
+.sxwl-cell-time {
+  font-family: $sxwl-font-mono;
+  font-variant-numeric: tabular-nums;
+
+  // 日期用来定位、时间只是补充，用字色差开而不是加粗
+  .sxwl-cell-time__clock {
+    color: $sxwl-color-text-tertiary;
   }
+}
+
+// -------- 空态 / 错误态 --------
+
+.sxwl-page__empty {
+  padding: $sxwl-space-4xl 0;
+  text-align: center;
+}
+
+.sxwl-page__empty-icon {
+  font-size: 28px;
+  color: $sxwl-color-text-disabled;
+}
+
+.sxwl-page__empty-title {
+  margin: $sxwl-space-sm 0 $sxwl-space-2xs;
+  font-size: $sxwl-font-size-base;
+  font-weight: $sxwl-font-weight-medium;
+  color: $sxwl-color-text-heading;
+}
+
+.sxwl-page__empty-hint {
+  margin: 0 0 $sxwl-space-base;
+  font-size: $sxwl-font-size-sm;
+  color: $sxwl-color-text-secondary;
+}
+
+.sxwl-page__error {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: $sxwl-space-sm;
+  font-size: $sxwl-font-size-base;
+  color: $sxwl-color-danger-text;
+  background: $sxwl-color-bg-container;
 }

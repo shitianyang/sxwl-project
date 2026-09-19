@@ -30,7 +30,7 @@ public class SysBackupController {
 
     @PostMapping("/backup")
     @SxwlRepeatSubmit(interval = 60, message = "备份操作执行中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.BACKUP_BACKUP + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Monitor.BACKUP_BACKUP + "')")
     @SxwlLog(title = "数据备份", description = "执行数据库备份")
     public void backup() {
         // 在请求线程（含 SecurityContext）同步取出 userId/orgId，传入异步方法，
@@ -42,7 +42,7 @@ public class SysBackupController {
     }
 
     @GetMapping("/list")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.BACKUP_VIEW + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Monitor.BACKUP_VIEW + "')")
     @SxwlLog(title = "数据备份", description = "查询备份列表")
     public PageInfo<SysBackupDTO> list(@RequestParam(defaultValue = "1") int page,
                                        @RequestParam(defaultValue = "20") int size) {
@@ -51,7 +51,7 @@ public class SysBackupController {
 
     @PostMapping("/restore/{fileId}")
     @SxwlRepeatSubmit(interval = 60, message = "恢复操作执行中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.BACKUP_RESTORE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Monitor.BACKUP_RESTORE + "')")
     @SxwlLog(title = "数据备份", description = "恢复备份[fileId=#{#fileId}]")
     public void restore(@PathVariable("fileId") Long fileId) {
         sysBackupService.restore(fileId);
@@ -59,7 +59,7 @@ public class SysBackupController {
 
     @DeleteMapping("/{id}")
     @SxwlRepeatSubmit
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.Monitor.BACKUP_DELETE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.Monitor.BACKUP_DELETE + "')")
     @SxwlLog(title = "数据备份", description = "删除备份记录[id=#{#id}]")
     public void delete(@PathVariable("id") Long id) {
         sysBackupService.delete(id);

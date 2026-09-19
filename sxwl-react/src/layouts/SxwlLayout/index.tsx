@@ -7,6 +7,7 @@ import { useMenuStore } from '@/stores/menuStore';
 import { logout } from '@/api/authApi';
 import type { MenuTreeItem } from '@/api/system/menuApi';
 import logoSrc from '@/assets/images/logo.png';
+import { SXWL_LAYOUT } from '@/styles/theme.token';
 import HeaderNotice from './HeaderNotice';
 import SxwlClock from '@/components/SxwlClock';
 import './index.scss';
@@ -162,7 +163,8 @@ export default function LayoutPage() {
         trigger={null}
         collapsible
         collapsed={collapsed}
-        width={220}
+        width={SXWL_LAYOUT.sidebarWidth}
+        collapsedWidth={SXWL_LAYOUT.sidebarCollapsedWidth}
         className="sxwl-layout-sider"
       >
         <div className="sxwl-layout-logo">

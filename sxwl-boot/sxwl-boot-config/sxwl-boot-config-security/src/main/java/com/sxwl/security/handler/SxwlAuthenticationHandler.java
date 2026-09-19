@@ -182,8 +182,9 @@ public class SxwlAuthenticationHandler {
 
     /**
      * 缓存用户信息到 Redis Hash（供 JwtAuthenticationFilter 读取）
+     * <p>除登录签发 Token 外，/auth/refresh 在快照被主动失效后也调用此方法重建最新权限。</p>
      */
-    private void cacheUserInfo(SxwlLoginUser loginUser, String clientType) {
+    public void cacheUserInfo(SxwlLoginUser loginUser, String clientType) {
         String infoKey = SxwlRedisKeyUtils.tokenInfoKey(clientType, loginUser.getUserId());
 
         Map<String, String> userInfo = new LinkedHashMap<>();

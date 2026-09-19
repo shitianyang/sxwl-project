@@ -1,9 +1,9 @@
 spring:
   datasource:
     # 数据库连接 URL
-    url: jdbc:postgresql://localhost:30013/sxwl?currentSchema=public&useUnicode=true&characterEncoding=utf8
-    username: postgres                 # 数据库用户名
-    password: 123456                   # 数据库密码
+    url: jdbc:postgresql://localhost:30203/sxwl_project?currentSchema=public&useUnicode=true&characterEncoding=utf8
+    username: sxwl                 # 数据库用户名
+    password: '@sxwl0324!'             # 数据库密码
     driver-class-name: org.postgresql.Driver
     # HikariCP 连接池配置
     hikari:
@@ -16,8 +16,8 @@ spring:
   data:
     redis:
       host: localhost                  # Redis 主机
-      port: 30011                      # Redis 端口
-      password: 123456                 # Redis 密码
+      port: 30201                      # Redis 端口
+      password: '@sxwl0324!'           # Redis 密码
       database: 0                      # 使用的数据库索引（0-15）
       timeout: 10000                   # 连接超时（毫秒）
       # Lettuce 连接池配置
@@ -31,28 +31,25 @@ spring:
 # ==================== 自定义配置 ====================
 sxwl:
   web:
-    allowed-origins: "${SXWL_ALLOWED_ORIGINS:}" # 必须通过部署环境显式配置域名白名单
-    request-log-enabled: false         # 生产关闭请求日志，减少 IO
-    trust-forwarded-headers: ${SXWL_TRUST_FORWARDED_HEADERS:false}
+    allowed-origins: "http://127.0.0.1:31001,http://localhost:31001"
+    request-log-enabled: true          # 测试环境开启请求日志，便于排查
+    trust-forwarded-headers: false
   mybatis:
-    slow-sql-threshold: 3000           # 生产阈值放宽，仅记录真正慢的查询
+    slow-sql-threshold: 1000           # 测试环境开启慢查询监控（超过 1 秒打 WARN）
   redis:
-    lock-default-timeout: 10
-    rate-limit-default-window: 60
-    repeat-submit-interval: 3
+    lock-default-timeout: 10           # 分布式锁默认超时（秒）
+    rate-limit-default-window: 60      # 限流默认时间窗口（秒）
+    repeat-submit-interval: 3          # 防重复提交间隔（秒）
   security:
-    jwt-secret: 05e2b6fd0e7ad75bffec5bacdf72c8f071c337aba8bc5e9eb51698ccfbb46b32  # JWT 签名密钥
+    jwt-secret: 05e2b6fd0e7ad75bffec5bacdf72c8f071c337aba8bc5e9eb51698ccfbb46b32  # JWT 签名密钥（测试环境明文即可）
     sm2-key-rotation-interval-minutes: 1440  # SM2 密钥轮换间隔（分钟），默认 24 小时
     sm2-key-grace-period-minutes: 120        # SM2 历史密钥保留宽限期（分钟），默认 2 小时
     sm2-key-max-history: 1                   # SM2 历史密钥最大保留数（不含当前）
-  wechat:
-    appid: ""                                # 微信小程序 AppID（生产环境部署时填写）
-    secret: ""                               # 微信小程序 AppSecret（生产环境部署时填写）
   rustfs:
-    endpoint: http://localhost:9000      # S3 兼容服务地址（生产环境 Rustfs）
+    endpoint: http://localhost:30024      # S3 兼容服务地址（测试环境 Rustfs）
     region: us-east-1
     access-key: admin
-    secret-key: 12345678
+    secret-key: '@Sxwl0324!'
     default-bucket: sxwl-files
     presigned-url-expire: 3600           # 预签名 URL 有效期（秒）
     temp-path-prefix: tmp/

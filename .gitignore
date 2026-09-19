@@ -27,17 +27,6 @@ build/
 **/boot-app.jar
 **/*.jar
 
-# ============ 配置文件（敏感） ============
-# 本地环境配置文件（含密码等敏感信息）
-sxwl-boot/sxwl-boot-app/src/main/resources/application-dev.yaml
-sxwl-boot/sxwl-boot-app/src/main/resources/application-prod.yaml
-sxwl-boot/sxwl-boot-app/src/main/resources/application-test.yaml
-
-# 所有包含敏感信息的环境配置
-**/application-*.yaml
-!**/application.yaml
-!**/application-*.template
-
 # ============ Node / React ============
 # 依赖
 sxwl-react/node_modules/
@@ -53,19 +42,6 @@ sxwl-react/*.tsbuildinfo
 
 # ESLint 缓存
 sxwl-react/.eslintcache
-
-# 环境变量文件（含密钥）
-sxwl-react/.env.local
-sxwl-react/.env.development.local
-sxwl-react/.env.production.local
-./env
-
-# ============ 数据库 ============
-# 数据库文件（可能含密码）
-*.db
-*.sqlite
-*.sql.gz
-*.sql
 
 # ============ 日志 ============
 logs/

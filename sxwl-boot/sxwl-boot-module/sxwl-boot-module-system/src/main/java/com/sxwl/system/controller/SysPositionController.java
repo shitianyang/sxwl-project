@@ -37,7 +37,7 @@ public class SysPositionController {
      * @return 岗位信息
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.POSITION_QUERY + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.POSITION_QUERY + "')")
     @SxwlLog(title = "岗位管理", description = "查询岗位详情[id=#{#id}]")
     public SysPositionDTO getPositionById(@PathVariable("id") Long id) {
         return sysPositionService.getPositionById(id);
@@ -50,7 +50,7 @@ public class SysPositionController {
      * @return 分页岗位列表
      */
     @GetMapping("/page")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.POSITION_LIST + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.POSITION_LIST + "')")
     @SxwlLog(title = "岗位管理", description = "查询岗位列表")
     public PageInfo<SysPositionDTO> getPositionPageByParams(@Valid SysPositionPageParams params) {
         return sysPositionService.getPositionPageByParams(params);
@@ -63,7 +63,7 @@ public class SysPositionController {
      */
     @PostMapping
     @SxwlRepeatSubmit(interval = 3, message = "岗位创建中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.POSITION_ADD + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.POSITION_ADD + "')")
     @SxwlLog(title = "岗位管理", description = "新增岗位[#{#dto.positionCode}]")
     public void createPosition(@Valid @RequestBody SysPositionDTO dto) {
         sysPositionService.createPosition(dto);
@@ -76,7 +76,7 @@ public class SysPositionController {
      */
     @PutMapping
     @SxwlRepeatSubmit(interval = 3, message = "岗位修改中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.POSITION_EDIT + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.POSITION_EDIT + "')")
     @SxwlLog(title = "岗位管理", description = "修改岗位[#{#dto.positionCode}]")
     public void updatePosition(@Valid @RequestBody SysPositionDTO dto) {
         sysPositionService.updatePosition(dto);
@@ -89,7 +89,7 @@ public class SysPositionController {
      */
     @DeleteMapping("/{id}")
     @SxwlRepeatSubmit(interval = 3, message = "岗位删除中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.POSITION_DELETE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.POSITION_DELETE + "')")
     @SxwlLog(title = "岗位管理", description = "删除岗位[id=#{#id}]")
     public void deletePositionById(@PathVariable("id") Long id) {
         sysPositionService.deletePositionById(id);
@@ -102,7 +102,7 @@ public class SysPositionController {
      */
     @DeleteMapping("/batch")
     @SxwlRepeatSubmit(interval = 60, message = "批量删除岗位中，请稍候")
-    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority(" + SxwlPermConstant.System.POSITION_DELETE + ")")
+    @PreAuthorize("hasAuthority('*:*:*') or hasAuthority('" + SxwlPermConstant.System.POSITION_DELETE + "')")
     @SxwlLog(title = "岗位管理", description = "批量删除岗位[ids=#{#ids}]")
     public void batchDeletePositionByIds(@RequestBody List<Long> ids) {
         sysPositionService.batchDeletePositionByIds(ids);

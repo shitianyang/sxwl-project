@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Import;
  * @since 0.1.0
  */
 @AutoConfiguration
-@EnableConfigurationProperties(SxwlSecurityProperties.class)
+@EnableConfigurationProperties({ SxwlSecurityProperties.class, SxwlSmsProperties.class })
 @Import(SxwlSecurityConfig.class)
 public class SxwlSecurityAutoConfiguration {
 }
