@@ -353,8 +353,6 @@ export default function UserPage() {
         pageSize={pageSize}
         rowSelection={rowSelection}
         breadcrumb={['系统管理', '用户管理']}
-        title="用户管理"
-        description="维护账号、状态与角色 / 组织 / 岗位归属"
         searchFields={searchFields}
         toolbarButtons={toolbarButtons}
         onSearch={handleSearch}

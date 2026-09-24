@@ -69,15 +69,11 @@ export interface SxwlPageProps {
   pageSize?: number;
   /** 表格行选择配置 */
   rowSelection?: object;
-  /** 页标题；缺省取面包屑末级 */
-  title?: string;
-  /** 页标题下的一句话说明 */
-  description?: string;
   /** 面包屑（如 ['系统管理', '用户管理']） */
   breadcrumb?: string[];
   /** 搜索字段配置 */
   searchFields?: SearchFieldConfig[];
-  /** 工具栏按钮配置（渲染在页头右侧，与列表同级） */
+  /** 工具栏按钮配置：渲染在面板内、筛选条与表格之间；type='link' 归右组（次操作），其余左组 */
   toolbarButtons?: ToolbarButtonConfig[];
   /** Table 横向滚动（纵向由骨架测量，不要传 y） */
   scroll?: { x?: number | string };
@@ -127,8 +123,6 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
     page,
     pageSize = 10,
     rowSelection,
-    title,
-    description,
     breadcrumb,
     searchFields,
     toolbarButtons,
@@ -142,33 +136,38 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
   const hasSearch = !!searchFields?.length;
   const [bodyRef, scrollY] = useTableScrollY(hasSearch);
 
-  // -------- 页头：面包屑 + 标题 + 说明 + 主操作 --------
+  // -------- 页头：单行面包屑（侧边栏已回答「我在哪」，不再放大标题造成三遍重复） --------
 
   const crumb = breadcrumb ?? [];
-  const heading = title ?? crumb[crumb.length - 1];
 
-  const renderActions = () => {
+  const renderButton = (btn: ToolbarButtonConfig, index: number) => {
+    const btnKey = btn.permission ?? btn.label ?? index;
+    const key = Array.isArray(btnKey) ? btnKey[0] ?? index : btnKey;
+    const shared = {
+      type: btn.type,
+      danger: btn.danger,
+      icon: btn.icon ? <SxwlIcon name={btn.icon} /> : undefined,
+      onClick: btn.onClick,
+    };
+    if (btn.permission) {
+      return (
+        <SxwlPermissionButton key={key} {...shared} permission={btn.permission} mode={btn.permissionMode}>
+          {btn.label}
+        </SxwlPermissionButton>
+      );
+    }
+    return <SxwlButton key={key} {...shared}>{btn.label}</SxwlButton>;
+  };
+
+  // 邻近性原则：按钮影响表格数据，就长在表格旁边（筛选条与表格之间）
+  const renderToolbar = () => {
     if (!toolbarButtons?.length) return null;
+    const main = toolbarButtons.filter((b) => b.type !== 'link');
+    const aux = toolbarButtons.filter((b) => b.type === 'link');
     return (
-      <div className="sxwl-page__actions">
-        {toolbarButtons.map((btn, index) => {
-          const btnKey = btn.permission ?? btn.label ?? index;
-          const key = Array.isArray(btnKey) ? btnKey[0] ?? index : btnKey;
-          const shared = {
-            type: btn.type,
-            danger: btn.danger,
-            icon: btn.icon ? <SxwlIcon name={btn.icon} /> : undefined,
-            onClick: btn.onClick,
-          };
-          if (btn.permission) {
-            return (
-              <SxwlPermissionButton key={key} {...shared} permission={btn.permission} mode={btn.permissionMode}>
-                {btn.label}
-              </SxwlPermissionButton>
-            );
-          }
-          return <SxwlButton key={key} {...shared}>{btn.label}</SxwlButton>;
-        })}
+      <div className="sxwl-panel__toolbar">
+        <div className="sxwl-panel__toolbar-main">{main.map(renderButton)}</div>
+        {aux.length > 0 && <div className="sxwl-panel__toolbar-aux">{aux.map(renderButton)}</div>}
       </div>
     );
   };
@@ -228,23 +227,18 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
 
   return (
     <div className="sxwl-page">
-      <div className="sxwl-page__head">
-        <div className="sxwl-page__head-text">
-          {crumb.length > 0 && (
-            <div className="sxwl-page__crumb">
-              {crumb.map((item, i) => (
-                <span key={item} className="sxwl-page__crumb-part">
-                  {i > 0 && <span className="sxwl-page__crumb-sep">/</span>}
-                  <span className={i === crumb.length - 1 ? 'is-current' : undefined}>{item}</span>
-                </span>
-              ))}
-            </div>
-          )}
-          {heading && <h1 className="sxwl-page__title">{heading}</h1>}
-          {description && <p className="sxwl-page__desc">{description}</p>}
+      {crumb.length > 0 && (
+        <div className="sxwl-page__head">
+          <div className="sxwl-page__crumb">
+            {crumb.map((item, i) => (
+              <span key={item} className="sxwl-page__crumb-part">
+                {i > 0 && <span className="sxwl-page__crumb-sep">/</span>}
+                <span className={i === crumb.length - 1 ? 'is-current' : undefined}>{item}</span>
+              </span>
+            ))}
+          </div>
         </div>
-        {renderActions()}
-      </div>
+      )}
 
       <section className="sxwl-panel">
         {hasSearch && (
@@ -255,6 +249,7 @@ function SxwlPage(props: SxwlPageProps): JSX.Element {
             onReset={onReset}
           />
         )}
+        {renderToolbar()}
         {renderContent()}
       </section>
     </div>

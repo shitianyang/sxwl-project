@@ -28,7 +28,7 @@ body {
   padding: 0;
   font-family: $sxwl-font-family;
   font-size: $sxwl-font-size-base;
-  line-height: $sxwl-line-height-normal;
+  line-height: $sxwl-line-height-snug;
   color: $sxwl-color-text-body;
   background: $sxwl-color-bg-page;
 }
@@ -61,44 +61,19 @@ body {
 }
 
 // ============================================
-// antd Modal（portal 渲染到 body，必须在 .sxwl-root 之外才能生效）
-// Pro 观感：白底 header + 中性加粗标题 + 橙色关闭 hover
+// 弹窗骨架（全局统一）：内边距 / 关闭按钮基线
+// antd v6 内容容器为 .ant-modal-container（旧版叫 .ant-modal-content）
 // ============================================
+
 .ant-modal {
-  &-content {
-    overflow: hidden;
-  }
-
-  &-header {
-    margin-bottom: 0;
-    padding: $sxwl-space-base $sxwl-space-xl;
-    border-bottom: 1px solid $sxwl-color-divider;
-    background: $sxwl-color-bg-container;
-  }
-
-  &-title {
-    color: $sxwl-color-text-heading;
-    font-size: $sxwl-font-size-md;
-    font-weight: $sxwl-font-weight-semibold;
-  }
-
-  &-close {
-    color: $sxwl-color-text-tertiary;
-    transition: color $sxwl-mo-fast;
-
-    &:hover {
-      color: $sxwl-brand-500 !important;
-    }
-  }
-
-  &-body {
+  .ant-modal-container {
     padding: $sxwl-space-lg $sxwl-space-xl;
   }
 
-  &-footer {
-    margin-top: 0;
-    padding: $sxwl-space-md $sxwl-space-xl;
-    border-top: 1px solid $sxwl-color-divider;
+  // 关闭按钮 36px 的中心线对齐标题中心线：20 + 标题行高24/2 - 36/2 = 14
+  .ant-modal-close {
+    top: 14px;
+    right: $sxwl-space-sm;
   }
 }
 
@@ -106,7 +81,7 @@ body {
 // antd Result（Error 404 / 403 / 500 三页自动受益）
 // ============================================
 .ant-result {
-  padding-top: $sxwl-space-12;  // 48px（使用 Token 替代 6vh）
+  padding-top: $sxwl-space-4xl;  // 48px
 
   &-title {
     color: $sxwl-color-text-heading;
@@ -132,24 +107,26 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  // 全局重置（作用域限定在 #root 容器内）
-  *,
-  *::before,
-  *::after {
+  // 全局重置（作用域限定在 #root 容器内）。
+  // 必须走 :where()：写成 .sxwl-root * 时特异性与组件类名打平且注入更靠后，
+  // 会把 .sxwl-page__head { margin-bottom: 32px } 这类组件间距全站压平。
+  :where(.sxwl-root) *,
+  :where(.sxwl-root) *::before,
+  :where(.sxwl-root) *::after {
     margin: 0;
     box-sizing: border-box;
   }
 
   a {
-    color: $sxwl-color-primary;
+    color: $sxwl-color-text-brand;
     text-decoration: none;
-    transition: color $sxwl-dur-fast;
+    transition: color $sxwl-mo-fast;
   }
 
   a:hover {
-    color: $sxwl-color-primary-hover;
+    color: $sxwl-brand-action;
   }
 
   // 滚动条美化
-  @include scrollbar-thin(#e5e6eb, #c9cdd4);
+  @include scrollbar-thin;
 }

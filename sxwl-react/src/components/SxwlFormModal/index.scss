@@ -1,19 +1,43 @@
 // ============================================
 // SxwlFormModal — 表单弹窗样式
-// 弹窗框架（header / 标题 / 分割线 / 底栏）已在 global.scss 的 .ant-modal 统一处理，
+// 弹窗骨架（内边距 / 关闭按钮基线）已在 global.scss 的 .ant-modal 段统一处理，
 // 焦点环由 theme.token.ts 的 colorPrimary 派生，这里不再重复覆盖。
 // ============================================
 
 @use "../../styles/variables" as *;
 @use "../../styles/mixins" as *;
 
-.sxwl-form-modal-form {
-  // 字段纵向节奏：16px 一档，末项不留多余空白
-  .ant-form-item {
-    margin-bottom: $sxwl-space-base;
-  }
+// 字段多时限高滚动，弹窗骨架（标题/底栏）钉住，只有表单区滚。
+// overflow-x: clip 是为消掉栅格 Row 左右 -12px 负边距撑出的横向滚动条（clip 不产生滚动容器）
+.sxwl-form-modal .ant-modal-body {
+  max-height: calc(100vh - 260px);
+  overflow: clip auto;
+}
 
-  .ant-form-item:last-child {
+.sxwl-form-modal__section {
+  display: flex;
+  gap: $sxwl-space-sm;
+  align-items: center;
+  // 纵向 row-gap 已由 Row 提供 20px，这里只需给标题与下方字段留 8px
+  margin: 0 0 $sxwl-space-xs;
+  font-size: $sxwl-font-size-sm;
+  font-weight: $sxwl-font-weight-semibold;
+  color: $sxwl-color-text-heading;
+
+  // 右侧细线延续分组感，不切区块只作收口
+
+  &::after {
+    flex: 1;
+    height: 1px;
+    background: $sxwl-color-bg-hover;
+    content: '';
+  }
+}
+
+.sxwl-form-modal-form {
+  // 字段纵向节奏：靠 Row 的纵向 gutter 撑开，form-item 自身不带 margin
+  // （每个 form-item 独占一个 Col，若写 :last-child{margin:0} 会把所有项都归零）
+  .ant-form-item {
     margin-bottom: 0;
   }
 

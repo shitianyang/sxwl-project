@@ -1,9 +1,24 @@
 import type { ReactNode } from 'react';
 import type { Rule } from 'antd/es/form';
 
+/** 下拉选项 */
+export interface FormFieldOption {
+  value: any;
+  label: string;
+  disabled?: boolean;
+}
+
+/** 树选择节点（配合 fieldNames 映射） */
+export interface FormFieldTreeOption {
+  label?: string;
+  id?: string | number;
+  children?: FormFieldTreeOption[];
+  [key: string]: unknown;
+}
+
 /**
- * 通用表单字段配置
- * SxwlSearchForm / SxwlFormModal 共用
+ * 表单字段配置 —— SxwlFormModal / SxwlSearchForm 的驱动数据。
+ * 契约由两个组件的实际用法反推（本文件随组件用法演进）。
  */
 export interface FormFieldConfig {
   /** 字段名 */
@@ -11,33 +26,50 @@ export interface FormFieldConfig {
   /** 标签文本 */
   label?: string;
   /** 控件类型 */
-  type: 'input' | 'password' | 'select' | 'treeSelect' | 'textarea' | 'dateRange' | 'markdown' | 'richtext';
+  type?:
+    | 'input'
+    | 'password'
+    | 'select'
+    | 'treeSelect'
+    | 'dateRange'
+    | 'markdown'
+    | 'richtext'
+    | 'textarea'
+    | 'switch';
   /** 占位符 */
   placeholder?: string;
-  /** 控件下方的一句话说明（比 placeholder 更适合放规则解释） */
-  extra?: ReactNode;
-  /** 是否必填（自动添加必填校验） */
+  /** 是否必填（自动生成「请输入{label}」规则） */
   required?: boolean;
-  /** 初始值 */
-  initialValue?: any;
-  /** 校验规则（required 为 true 时自动追加 required 规则） */
+  /** 附加校验规则 */
   rules?: Rule[];
-  /** Select 选项 */
-  options?: { value: any; label: string }[];
-  /** Select 选择模式（多选用于角色/组织分配） */
+  /** Form.Item 初始值 */
+  initialValue?: unknown;
+  /** Form.Item 说明文案 */
+  extra?: ReactNode;
+  /** 两列布局下独占整行（长文本、备注类字段） */
+  full?: boolean;
+  /** 分组标题：与前一字段不同时插入整行段落标题（长表单分段用） */
+  section?: string;
+  /** 禁用 */
+  disabled?: boolean;
+  /** 最大长度（input / password） */
+  maxLength?: number;
+  /** select 选项 */
+  options?: FormFieldOption[];
+  /** select 模式（multiple / tags） */
   mode?: 'multiple' | 'tags';
-  /** Select 是否可搜索过滤 */
+  /** select 是否可搜索 */
   showSearch?: boolean;
-  /** Select 是否可清空 */
+  /** select 是否可清除 */
   allowClear?: boolean;
-  /** 树形数据（treeSelect 类型时使用） */
+  /** treeSelect 树数据 */
   treeData?: unknown[];
+  /** treeSelect 字段映射，默认 { label:'label', value:'id', children:'children' } */
+  fieldNames?: { label?: string; value?: string; children?: string };
   /** treeSelect 是否多选 */
   multiple?: boolean;
-  /** 树形字段映射（treeSelect 类型时使用） */
-  fieldNames?: { label: string; value: string; children: string };
-  /** 最大输入长度 */
-  maxLength?: number;
-  /** 是否禁用 */
-  disabled?: boolean;
+  /** dateRange 起始输出参数名，默认 {name}Start */
+  dateRangeStartKey?: string;
+  /** dateRange 结束输出参数名，默认 {name}End */
+  dateRangeEndKey?: string;
 }

@@ -226,7 +226,6 @@ export default function OrganizationPage() {
         fields={formFields}
         onOk={handleSave}
         onCancel={() => setModalOpen(false)}
-        width={600}
         confirmLoading={confirmLoading}
         initialValues={formInitialValues}
         editingData={editingOrg}

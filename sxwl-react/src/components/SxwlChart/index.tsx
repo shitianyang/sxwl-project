@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Chart } from '@antv/g2';
 import type { G2Spec } from '@antv/g2';
+import { SXWL_COLOR } from '@/styles/theme.token';
 
 export type { G2Spec };
 
@@ -17,8 +18,8 @@ export interface SxwlChartProps {
   colorField?: string;
   /** 饼图角度字段 */
   thetaField?: string;
-  /** 坐标系配置，如 { type: 'theta' }（饼图）或 { type: 'transpose' }（条形图） */
-  coordinate?: { type: string; [key: string]: any };
+  /** 坐标系配置。G2 v5 中 transpose 不是坐标类型，须写成 { transform: [{ type: 'transpose' }] }；饼图为 { type: 'theta' } */
+  coordinate?: Record<string, any>;
   /** 图表样式 */
   style?: React.CSSProperties;
   /** 图表高度（px），默认 300 */
@@ -125,7 +126,11 @@ const SxwlChart = ({
       if (xField) mark.encode('x', xField);
       if (yField) mark.encode('y', yField);
       if (colorField) mark.encode('color', colorField);
-      if (thetaField) mark.encode('theta', thetaField);
+      // G2 v5 饼图：interval 没有 theta 通道，须 y 编码 + stackY 变换配合 theta 坐标系
+      if (thetaField) {
+        mark.encode('y', thetaField);
+        mark.transform({ type: 'stackY' });
+      }
 
       // 额外编码
       if (encodes) {
@@ -137,8 +142,18 @@ const SxwlChart = ({
         mark.encode('shape', smooth ? 'smooth' : undefined);
       }
 
-      // 比例尺
-      if (scale) mark.scale(scale);
+      // 用色：多系列走「品牌领街」色板；单系列直接着领街色（line 描边 / area 描边+淡底 / 其余填充）
+      const palette: readonly string[] = SXWL_COLOR.chartSeries;
+      const hasSeriesColor = !!(colorField || thetaField || (encodes && 'color' in encodes));
+      if (hasSeriesColor) {
+        mark.scale({ color: { range: palette }, ...(scale ?? {}) });
+      } else {
+        const lead = palette[0];
+        if (chartType === 'line') mark.style({ stroke: lead });
+        else if (chartType === 'area') mark.style({ stroke: lead, fill: lead, fillOpacity: 0.15 });
+        else mark.style({ fill: lead });
+        if (scale) mark.scale(scale);
+      }
       // 坐标轴
       if (axis) mark.axis(axis);
       // 图例

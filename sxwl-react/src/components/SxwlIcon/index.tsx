@@ -48,6 +48,7 @@ const iconModules = import.meta.glob(
     '@/assets/icons/ant-design--file-search-outlined.svg',
     '@/assets/icons/ant-design--file-text-outlined.svg',
     '@/assets/icons/ant-design--font-colors-outlined.svg',
+    '@/assets/icons/ant-design--form-outlined.svg',
     '@/assets/icons/ant-design--highlight-outlined.svg',
     '@/assets/icons/ant-design--idcard-outlined.svg',
     '@/assets/icons/ant-design--inbox-outlined.svg',

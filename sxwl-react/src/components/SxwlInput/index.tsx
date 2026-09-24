@@ -17,7 +17,7 @@ export interface SxwlInputProps extends InputProps {
  * <SxwlInput value={name} onChange={setName} allowClear />
  * ```
  */
-const SxwlInput = forwardRef<InputRef, SxwlInputProps>(
+const SxwlInputImpl = forwardRef<InputRef, SxwlInputProps>(
   ({ type = 'text', allowClear = true, ...rest }, ref) => {
     if (type === 'password') {
       return <Input.Password ref={ref} {...rest} />;
@@ -26,6 +26,14 @@ const SxwlInput = forwardRef<InputRef, SxwlInputProps>(
   },
 );
 
+type SxwlInputComponent = typeof SxwlInputImpl & {
+  /** antd Input.TextArea 直通（表单模板 textarea 类型使用） */
+  TextArea: typeof Input.TextArea;
+};
+
+const SxwlInput = SxwlInputImpl as SxwlInputComponent;
+
 SxwlInput.displayName = 'SxwlInput';
+SxwlInput.TextArea = Input.TextArea;
 
 export default SxwlInput;

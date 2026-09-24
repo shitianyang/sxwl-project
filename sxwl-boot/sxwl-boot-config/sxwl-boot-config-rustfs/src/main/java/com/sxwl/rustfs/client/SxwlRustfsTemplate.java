@@ -87,8 +87,8 @@ public class SxwlRustfsTemplate {
         this.defaultBucket = properties.getDefaultBucket();
         this.tmpPrefix = properties.getTmpPrefix();
 
-        // 确保默认 Bucket 存在
-        createBucketIfNotExists(defaultBucket);
+        // 构造函数只创建客户端，不发网络请求；默认 Bucket 的创建由
+        // SxwlRustfsAutoConfiguration.DefaultBucketInitializer 在 Bean 初始化阶段统一执行一次
         log.info("SxwlRustfsTemplate 初始化完成: endpoint={}, bucket={}", properties.getEndpoint(), defaultBucket);
     }
 
