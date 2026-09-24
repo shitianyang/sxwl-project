@@ -12,13 +12,22 @@
   align-items: center;
   gap: $sxwl-space-base;
 
+  // flex-basis 取「240px 与半个容器」的较小值：flex 换行按 basis 判定、收缩救不回来，
+  // 定宽 240 在 494 窄容器里差 2px 就退化成竖排+大片死白（codegen 页实测）。
+  // 百分比兜底保证最窄也能稳定一行两个；宽屏仍按 240 封顶一行摆多个
   .sxwl-filters__field {
-    width: 240px;
+    flex: 0 1 min(240px, calc(50% - 9px));
+    min-width: 160px;
     margin-bottom: 0;
   }
 
+  // 日期区间字段占整行配额（320 起）
+  .sxwl-filters__field:has(.sxwl-filters__range) {
+    flex-basis: min(320px, 100%);
+  }
+
   .sxwl-filters__range {
-    width: 320px;
+    width: 100%;
   }
 
   .sxwl-filters__spacer {

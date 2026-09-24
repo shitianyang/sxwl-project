@@ -258,7 +258,6 @@ export default function MenuPage() {
         fields={formFields}
         onOk={handleSave}
         onCancel={() => setModalOpen(false)}
-        width={640}
         confirmLoading={confirmLoading}
         initialValues={formInitialValues}
         editingData={editingMenu}

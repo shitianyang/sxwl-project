@@ -16,24 +16,15 @@
   min-height: 0;
 }
 
-// -------- 页头：面包屑 + 标题 + 说明 + 主操作 --------
+// -------- 页头：单行面包屑。侧边栏已回答「我在哪」，CRUD 页不再放大标题 --------
 
 .sxwl-page__head {
-  display: flex;
-  align-items: flex-start;
   flex-shrink: 0;
-  gap: $sxwl-space-base;
-  margin-bottom: $sxwl-space-2xl;
+  margin-bottom: $sxwl-space-base;
   animation: sxwl-rise-soft $sxwl-mo-base $sxwl-mo-easing-decelerate both;
 }
 
-.sxwl-page__head-text {
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
 .sxwl-page__crumb {
-  margin-bottom: $sxwl-space-2xs;
   font-size: $sxwl-font-size-sm;
   color: $sxwl-color-text-secondary;
 }
@@ -45,26 +36,6 @@
 
 .sxwl-page__crumb-part .is-current {
   color: $sxwl-color-text-heading;
-}
-
-.sxwl-page__title {
-  margin: 0 0 $sxwl-space-2xs;
-  font-size: $sxwl-font-size-xl;
-  font-weight: $sxwl-font-weight-semibold;
-  line-height: $sxwl-line-height-tight;
-  color: $sxwl-color-text-heading;
-}
-
-.sxwl-page__desc {
-  margin: 0;
-  font-size: $sxwl-font-size-sm;
-  color: $sxwl-color-text-secondary;
-}
-
-.sxwl-page__actions {
-  display: flex;
-  flex-shrink: 0;
-  gap: $sxwl-space-sm;
 }
 
 // -------- 面板：唯一的容器 --------
@@ -86,6 +57,32 @@
 .sxwl-panel__filters {
   flex-shrink: 0;
   padding: $sxwl-space-xl $sxwl-space-xl $sxwl-space-lg;
+}
+
+// 表格工具栏：主操作靠左、次操作（link）靠右。
+// 有筛选条时其上间距由筛选条 20px 下衬提供；工具栏打头（无筛选条）才自带顶衬
+.sxwl-panel__toolbar {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: $sxwl-space-sm;
+  align-items: center;
+  padding: 0 $sxwl-space-xl $sxwl-space-md;
+
+  &:first-child {
+    padding-top: $sxwl-space-xl;
+  }
+}
+
+.sxwl-panel__toolbar-main,
+.sxwl-panel__toolbar-aux {
+  display: flex;
+  gap: $sxwl-space-sm;
+  align-items: center;
+}
+
+.sxwl-panel__toolbar-aux {
+  margin-left: auto;
 }
 
 // -------- 表体：只有这里滚动 --------

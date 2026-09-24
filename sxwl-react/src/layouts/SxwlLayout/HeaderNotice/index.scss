@@ -28,11 +28,11 @@
   width: 40px;
   border-radius: $sxwl-radius-sm;
   color: $sxwl-color-text-secondary;
-  transition: all $sxwl-dur-fast;
+  transition: all $sxwl-mo-fast;
 
   &:hover {
-    color: $sxwl-color-primary;
-    background: #f5f5f5;
+    color: $sxwl-brand-500;
+    background: $sxwl-color-bg-hover;
   }
 }
 
@@ -55,7 +55,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid $sxwl-color-border-secondary;
+  border-bottom: 1px solid $sxwl-color-divider;
 }
 
 .sxwl-notice-popover-loading {
@@ -73,14 +73,14 @@
 .sxwl-notice-list-item {
   padding: 10px 16px;
   cursor: pointer;
-  transition: background $sxwl-dur-fast;
+  transition: background $sxwl-mo-fast;
 
   &.unread {
-    background: $sxwl-color-primary-1;
+    background: $sxwl-brand-selected;
   }
 
   &:hover {
-    background: #fafafa;
+    background: $sxwl-color-bg-hover;
   }
 }
 
@@ -104,7 +104,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #ff4d4f;
+  background: $sxwl-color-danger;
   vertical-align: middle;
   margin-right: 4px;
   flex-shrink: 0;

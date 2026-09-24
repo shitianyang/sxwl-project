@@ -2,7 +2,7 @@ import { type JSX } from 'react';
 import type { Dayjs } from 'dayjs';
 import {
   SxwlInput, SxwlButton, SxwlSelect, SxwlIcon,
-  SxwlForm, SxwlRangePicker,
+  SxwlForm, SxwlRangePicker, SxwlSpace,
 } from '@/components';
 import type { FormFieldConfig } from '@/types/FormFieldConfig';
 import './index.scss';
@@ -84,8 +84,10 @@ function SxwlSearchFormInner({ fields, className, onSearch, onReset }: SxwlSearc
       })}
       <div className="sxwl-filters__spacer" />
       <SxwlForm.Item className="sxwl-filters__actions">
-        <SxwlButton type="primary" htmlType="submit">查询</SxwlButton>
-        <SxwlButton onClick={handleReset}>重置</SxwlButton>
+        <SxwlSpace size={12}>
+          <SxwlButton type="primary" htmlType="submit">查询</SxwlButton>
+          <SxwlButton onClick={handleReset}>重置</SxwlButton>
+        </SxwlSpace>
       </SxwlForm.Item>
     </SxwlForm>
   );

@@ -6,6 +6,8 @@ export type SxwlSelectProps = SelectProps;
 /**
  * SxwlSelect — 基于 antd Select 的二次封装
  *
+ * 默认宽度 100%（与 Input 对齐，表单列内自动撑满），可用 style.width 覆盖。
+ *
  * 用法：
  * ```tsx
  * <SxwlSelect
@@ -18,6 +20,8 @@ export type SxwlSelectProps = SelectProps;
  * />
  * ```
  */
-const SxwlSelect = (props: SxwlSelectProps) => <Select {...props} />;
+const SxwlSelect = ({ style, ...rest }: SxwlSelectProps) => (
+  <Select style={{ width: '100%', ...style }} {...rest} />
+);
 
 export default SxwlSelect;

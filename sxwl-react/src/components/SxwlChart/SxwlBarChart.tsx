@@ -15,9 +15,8 @@ export interface SxwlBarChartProps extends Omit<SxwlChartProps, 'chartType' | 'c
  * ```tsx
  * <SxwlBarChart
  *   data={[{ product: 'A', sales: 100 }, { product: 'B', sales: 150 }]}
- *   xField="sales"
- *   yField="product"
- *   colorField="region"
+ *   xField="product"
+ *   yField="sales"
  * />
  * ```
  */
@@ -28,7 +27,7 @@ const SxwlBarChart = (props: SxwlBarChartProps) => {
     <SxwlChart
       {...rest}
       chartType="interval"
-      coordinate={{ type: 'transpose' }}
+      coordinate={{ transform: [{ type: 'transpose' }] }}
       markStyle={markStyle}
     />
   );

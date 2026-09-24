@@ -136,14 +136,15 @@ public class SxwlRustfsAutoConfiguration {
     }
 
     /**
-     * 确保默认 Bucket 存在（启动后执行，RustFS 未就绪时仅 warn 不阻塞）
+     * 确保默认 Bucket 存在（启动后执行，RustFS 未就绪或凭据错误时仅 warn 不阻塞）
      *
-     * <p>该方法在 {@code sxwlRustfsTemplate} Bean 初始化后自动触发。</p>
+     * <p>直接复用 {@code sxwlRustfsTemplate} 单例 Bean，全启动链路只建一次桶；
+     * 不再单独 new 模板，避免重复创建 S3Client 与重复建桶的网络请求。</p>
      */
     @Bean
     @ConditionalOnMissingBean
-    public DefaultBucketInitializer defaultBucketInitializer(SxwlRustfsProperties properties) {
-        return new DefaultBucketInitializer(properties, DEFAULT_BUCKET);
+    public DefaultBucketInitializer defaultBucketInitializer(SxwlRustfsTemplate template) {
+        return new DefaultBucketInitializer(template, DEFAULT_BUCKET);
     }
 
     /**
@@ -152,23 +153,21 @@ public class SxwlRustfsAutoConfiguration {
      * <p>实现 {@link InitializingBean}，在 Spring Bean 初始化后执行 Bucket 检查创建。</p>
      */
     public static class DefaultBucketInitializer implements InitializingBean {
-        private final SxwlRustfsProperties properties;
+        private final SxwlRustfsTemplate template;
         private final String bucketName;
 
-        public DefaultBucketInitializer(SxwlRustfsProperties properties, String bucketName) {
-            this.properties = properties;
+        public DefaultBucketInitializer(SxwlRustfsTemplate template, String bucketName) {
+            this.template = template;
             this.bucketName = bucketName;
         }
 
         @Override
-        public void afterPropertiesSet() throws Exception {
-            SxwlRustfsTemplate template = new SxwlRustfsTemplate(properties);
-            try {
-                template.createBucketIfNotExists(bucketName);
+        public void afterPropertiesSet() {
+            // createBucketIfNotExists 内部吞异常只返回布尔值，按返回值打印真实结果，避免“失败仍报成功”的误导日志
+            if (template.createBucketIfNotExists(bucketName)) {
                 log.info("默认 Bucket 初始化成功: {}", bucketName);
-            } catch (Exception e) {
-                log.warn("默认 Bucket 初始化失败（RustFS 可能未启动）: bucket={}, error={}",
-                        bucketName, e.getMessage());
+            } else {
+                log.warn("默认 Bucket 初始化失败（RustFS 可能未启动或凭据不正确）: bucket={}", bucketName);
             }
         }
     }

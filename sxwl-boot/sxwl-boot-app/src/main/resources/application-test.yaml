@@ -48,8 +48,8 @@ sxwl:
   rustfs:
     endpoint: http://localhost:30230      # S3 兼容服务地址（测试环境 Rustfs）
     region: us-east-1
-    access-key: admin
-    secret-key: '@Sxwl0324!'
+    access-key: sxwl
+    secret-key: '@sxwl0324!'
     default-bucket: sxwl-files
     presigned-url-expire: 3600           # 预签名 URL 有效期（秒）
     temp-path-prefix: tmp/
